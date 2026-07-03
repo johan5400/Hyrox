@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🏁 Arrivée · HYROX</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#0B1220;--card:#111C30;--brd:#1E3050;--ink:#F1F5FB;--ink2:#9FB2CC;--green:#10B981;--red:#EF4444;--amber:#F59E0B}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:14px}
+h1{font-size:17px;font-weight:900;margin-bottom:4px}
+.sub{font-size:11px;color:var(--ink2);font-weight:700;margin-bottom:14px}
+.sec{font-size:11px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.tile{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border-left:5px solid var(--green)}
+.tile .n{flex:1;font-size:15px;font-weight:900}
+.tile .s{font-size:10px;color:var(--ink2);font-weight:700}
+.badge{font-size:10px;font-weight:900;border-radius:6px;padding:2px 8px;border:1px solid}
+.chrono{font-size:16px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums}
+.finish{background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:900;font-family:inherit}
+.finish:active{transform:scale(.97)}
+.res .n{font-size:14px}
+.res{border-left-color:var(--amber)}
+.time-official{font-size:18px;font-weight:900;color:var(--green);font-variant-numeric:tabular-nums}
+.undo{background:none;border:1px solid var(--red);color:var(--red);border-radius:8px;padding:6px 10px;font-size:10px;font-weight:800;font-family:inherit}
+.empty{text-align:center;color:var(--ink2);padding:30px 10px;font-size:13px;line-height:1.6}
+.warn{font-size:9px;color:var(--amber);font-weight:800}
+
+.hx-net{position:fixed;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444AA;z-index:99;transition:all .3s}
+.hx-net.on{background:#10B981;box-shadow:0 0 8px #10B98188}
+</style>
+</head>
+<body>
+<h1>🏁 Arrivée · chrono officiel</h1>
+<div class="sub" id="sub">Tape 🏁 quand l'équipe franchit la ligne — le temps officiel = arrivée − départ de sa vague.</div>
+<div class="sec">En course</div>
+<div id="running"><div class="empty">Connexion…</div></div>
+<div class="sec">Arrivés (aujourd'hui)</div>
+<div id="finished"><div class="empty">—</div></div>
+
+<script>
+var FIREBASE_DB_URL='https://foc-2026-default-rtdb.europe-west1.firebasedatabase.app';
+firebase.initializeApp({databaseURL:FIREBASE_DB_URL});
+var db=firebase.database();
+var R='hyrox/race';
+
+var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0;
+db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
+function now(){ return Date.now()+OFFSET; }
+db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
+db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
+db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); });
+
+function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
+function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0; }
+
+function fmt(ms){
+  if(ms==null||ms<0) return '—';
+  var cs=Math.floor(ms/1000);
+  var h=Math.floor(cs/3600), m=Math.floor((cs%3600)/60), s=cs%60;
+  return (h?h+':':'')+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
+}
+
+function finishTeam(waveKey, teamId, nom){
+  var w=WAVES[waveKey]; if(!w||!w.startAt){ alert('Vague non lancée ?'); return; }
+  var elapsed=now()-w.startAt;
+  if(!confirm('🏁 '+nom+' — arrêter le chrono à '+fmt(elapsed)+' ?')) return;
+  db.ref(R+'/progress/'+teamId).update({
+    waveKey:waveKey,
+    finishedAt:firebase.database.ServerValue.TIMESTAMP,
+    officialMs:elapsed
+  });
+  if(navigator.vibrate) navigator.vibrate([50,80,50]);
+}
+function dnfTeam(teamId, nom){
+  if(!confirm('❌ Marquer '+nom+' DNF (abandon / cap dépassé) ?')) return;
+  db.ref(R+'/progress/'+teamId).update({
+    dnf:true,
+    finishedAt:firebase.database.ServerValue.TIMESTAMP,
+    officialMs:null
+  });
+}
+function undoFinish(teamId, nom){
+  if(!confirm('Annuler l\'arrivée de '+nom+' ? (repart en course)')) return;
+  db.ref(R+'/progress/'+teamId+'/finishedAt').remove();
+  db.ref(R+'/progress/'+teamId+'/officialMs').remove();
+  db.ref(R+'/progress/'+teamId+'/dnf').remove();
+}
+
+function render(){
+  var run=document.getElementById('running'), fin=document.getElementById('finished');
+  if(!CFG){ run.innerHTML='<div class="empty">En attente de la config course…</div>'; return; }
+  var total=nStations();
+  var running=[], finished=[];
+  Object.values(WAVES).forEach(function(w){
+    if(!w.startAt) return;
+    (w.athletes||[]).forEach(function(a){
+      var p=prog(a.id);
+      var item={waveKey:w.key,teamId:a.id,nom:a.nom,catNom:w.catNom,couleur:w.couleur,waveNum:w.num,startAt:w.startAt,p:p};
+      if(p.finishedAt) finished.push(item); else running.push(item);
+    });
+  });
+
+  // en course : ceux qui ont le plus de stations validées en premier (proches de l'arrivée)
+  running.sort(function(a,b){ return doneCount(b.teamId)-doneCount(a.teamId) || a.waveNum-b.waveNum; });
+  run.innerHTML = running.length ? running.map(function(t){
+    var d=doneCount(t.teamId);
+    var near = d>=total ? ' ⭐' : '';
+    return '<div class="tile"><div class="n">'+t.nom+near
+      +'<div class="s">'+d+'/'+total+' stations · vague '+t.waveNum+(d<total?' <span class="warn">· stations manquantes</span>':'')+'</div></div>'
+      +'<span class="badge" style="color:'+t.couleur+';border-color:'+t.couleur+'55;background:'+t.couleur+'22">'+t.catNom+'</span>'
+      +'<span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span>'
+      +'<button class="finish" onclick="finishTeam(\''+t.waveKey+'\',\''+t.teamId+'\',\''+String(t.nom).replace(/'/g,"\\'")+'\')">🏁</button>'
+      +'<button class="undo" onclick="dnfTeam(\''+t.teamId+'\',\''+String(t.nom).replace(/'/g,"\\'")+'\')">DNF</button>'
+      +'</div>';
+  }).join('') : '<div class="empty">Personne en course.<br>Les équipes apparaissent dès que le TK lance une vague.</div>';
+
+  finished.sort(function(a,b){ return (a.p.dnf?9e13:(a.p.officialMs||9e12))-(b.p.dnf?9e13:(b.p.officialMs||9e12)); });
+  fin.innerHTML = finished.length ? finished.map(function(t,i){
+    return '<div class="tile res"><div style="font-size:13px;font-weight:900;color:var(--ink2);min-width:24px">'+(i+1)+'</div>'
+      +'<div class="n">'+t.nom+'<div class="s">'+t.catNom+' · vague '+t.waveNum+'</div></div>'
+      +(t.p.dnf?'<span class="time-official" style="color:var(--red)">DNF</span>':'<span class="time-official">'+fmt(t.p.officialMs)+'</span>')
+      +'<button class="undo" onclick="undoFinish(\''+t.teamId+'\',\''+String(t.nom).replace(/'/g,"\\'")+'\')">annuler</button>'
+      +'</div>';
+  }).join('') : '<div class="empty">Aucune arrivée pour l\'instant.</div>';
+}
+
+setInterval(function(){
+  document.querySelectorAll('.chrono[data-start]').forEach(function(n){
+    n.textContent=fmt(now()-parseInt(n.dataset.start,10));
+  });
+},500);
+
+/* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
+(function(){
+  var dot=document.createElement('div'); dot.className='hx-net'; dot.title='Connexion Firebase';
+  document.body.appendChild(dot);
+  db.ref('.info/connected').on('value',function(s){
+    dot.className='hx-net'+(s.val()?' on':'');
+    dot.title=s.val()?'Connecté — synchro temps réel':'⚠️ Hors-ligne — les saisies partiront à la reconnexion';
+  });
+  var lock=null;
+  function wake(){
+    if(!('wakeLock' in navigator)) return;
+    navigator.wakeLock.request('screen').then(function(l){ lock=l; }).catch(function(){});
+  }
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
+  wake();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔴 Live · HYROX</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#0B1220;--card:#111C30;--brd:#1E3050;--ink:#F1F5FB;--ink2:#9FB2CC;--green:#10B981;--red:#EF4444;--amber:#F59E0B;--blue:#3B82F6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:18px}
+.hdr{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.hdr h1{font-size:clamp(18px,3vw,28px);font-weight:900;flex:1}
+.live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite;margin-right:8px;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.divbtn{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
+.divbtn.on{color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(480px,100%),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:16px;overflow:hidden}
+.card h2{font-size:15px;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;margin-bottom:5px;background:#0B1626;border:1px solid var(--brd)}
+.rank{min-width:30px;font-size:16px;font-weight:900;text-align:center;color:var(--ink2)}
+.rank.r1{color:#FFD700}.rank.r2{color:#C0C0C0}.rank.r3{color:#CD7F32}
+.nom{flex:1;font-size:clamp(13px,1.6vw,16px);font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{font-size:10px;color:var(--ink2);font-weight:700}
+.toff{font-size:clamp(14px,1.8vw,18px);font-weight:900;color:var(--green);font-variant-numeric:tabular-nums}
+.dnf{color:var(--red);font-weight:900;font-size:13px}
+.chrono{font-size:13px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
+.pbar{flex:1;max-width:38%;height:10px;background:#060D18;border:1px solid var(--brd);border-radius:6px;overflow:hidden}
+.pbar>div{height:100%;transition:width .4s}
+.pct{font-size:10px;font-weight:900;color:var(--ink2);min-width:44px;text-align:right}
+.empty{text-align:center;color:var(--ink2);padding:24px;font-size:12px}
+.badge{font-size:9px;font-weight:900;border-radius:5px;padding:1px 6px;border:1px solid}
+.foot{text-align:center;font-size:10px;color:var(--ink2);font-weight:700;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1><span class="live-dot"></span><span id="evnom">HYROX</span> · Live</h1>
+  <div id="divbtns"></div>
+</div>
+<div class="grid" id="grid"><div class="empty">Connexion…</div></div>
+<div class="foot" id="foot">—</div>
+
+<script>
+var FIREBASE_DB_URL='https://foc-2026-default-rtdb.europe-west1.firebasedatabase.app';
+firebase.initializeApp({databaseURL:FIREBASE_DB_URL});
+var db=firebase.database();
+var R='hyrox/race';
+
+var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0, FILTER='all';
+db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
+function now(){ return Date.now()+OFFSET; }
+db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
+db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
+db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); });
+
+function fmt(ms){
+  if(ms==null) return '—';
+  var s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+  return (h?h+':':'')+('0'+m).slice(-2)+':'+('0'+sec).slice(-2);
+}
+function nSegments(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';}).length; }
+function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
+function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0; }
+
+function setFilter(f){ FILTER=f; render(); }
+
+function render(){
+  var grid=document.getElementById('grid');
+  if(!CFG){ grid.innerHTML='<div class="empty">En attente de la publication de la course…</div>'; return; }
+  document.getElementById('evnom').textContent=CFG.nom||'HYROX';
+
+  // boutons divisions
+  var divs=Object.values(CFG.divisions||{}).sort(function(a,b){return (a.id||0)-(b.id||0);});
+  document.getElementById('divbtns').innerHTML =
+    '<button class="divbtn'+(FILTER==='all'?' on':'')+'" style="'+(FILTER==='all'?'background:#3B82F6;border-color:#3B82F6':'')+'" onclick="setFilter(\'all\')">Toutes</button> '
+    + divs.map(function(d){
+      var on=FILTER===String(d.id);
+      return '<button class="divbtn'+(on?' on':'')+'" style="'+(on?'background:'+d.couleur+';border-color:'+d.couleur:'color:'+d.couleur)+'" onclick="setFilter(\''+d.id+'\')">'+d.nom+'</button>';
+    }).join(' ');
+
+  var total=nSegments();
+  var byDiv={};
+  Object.values(WAVES).forEach(function(w){
+    if(FILTER!=='all' && String(w.catId)!==FILTER) return;
+    if(!w.startAt) return;
+    if(!byDiv[w.catId]) byDiv[w.catId]={nom:w.catNom,couleur:w.couleur,finished:[],running:[]};
+    (w.athletes||[]).forEach(function(a){
+      var p=prog(a.id);
+      var item={nom:a.nom,waveNum:w.num,startAt:w.startAt,p:p,done:doneCount(a.id)};
+      if(p.finishedAt) byDiv[w.catId].finished.push(item);
+      else byDiv[w.catId].running.push(item);
+    });
+  });
+
+  var keys=Object.keys(byDiv);
+  if(!keys.length){ grid.innerHTML='<div class="empty">Aucune vague lancée pour l\'instant.</div>'; return; }
+
+  grid.innerHTML=keys.map(function(k){
+    var d=byDiv[k];
+    d.finished.sort(function(a,b){ return (a.p.dnf?9e13:(a.p.officialMs||9e12))-(b.p.dnf?9e13:(b.p.officialMs||9e12)); });
+    d.running.sort(function(a,b){ return b.done-a.done || a.waveNum-b.waveNum; });
+    var rows='';
+    d.finished.forEach(function(t,i){
+      var r=i+1;
+      rows+='<div class="row"><div class="rank'+(r<=3&&!t.p.dnf?' r'+r:'')+'">'+(t.p.dnf?'—':r)+'</div>'
+        +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+'</div></div>'
+        +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(t.p.officialMs)+'</span>')
+        +'</div>';
+    });
+    d.running.forEach(function(t){
+      var pct=total?Math.round(t.done/total*100):0;
+      rows+='<div class="row" style="border-left:3px solid '+d.couleur+'"><div class="rank">🏃</div>'
+        +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+' · '+t.done+'/'+total+' segments</div></div>'
+        +'<div class="pbar"><div style="width:'+pct+'%;background:linear-gradient(90deg,'+d.couleur+',#10B981)"></div></div>'
+        +'<div class="pct">'+pct+'%</div>'
+        +'<span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span>'
+        +'</div>';
+    });
+    return '<div class="card"><h2><span class="badge" style="color:'+d.couleur+';border-color:'+d.couleur+'55;background:'+d.couleur+'22">'+d.nom+'</span>'
+      +'<span class="sub">'+d.finished.filter(function(t){return !t.p.dnf;}).length+' arrivés · '+d.running.length+' en course</span></h2>'
+      +(rows||'<div class="empty">—</div>')+'</div>';
+  }).join('');
+
+  document.getElementById('foot').textContent='Cap '+(CFG.capMinutes||100)+' min · mise à jour temps réel';
+}
+
+setInterval(function(){
+  document.querySelectorAll('.chrono[data-start]').forEach(function(n){
+    n.textContent=fmt(now()-parseInt(n.dataset.start,10));
+  });
+},500);
+</script>
+</body>
+</html>

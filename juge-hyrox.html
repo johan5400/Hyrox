@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Juge · HYROX</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#0B1220;--card:#111C30;--brd:#1E3050;--ink:#F1F5FB;--ink2:#9FB2CC;--blue:#3B82F6;--green:#10B981;--red:#EF4444;--violet:#8B5CF6}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:14px}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.hdr h1{font-size:16px;font-weight:900;flex:1}
+.back{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:900;font-family:inherit}
+.tile{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.tile .n{font-size:14px;font-weight:900;flex:1}
+.tile .s{font-size:10px;color:var(--ink2);font-weight:700}
+.team{border-left:5px solid var(--blue)}
+.badge{font-size:10px;font-weight:900;border-radius:6px;padding:2px 8px;border:1px solid}
+.empty{text-align:center;color:var(--ink2);padding:40px 10px;font-size:13px;line-height:1.6}
+/* compteur */
+.counter{max-width:520px;margin:0 auto;text-align:center}
+.cnt-team{font-size:19px;font-weight:900;margin:6px 0 2px}
+.cnt-cat{font-size:11px;font-weight:900;margin-bottom:10px}
+.cnt-val{font-size:64px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.cnt-target{font-size:14px;color:var(--ink2);font-weight:800;margin-bottom:8px}
+.bar{height:12px;background:#0B1626;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin:10px 0 18px}
+.bar>div{height:100%;background:linear-gradient(90deg,#2563EB,#10B981);width:0%;transition:width .15s}
+.tap{width:100%;padding:42px 10px;border:none;border-radius:20px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:26px;font-weight:900;font-family:inherit;box-shadow:0 6px 24px #2563EB55}
+.tap:active{transform:scale(.98)}
+.row2{display:flex;gap:10px;margin-top:12px}
+.minus{flex:1;padding:14px;border:1px solid var(--red);background:none;color:var(--red);border-radius:12px;font-size:16px;font-weight:900;font-family:inherit}
+.validbtn{flex:2;padding:14px;border:none;background:var(--green);color:#03170e;border-radius:12px;font-size:15px;font-weight:900;font-family:inherit}
+.okscreen{text-align:center;padding:60px 10px}
+.okscreen .big{font-size:70px}
+.poids{font-size:12px;color:var(--violet);font-weight:900;margin-bottom:14px}
+
+.hx-net{position:fixed;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444AA;z-index:99;transition:all .3s}
+.hx-net.on{background:#10B981;box-shadow:0 0 8px #10B98188}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <button class="back" id="backBtn" style="display:none" onclick="goBack()">← Retour</button>
+  <h1 id="title">👨‍⚖️ Juge · choisis ta station</h1>
+</div>
+<div id="view"><div class="empty">Connexion…</div></div>
+
+<script>
+var FIREBASE_DB_URL='https://foc-2026-default-rtdb.europe-west1.firebasedatabase.app';
+firebase.initializeApp({databaseURL:FIREBASE_DB_URL});
+var db=firebase.database();
+var R='hyrox/race';
+
+var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0;
+var SCREEN='stations'; // stations | teams | counter | ok
+var MY_STATION=null, CUR=null; // CUR={waveKey,teamId,nom,cat...}
+var COUNT=0;
+
+db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
+function now(){ return Date.now()+OFFSET; }
+
+db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
+db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
+db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; if(SCREEN==='teams') render(); });
+
+try{ MY_STATION = JSON.parse(localStorage.getItem('hxj-station')||'null'); if(MY_STATION!=null) SCREEN='teams'; }catch(e){}
+
+function stations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){ return st.seg==='station'; }); }
+function stationByIdx(i){ return ((CFG&&CFG.stations)||[]).find(function(st){ return st.idx===i; }); }
+
+function goBack(){
+  if(SCREEN==='counter'){ SCREEN='teams'; CUR=null; }
+  else { SCREEN='stations'; MY_STATION=null; localStorage.removeItem('hxj-station'); }
+  render();
+}
+
+function pickStation(idx){
+  MY_STATION=idx; localStorage.setItem('hxj-station', JSON.stringify(idx));
+  SCREEN='teams'; render();
+}
+
+function teamProg(teamId){ return (PROGRESS&&PROGRESS[teamId])||{}; }
+function stDone(teamId, idx){ var p=teamProg(teamId); return !!(p.stations&&p.stations[idx]&&p.stations[idx].done); }
+
+function runningTeams(){
+  var out=[];
+  Object.values(WAVES).forEach(function(w){
+    if(!w.startAt) return;
+    (w.athletes||[]).forEach(function(a){
+      var p=teamProg(a.id);
+      if(p.finishedAt) return;
+      out.push({waveKey:w.key,teamId:a.id,nom:a.nom,catNom:w.catNom,couleur:w.couleur,waveNum:w.num,startAt:w.startAt});
+    });
+  });
+  return out;
+}
+
+function precedingRunIdx(stationIdx){
+  var runs=((CFG&&CFG.stations)||[]).filter(function(s){return s.seg==='run'&&s.idx<stationIdx;});
+  return runs.length ? runs[runs.length-1].idx : null;
+}
+
+function pickTeam(waveKey,teamId){
+  var t=runningTeams().find(function(x){return x.teamId===teamId&&x.waveKey===waveKey;});
+  if(!t) return;
+  CUR=t;
+  var p=teamProg(teamId);
+  COUNT=(p.stations&&p.stations[MY_STATION]&&p.stations[MY_STATION].val)||0;
+  // ✅ Run précédent auto-validé : l'arrivée à la station prouve le run
+  var rIdx=precedingRunIdx(MY_STATION);
+  if(rIdx!=null && !(p.stations&&p.stations[rIdx]&&p.stations[rIdx].done)){
+    var rSt=stationByIdx(rIdx)||{};
+    db.ref(R+'/progress/'+teamId+'/stations/'+rIdx).set({
+      val:rSt.qty||1000, done:true, auto:true,
+      at:firebase.database.ServerValue.TIMESTAMP,
+      elapsedMs: now()-(t.startAt||now())
+    });
+  }
+  SCREEN='counter'; render();
+}
+
+function stTarget(st, catId){
+  var q=(st.qtyParCat&&st.qtyParCat[String(catId)]!=null)?st.qtyParCat[String(catId)]:st.qty;
+  return parseFloat(q)||st.qty||0;
+}
+function catIdOf(waveKey){ var w=WAVES[waveKey]; return w?w.catId:null; }
+
+function tap(){
+  var st=stationByIdx(MY_STATION); if(!st||!CUR) return;
+  var target=stTarget(st,catIdOf(CUR.waveKey));
+  COUNT=Math.min(target, +(COUNT+(st.step||1)).toFixed(2));
+  save(false);
+  if(COUNT>=target){ validate(); return; }
+  render();
+  if(navigator.vibrate) navigator.vibrate(15);
+}
+function minus(){
+  var st=stationByIdx(MY_STATION); if(!st) return;
+  COUNT=Math.max(0, +(COUNT-(st.step||1)).toFixed(2));
+  save(false); render();
+}
+function save(done){
+  if(!CUR) return;
+  db.ref(R+'/progress/'+CUR.teamId+'/stations/'+MY_STATION).set({
+    val:COUNT, done:!!done, at:firebase.database.ServerValue.TIMESTAMP,
+    elapsedMs: now()-(CUR.startAt||now())
+  });
+  db.ref(R+'/progress/'+CUR.teamId+'/waveKey').set(CUR.waveKey);
+}
+function validate(){
+  var st=stationByIdx(MY_STATION);
+  COUNT=stTarget(st,catIdOf(CUR.waveKey));
+  save(true);
+  if(navigator.vibrate) navigator.vibrate([40,60,40]);
+  SCREEN='ok'; render();
+  setTimeout(function(){ if(SCREEN==='ok'){ SCREEN='teams'; CUR=null; render(); } },1500);
+}
+
+function fmt(ms){ var s=Math.floor(ms/1000); return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2); }
+
+function render(){
+  var el=document.getElementById('view'), ttl=document.getElementById('title'), bk=document.getElementById('backBtn');
+  if(!CFG){ el.innerHTML='<div class="empty">En attente de la config course…<br>Publie depuis l\'admin (🏃 HYROX → Appliquer).</div>'; return; }
+  bk.style.display = SCREEN==='stations' ? 'none':'inline-block';
+
+  if(SCREEN==='stations'){
+    ttl.textContent='👨‍⚖️ Juge · choisis ta station';
+    el.innerHTML = stations().map(function(st){
+      return '<div class="tile" onclick="pickStation('+st.idx+')"><div class="n">'+st.nom+'</div>'
+        +'<div class="s">'+st.qty+' · '+st.step+'/clic</div></div>';
+    }).join('') || '<div class="empty">Aucune station publiée</div>';
+    return;
+  }
+
+  var st=stationByIdx(MY_STATION);
+  if(SCREEN==='teams'){
+    ttl.textContent='🏋️ '+((st&&st.nom)||'Station');
+    var teams=runningTeams().filter(function(t){ return !stDone(t.teamId,MY_STATION); })
+      .sort(function(a,b){ return a.waveNum-b.waveNum || a.nom.localeCompare(b.nom); });
+    el.innerHTML = teams.length ? teams.map(function(t){
+      var p=teamProg(t.teamId); var nDone=p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0;
+      return '<div class="tile team" style="border-left-color:'+t.couleur+'" onclick="pickTeam(\''+t.waveKey+'\',\''+t.teamId+'\')">'
+        +'<div class="n">'+t.nom+'<div class="s">Vague '+t.waveNum+' · '+nDone+'/'+stations().length+' stations · ⏱ '+fmt(now()-t.startAt)+'</div></div>'
+        +'<span class="badge" style="color:'+t.couleur+';border-color:'+t.couleur+'55;background:'+t.couleur+'22">'+t.catNom+'</span>'
+        +'</div>';
+    }).join('') : '<div class="empty">Aucune équipe en course pour cette station.<br>Les équipes apparaissent dès que le TK lance leur vague.</div>';
+    return;
+  }
+
+  if(SCREEN==='counter' && CUR && st){
+    ttl.textContent='🏋️ '+st.nom;
+    var target=stTarget(st,catIdOf(CUR.waveKey));
+    var poids=(st.poids&&st.poids[String(catIdOf(CUR.waveKey))])||'';
+    var pct=target?Math.min(100,COUNT/target*100):0;
+    el.innerHTML='<div class="counter">'
+      +'<div class="cnt-team">'+CUR.nom+'</div>'
+      +'<div class="cnt-cat" style="color:'+CUR.couleur+'">'+CUR.catNom+' · vague '+CUR.waveNum+'</div>'
+      +(poids?'<div class="poids">⚖️ '+poids+'</div>':'')
+      +'<div class="cnt-val">'+(+COUNT.toFixed(2))+'</div>'
+      +'<div class="cnt-target">/ '+target+'</div>'
+      +'<div class="bar"><div style="width:'+pct+'%"></div></div>'
+      +'<button class="tap" onclick="tap()">+'+st.step+'</button>'
+      +'<div class="row2"><button class="minus" onclick="minus()">−'+st.step+'</button>'
+      +'<button class="validbtn" onclick="validate()">✅ VALIDER STATION</button></div>'
+      +'</div>';
+    return;
+  }
+
+  if(SCREEN==='ok'){
+    ttl.textContent='🏋️ '+((st&&st.nom)||'');
+    el.innerHTML='<div class="okscreen"><div class="big">✅</div><div style="font-size:18px;font-weight:900;margin-top:8px">Station validée</div><div style="font-size:12px;color:var(--ink2);margin-top:4px">Équipe suivante…</div></div>';
+  }
+}
+
+/* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
+(function(){
+  var dot=document.createElement('div'); dot.className='hx-net'; dot.title='Connexion Firebase';
+  document.body.appendChild(dot);
+  db.ref('.info/connected').on('value',function(s){
+    dot.className='hx-net'+(s.val()?' on':'');
+    dot.title=s.val()?'Connecté — synchro temps réel':'⚠️ Hors-ligne — les saisies partiront à la reconnexion';
+  });
+  var lock=null;
+  function wake(){
+    if(!('wakeLock' in navigator)) return;
+    navigator.wakeLock.request('screen').then(function(l){ lock=l; }).catch(function(){});
+  }
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
+  wake();
+})();
+</script>
+</body>
+</html>

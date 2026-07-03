@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🚀 Départ · HYROX</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--bg:#0B1220;--card:#111C30;--brd:#1E3050;--ink:#F1F5FB;--ink2:#9FB2CC;--green:#10B981;--red:#EF4444;--amber:#F59E0B;--blue:#3B82F6}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:14px;display:flex;flex-direction:column}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.hdr h1{font-size:16px;font-weight:900;flex:1}
+.day-btn{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:900;font-family:inherit}
+.day-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.main{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:560px;margin:0 auto;width:100%}
+.next{background:var(--card);border:2px solid var(--brd);border-radius:20px;padding:22px;text-align:center;margin-bottom:14px}
+.next .lbl{font-size:11px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:1px}
+.next .cat{font-size:clamp(22px,6vw,34px);font-weight:900;margin:8px 0 2px}
+.next .meta{font-size:13px;color:var(--ink2);font-weight:800;margin-bottom:6px}
+.count{font-size:15px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums;margin-bottom:4px}
+.count.auto{color:var(--green)}
+.aths{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0 4px}
+.ath{background:#0B1626;border:1px solid var(--brd);border-radius:7px;padding:3px 10px;font-size:11px;font-weight:800;color:var(--ink2)}
+.go{width:100%;padding:34px 10px;border:none;border-radius:22px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;font-size:34px;font-weight:900;font-family:inherit;box-shadow:0 8px 30px #10B98155;letter-spacing:2px}
+.go:active{transform:scale(.98)}
+.go:disabled{opacity:.35}
+.running{background:var(--card);border:1px solid var(--brd);border-left:5px solid var(--green);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.running .n{flex:1;font-size:13px;font-weight:900}
+.running .s{font-size:10px;color:var(--ink2);font-weight:700}
+.chrono{font-size:24px;font-weight:900;color:var(--green);font-variant-numeric:tabular-nums}
+.cancel{background:none;border:1px solid var(--red);color:var(--red);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;font-family:inherit}
+.queue{font-size:11px;color:var(--ink2);font-weight:800;text-align:center;margin-top:10px;line-height:1.8}
+.empty{text-align:center;color:var(--ink2);padding:40px 10px;font-size:14px;line-height:1.7}
+.hx-net{position:fixed;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444AA;z-index:99;transition:all .3s}
+.hx-net.on{background:#10B981;box-shadow:0 0 8px #10B98188}
+.sec{font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;text-align:center}
+</style>
+</head>
+<body>
+<div id="tkbar" style="background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:8px 14px;text-align:center;margin-bottom:10px;display:flex;align-items:center;gap:10px;justify-content:center">
+  <span style="font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase">TK</span>
+  <span id="tkclock" style="font-size:22px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums">--:--:--</span>
+</div>
+<div class="hdr">
+  <h1>🚀 Départ · le chef</h1>
+  <button class="day-btn on" id="d1" onclick="setDay(1)">J1</button>
+  <button class="day-btn" id="d2" onclick="setDay(2)">J2</button>
+</div>
+<div class="main" id="main"><div class="empty">Connexion…</div></div>
+
+<script>
+var FIREBASE_DB_URL='https://foc-2026-default-rtdb.europe-west1.firebasedatabase.app';
+firebase.initializeApp({databaseURL:FIREBASE_DB_URL});
+var db=firebase.database();
+var R='hyrox/race';
+
+var DAY=1, WAVES={}, CFG={}, OFFSET=0;
+db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
+function now(){ return Date.now()+OFFSET; }
+var TK={};
+db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; render(); });
+function tkStart(){ return (TK[DAY]&&TK[DAY].startAt)||null; }
+db.ref(R+'/config').on('value',function(s){ CFG=s.val()||{}; render(); });
+db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
+
+function setDay(d){ DAY=d;
+  document.getElementById('d1').className='day-btn'+(d===1?' on':'');
+  document.getElementById('d2').className='day-btn'+(d===2?' on':'');
+  render(); }
+
+function fmt(ms){
+  if(ms<0) ms=0;
+  var s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+  return (h?h+':':'')+('0'+m).slice(-2)+':'+('0'+sec).slice(-2);
+}
+
+function dayWaves(){
+  return Object.values(WAVES).filter(function(w){return (w.jour||1)===DAY;})
+    .sort(function(a,b){return (a.num||0)-(b.num||0);});
+}
+
+function launch(key){
+  var w=WAVES[key]; if(!w||w.startAt) return;
+  if(!tkStart()){ alert('⏸ Le chrono général (TK) n\'est pas lancé — vois avec le TK.'); return; }
+  if(!confirm('🚀 GO — Vague '+w.num+' · '+w.catNom+' ('+w.time+') ?\nDépart calé sur TK +'+fmt(now()-tkStart()))) return;
+  db.ref(R+'/waves/'+key+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+  if(navigator.vibrate) navigator.vibrate([60,80,60]);
+}
+function cancelLaunch(key){
+  var w=WAVES[key]; if(!w||!w.startAt) return;
+  if(now()-w.startAt>15000){ alert('Annulation possible seulement dans les 15s après le départ.'); return; }
+  if(confirm('Annuler le départ de la vague '+w.num+' ?')) db.ref(R+'/waves/'+key+'/startAt').remove();
+}
+
+function render(){
+  var el=document.getElementById('main');
+  var arr=dayWaves();
+  if(!arr.length){ el.innerHTML='<div class="empty">Aucune vague publiée pour ce jour.<br>Publie depuis l\'admin (🏃 HYROX → Appliquer).</div>'; return; }
+
+  var pending=arr.filter(function(w){return !w.startAt;});
+  var running=arr.filter(function(w){return w.startAt && (now()-w.startAt)<(CFG.capMinutes||100)*60000;})
+    .sort(function(a,b){return b.startAt-a.startAt;});
+  var html='';
+
+  if(pending.length){
+    var w=pending[0];
+    var cd='';
+    if(w.schedAt){
+      var diff=w.schedAt-now();
+      cd = diff>0
+        ? '<div class="count'+(CFG.autoStart?' auto':'')+'" data-sched="'+w.schedAt+'">'+(CFG.autoStart?'🤖 départ auto dans ':'⏳ prévu dans ')+fmt(diff)+'</div>'
+        : '<div class="count" style="color:var(--red)">⚠️ heure prévue dépassée ('+w.time+')</div>';
+    }
+    html+='<div class="next" style="border-color:'+(w.couleur||'#3B82F6')+'66">'
+      +'<div class="lbl">Prochaine vague · n°'+w.num+' · '+w.time+'</div>'
+      +'<div class="cat" style="color:'+(w.couleur||'#3B82F6')+'">'+w.catNom+'</div>'
+      +'<div class="meta">vague '+w.wave+'/'+w.nWaves+' · '+(w.athletes||[]).length+' partant(s)</div>'
+      +cd
+      +'<div class="aths">'+(w.athletes||[]).map(function(a){return '<span class="ath">'+a.nom+'</span>';}).join('')+'</div>'
+      +'</div>'
+      +(tkStart()
+         ? '<button class="go" onclick="launch(\''+w.key+'\')">🚀 GO</button>'
+         : '<button class="go" disabled>🚀 GO</button><div style="text-align:center;font-size:11px;color:var(--red);font-weight:900;margin-top:8px">⏸ En attente du chrono général (TK)</div>');
+    if(pending.length>1){
+      html+='<div class="queue">Ensuite : '+pending.slice(1,4).map(function(q){return q.time+' '+q.catNom+' '+q.wave+'/'+q.nWaves;}).join(' · ')
+        +(pending.length>4?' · +'+(pending.length-4):'')+'</div>';
+    }
+  } else {
+    html+='<div class="empty">✅ Toutes les vagues du jour sont parties</div>';
+  }
+
+  if(running.length){
+    html+='<div class="sec">En course</div>';
+    running.slice(0,4).forEach(function(w){
+      html+='<div class="running"><div class="n" style="color:'+(w.couleur||'#10B981')+'">'+w.catNom+' '+w.wave+'/'+w.nWaves
+        +'<div class="s">vague '+w.num+' · départ '+w.time+'</div></div>'
+        +'<div style="text-align:right"><span class="chrono" data-start="'+w.startAt+'">'+fmt(now()-w.startAt)+'</span>'
+        +(tkStart()?'<div style="font-size:9px;color:var(--ink2);font-weight:800">départ TK +'+fmt(w.startAt-tkStart())+'</div>':'')+'</div>'
+        +((now()-w.startAt)<=15000?'<button class="cancel" onclick="cancelLaunch(\''+w.key+'\')">annuler</button>':'')
+        +'</div>';
+    });
+  }
+  el.innerHTML=html;
+}
+
+/* Départs automatiques : si activé côté admin, la vague part seule à l'heure planifiée
+   (valeur déterministe = schedAt, donc pas de conflit si plusieurs écrans le font) */
+setInterval(function(){
+  var tkc=document.getElementById('tkclock');
+  if(tkc) tkc.textContent = tkStart()?fmt(now()-tkStart()):'--:--:--';
+  if(CFG&&CFG.autoStart&&tkStart()){
+    Object.values(WAVES).forEach(function(w){
+      if(!w.startAt && w.schedAt && now()>=w.schedAt){
+        db.ref(R+'/waves/'+w.key+'/startAt').set(w.schedAt);
+      }
+    });
+  }
+  document.querySelectorAll('.chrono[data-start]').forEach(function(n){
+    n.textContent=fmt(now()-parseInt(n.dataset.start,10));
+  });
+  document.querySelectorAll('.count[data-sched]').forEach(function(n){
+    var d=parseInt(n.dataset.sched,10)-now();
+    if(d<0){ render(); return; }
+    n.textContent=(CFG.autoStart?'🤖 départ auto dans ':'⏳ prévu dans ')+fmt(d);
+  });
+},400);
+
+/* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
+(function(){
+  var dot=document.createElement('div'); dot.className='hx-net'; dot.title='Connexion Firebase';
+  document.body.appendChild(dot);
+  db.ref('.info/connected').on('value',function(s){
+    dot.className='hx-net'+(s.val()?' on':'');
+    dot.title=s.val()?'Connecté — synchro temps réel':'⚠️ Hors-ligne — les actions partiront à la reconnexion';
+  });
+  var lock=null;
+  function wake(){
+    if(!('wakeLock' in navigator)) return;
+    navigator.wakeLock.request('screen').then(function(l){ lock=l; }).catch(function(){});
+  }
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
+  wake();
+})();
+</script>
+</body>
+</html>

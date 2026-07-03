@@ -33,6 +33,10 @@ h1{font-size:17px;font-weight:900;margin-bottom:4px}
 </head>
 <body>
 <h1>🏁 Arrivée · chrono officiel</h1>
+<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:6px 12px;display:inline-flex;align-items:center;gap:8px;margin-bottom:8px">
+  <span style="font-size:9px;font-weight:900;color:var(--ink2)">TK J<span id="tkday">1</span></span>
+  <span id="tkclock" style="font-size:16px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums">--:--:--</span>
+</div>
 <div class="sub" id="sub">Tape 🏁 quand l'équipe franchit la ligne — le temps officiel = arrivée − départ de sa vague.</div>
 <div class="sec">En course</div>
 <div id="running"><div class="empty">Connexion…</div></div>
@@ -48,6 +52,8 @@ var R='hyrox/race';
 var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
 function now(){ return Date.now()+OFFSET; }
+var TK={};
+db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; });
 db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
 db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); });
@@ -132,6 +138,21 @@ setInterval(function(){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
 },500);
+
+
+/* Départs automatiques (si activés côté admin) — valeur déterministe = schedAt */
+setInterval(function(){
+  var day=TK[2]&&TK[2].startAt?2:1;
+  var st=TK[day]&&TK[day].startAt;
+  var tkc=document.getElementById('tkclock'); if(tkc) tkc.textContent=st?fmt(now()-st):'--:--:--';
+  var tkd=document.getElementById('tkday'); if(tkd) tkd.textContent=day;
+  if(!CFG||!CFG.autoStart||!st) return;
+  Object.values(WAVES||{}).forEach(function(w){
+    if(!w.startAt && w.schedAt && now()>=w.schedAt){
+      db.ref(R+'/waves/'+w.key+'/startAt').set(w.schedAt);
+    }
+  });
+},3000);
 
 /* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
 (function(){

@@ -52,6 +52,8 @@ var R='hyrox/race';
 var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0, FILTER='all';
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
 function now(){ return Date.now()+OFFSET; }
+var TK={};
+db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; });
 db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
 db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); });
@@ -133,6 +135,17 @@ setInterval(function(){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
 },500);
+
+/* Départs automatiques (si activés côté admin) — valeur déterministe = schedAt */
+setInterval(function(){
+  if(!CFG||!CFG.autoStart) return;
+  if(!((TK[1]&&TK[1].startAt)||(TK[2]&&TK[2].startAt))) return;
+  Object.values(WAVES||{}).forEach(function(w){
+    if(!w.startAt && w.schedAt && now()>=w.schedAt){
+      db.ref(R+'/waves/'+w.key+'/startAt').set(w.schedAt);
+    }
+  });
+},3000);
 </script>
 </body>
 </html>

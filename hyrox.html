@@ -1148,6 +1148,13 @@ function checkPassword(){
         </div>
       </div>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--brd2);border-radius:10px;padding:10px 14px;margin-bottom:10px;cursor:pointer">
+      <input id="hx-auto" type="checkbox" onchange="saveHyroxCfg()" style="width:18px;height:18px;accent-color:#059669;cursor:pointer">
+      <div>
+        <div style="font-size:12px;font-weight:900;color:var(--ink)">🚀 Départs automatiques (TK optionnel)</div>
+        <div style="font-size:10px;color:var(--ink3);font-weight:600">Chaque vague démarre toute seule pile à l'heure planifiée — nécessite les dates J1/J2 dans Config. Le TK peut toujours lancer en avance ou annuler.</div>
+      </div>
+    </label>
     <div style="font-size:10px;color:var(--ink3);margin-bottom:10px;font-weight:600">Chaque division part à son heure : jour + heure de la 1ère vague. Nb de vagues auto = inscrits ÷ slots/vague. L'horaire se recalcule en direct.</div>
     <div id="hx-divisions"></div>
   </div>
@@ -2019,12 +2026,20 @@ function checkPassword(){
         <div style="font-size:15px;font-weight:900;color:var(--ink)">Applis HYROX · Terrain</div>
         <div style="font-size:11px;color:var(--mid)">TK, juges de station et arrivée — chacun scanne le QR de son poste</div>
       </div>
-      <button onclick="printHyroxQRAll()" style="padding:8px 16px;background:#0F1C2E;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;">🖨️ Imprimer les 3 (A4)</button>
+      <button onclick="printHyroxQRAll()" style="padding:8px 16px;background:#0F1C2E;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;">🖨️ Tout imprimer (A4)</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px">
 
+      <div style="background:#fff;border:2px solid #10B981;border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:13px;font-weight:900;color:#059669;margin-bottom:2px">🚀 Départ · Le Chef</div>
+        <div style="font-size:10px;color:var(--mid);margin-bottom:8px">depart.html</div>
+        <div id="qr-hx-depart" style="display:inline-block"></div>
+        <div style="font-size:10px;color:var(--mid);line-height:1.6;margin-top:8px">Prochaine vague en grand + bouton GO<br>compte à rebours · mode auto compatible</div>
+        <button onclick="printHyroxQR('depart')" style="margin-top:8px;padding:6px 14px;background:linear-gradient(135deg,#059669,#10B981);border:none;border-radius:7px;color:#fff;font-size:10px;font-weight:800;cursor:pointer;">🖨️ A4</button>
+      </div>
+
       <div style="background:#fff;border:1px solid var(--brd2,#DDE5F5);border-radius:12px;padding:14px;text-align:center">
-        <div style="font-size:13px;font-weight:900;color:#1565C0;margin-bottom:2px">⏱ TK · Départs</div>
+        <div style="font-size:13px;font-weight:900;color:#1565C0;margin-bottom:2px">⏱ TK · Contrôle</div>
         <div style="font-size:10px;color:var(--mid);margin-bottom:8px">tk-hyrox.html</div>
         <div id="qr-hx-tk" style="display:inline-block"></div>
         <div style="font-size:10px;color:var(--mid);line-height:1.6;margin-top:8px">Lance le chrono de chaque vague<br>🚀 GO · annulation 15s · chrono live</div>
@@ -13097,7 +13112,8 @@ function safeCall(fn, name) {
 
 /* ── QR applis HYROX terrain ── */
 var HX_APPS={
-  tk:     {file:'tk-hyrox.html',   titre:'⏱ TK · Départs HYROX',        soustitre:'Lancement du chrono des vagues', color:'0D47A1'},
+  depart: {file:'depart.html',     titre:'🚀 Départ · Le Chef',          soustitre:'Prochaine vague · gros bouton GO', color:'065F46'},
+  tk:     {file:'tk-hyrox.html',   titre:'⏱ TK · Contrôle des départs',  soustitre:'Vue d\'ensemble · GO · annulation', color:'0D47A1'},
   juge:   {file:'juge-hyrox.html', titre:'👨‍⚖️ Juge de station · HYROX', soustitre:'Choisis ta station · valide les reps', color:'4C1D95'},
   arrivee:{file:'arrivee.html',    titre:'🏁 Arrivée · Chrono officiel', soustitre:'Stoppe le chrono à la ligne',    color:'065F46'},
   live:   {file:'live-hyrox.html', titre:'🔴 Live · Classement HYROX',   soustitre:'Classement et progression en direct', color:'B91C1C'}
@@ -22775,6 +22791,7 @@ function saveHyroxCfg(){
   HYROX_CFG.interval = parseInt((document.getElementById('hx-interval')||{}).value,10) || 10;
   HYROX_CFG.cap      = parseInt((document.getElementById('hx-cap')||{}).value,10) || 100;
   HYROX_CFG.slots    = parseInt((document.getElementById('hx-slots')||{}).value,10) || 10;
+  HYROX_CFG.autoStart= !!((document.getElementById('hx-auto')||{}).checked);
   try { localStorage.setItem('hyrox-cfg', JSON.stringify(HYROX_CFG)); } catch(e){}
 }
 
@@ -22786,6 +22803,7 @@ function loadHyroxCfg(){
   if(iv && HYROX_CFG.interval) iv.value = HYROX_CFG.interval;
   if(cp && HYROX_CFG.cap) cp.value = HYROX_CFG.cap;
   var sl=document.getElementById('hx-slots'); if(sl && HYROX_CFG.slots) sl.value = HYROX_CFG.slots;
+  var au=document.getElementById('hx-auto'); if(au) au.checked = !!HYROX_CFG.autoStart;
 }
 
 /* ── Divisions (config vagues par division) ── */
@@ -22975,7 +22993,10 @@ function publishHyroxRace(){
   [1,2].forEach(function(day){
     hyroxWavesForDay(day).forEach(function(wv){
       var key='d'+day+'_c'+hxFbKey(wv.cat.id)+'_v'+wv.wave;
-      waves[key]={key:key, num:wv.num, jour:day, time:wv.time,
+      var dateStr = day===1 ? ((document.getElementById('ev-date1')||{}).value||'') : ((document.getElementById('ev-date2')||{}).value||'');
+      var schedAt = null;
+      if(dateStr){ var d=new Date(dateStr+'T'+wv.time+':00'); if(!isNaN(d.getTime())) schedAt=d.getTime(); }
+      waves[key]={key:key, num:wv.num, jour:day, time:wv.time, schedAt:schedAt,
         catId:wv.cat.id, catNom:wv.cat.nom, couleur:wv.cat.couleur||'#1D6DB5',
         wave:wv.wave, nWaves:wv.nWaves,
         athletes:(wv.athletes||[]).map(function(a){return {id:hxFbKey(a.id), nom:a.nom||'—'};})};
@@ -22986,11 +23007,14 @@ function publishHyroxRace(){
       nom:(document.getElementById('ev-nom')||{}).value||'HYROX',
       capMinutes:HYROX_CFG.cap||100, interval:HYROX_CFG.interval||10,
       slots:HYROX_CFG.slots||10, stations:stations, divisions:divisions,
+      autoStart:!!HYROX_CFG.autoStart,
       publishedAt:Date.now()
     }),
     db.ref('race/waves').set(waves)
   ]).then(function(){
-    toast('📡 Course publiée sur Firebase ('+Object.keys(waves).length+' vagues)','#059669');
+    var noDate = HYROX_CFG.autoStart && Object.values(waves).some(function(w){return !w.schedAt;});
+    toast('📡 Course publiée ('+Object.keys(waves).length+' vagues)'+(HYROX_CFG.autoStart?' · départs AUTO':''),'#059669');
+    if(noDate) setTimeout(function(){ toast('⚠️ Départs auto : renseigne les dates J1/J2 dans ⚙️ Config puis republie','#D97706'); },1600);
   }).catch(function(e){
     toast('❌ Publication Firebase échouée : '+(e&&e.message||e),'#DC2626');
   });

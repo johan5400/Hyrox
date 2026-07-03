@@ -35,10 +35,11 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 </head>
 <body>
 <div class="hdr">
-  <h1>⏱ TK · Départs HYROX</h1>
+  <h1>⏱ TK · Chrono général</h1>
   <button class="day-btn on" id="d1" onclick="setDay(1)">J1</button>
   <button class="day-btn" id="d2" onclick="setDay(2)">J2</button>
 </div>
+<div id="master" style="background:var(--card);border:2px solid var(--brd);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px"></div>
 <div id="list"><div class="empty">Connexion…</div></div>
 <div class="foot" id="foot">—</div>
 
@@ -52,6 +53,19 @@ var DAY=1, WAVES={}, CFG={}, OFFSET=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
 function now(){ return Date.now()+OFFSET; }
 
+var TK={};
+db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; render(); });
+function tkStart(){ return (TK[DAY]&&TK[DAY].startAt)||null; }
+function startTK(){
+  if(tkStart()){ return; }
+  if(!confirm('▶️ Lancer le CHRONO GÉNÉRAL du Jour '+DAY+' ?\nIl tournera toute la journée, tous les départs se caleront dessus.')) return;
+  db.ref(R+'/tk/'+DAY+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+}
+function resetTK(){
+  if(!confirm('⚠️ RESET du chrono général J'+DAY+' ?')) return;
+  if(!confirm('Vraiment sûr ? Les départs déjà lancés perdent leur référence TK (leurs temps athlètes restent corrects).')) return;
+  db.ref(R+'/tk/'+DAY+'/startAt').remove();
+}
 db.ref(R+'/config').on('value',function(s){ CFG=s.val()||{}; render();
   document.getElementById('foot').textContent=(CFG.nom||'HYROX')+' · intervalle '+(CFG.interval||10)+' min · cap '+(CFG.capMinutes||100)+' min'; });
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
@@ -69,6 +83,7 @@ function fmt(ms){
 
 function launch(key){
   var w=WAVES[key]; if(!w) return;
+  if(!tkStart()){ alert('⏸ Lance d\'abord le CHRONO GÉNÉRAL du jour.'); return; }
   if(!confirm('🚀 Lancer la vague '+w.num+' — '+w.catNom+' ('+w.time+') ?')) return;
   db.ref(R+'/waves/'+key+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
 }
@@ -78,7 +93,21 @@ function cancelLaunch(key){
   if(confirm('Annuler le départ de la vague '+w.num+' ?')) db.ref(R+'/waves/'+key+'/startAt').remove();
 }
 
+function renderMaster(){
+  var el=document.getElementById('master'); if(!el) return;
+  var st=tkStart();
+  el.innerHTML = st
+    ? '<div style="font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:1px">Chrono général · Jour '+DAY+'</div>'
+      +'<div class="chrono" data-start="'+st+'" style="font-size:52px;display:block;margin:4px 0">'+fmt(now()-st)+'</div>'
+      +'<button class="cancel" onclick="resetTK()">reset</button>'
+    : '<div style="font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:1px">Chrono général · Jour '+DAY+'</div>'
+      +'<div style="font-size:36px;font-weight:900;color:var(--ink2);margin:4px 0">00:00:00</div>'
+      +'<button class="go" onclick="startTK()" style="width:100%">▶️ LANCER LE CHRONO GÉNÉRAL</button>'
+      +'<div style="font-size:10px;color:var(--ink2);font-weight:700;margin-top:6px">Aucun départ de vague possible avant.</div>';
+}
+
 function render(){
+  renderMaster();
   var el=document.getElementById('list');
   var arr=Object.values(WAVES).filter(function(w){return (w.jour||1)===DAY;})
     .sort(function(a,b){return (a.num||0)-(b.num||0);});
@@ -89,11 +118,13 @@ function render(){
     if(w.startAt){
       var elapsed=now()-w.startAt;
       var capMs=(CFG.capMinutes||100)*60000;
+      var tkRef=tkStart()? ' <span style="font-size:10px;color:var(--ink2);font-weight:800">TK +'+fmt(w.startAt-tkStart())+'</span>':'';
       state = elapsed<capMs
-        ? '<span class="chrono" data-start="'+w.startAt+'">'+fmt(elapsed)+'</span> <button class="cancel" onclick="cancelLaunch(\''+w.key+'\')">annuler</button>'
-        : '<span class="done">🏁 terminée (cap)</span>';
+        ? '<span class="chrono" data-start="'+w.startAt+'">'+fmt(elapsed)+'</span>'+tkRef+' <button class="cancel" onclick="cancelLaunch(\''+w.key+'\')">annuler</button>'
+        : '<span class="done">🏁 terminée (cap)</span>'+tkRef;
     } else {
-      state='<button class="go" onclick="launch(\''+w.key+'\')">🚀 GO</button>';
+      var hint=(CFG.autoStart&&w.schedAt)?'<div style="font-size:9px;color:var(--green);font-weight:800;margin-top:3px">🤖 auto à '+w.time+'</div>':'';
+      state='<div style="text-align:center"><button class="go" onclick="launch(\''+w.key+'\')">🚀 GO</button>'+hint+'</div>';
     }
     return '<div class="wave" style="border-left-color:'+c+'">'
       +'<div class="top"><div class="time">'+w.time+'</div>'
@@ -110,6 +141,18 @@ setInterval(function(){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
 },250);
+
+
+/* Départs automatiques (si activés côté admin) — valeur déterministe = schedAt */
+setInterval(function(){
+  if(!CFG||!CFG.autoStart) return;
+  if(!tkStart()) return; /* pas de départ auto sans chrono général */
+  Object.values(WAVES||{}).forEach(function(w){
+    if(!w.startAt && w.schedAt && now()>=w.schedAt){
+      db.ref(R+'/waves/'+w.key+'/startAt').set(w.schedAt);
+    }
+  });
+},3000);
 
 /* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
 (function(){

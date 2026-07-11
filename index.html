@@ -22982,7 +22982,7 @@ function hxSetMov(idx, key, val){
   w.validated = false;
   if(typeof autoSave==='function') autoSave();
   renderHyroxStations();
-  if(typeof renderHyroxJudges==='function') renderHyroxJudges();
+  try{ if(typeof renderHyroxJudges==='function') renderHyroxJudges(); }catch(e){ console.error('hx judges (setMov)',e); }
 }
 
 function hxSetStd(idx, catId, kind, val){
@@ -23005,8 +23005,11 @@ function hxFbKey(v){ return String(v).replace(/[.#$\[\]\/]/g,'_'); }
 function buildHyroxJudges(jour){
   var w=hyroxWod();
   if(!w) return {bySeg:{}, byBen:{}, spare:[]};
+  // Normalise tableau OU objet Firebase (clés non contiguës) → vrai tableau
+  function _arr(x){ return Array.isArray(x) ? x : (x && typeof x==='object' ? Object.keys(x).map(function(k){return x[k];}) : []); }
   var segs=[];
-  (w.mouvements||[]).forEach(function(m,i){
+  _arr(w.mouvements).forEach(function(m,i){
+    if(!m) return; // ignore les trous / mouvements null
     if((m.hyroxSeg||'station')==='station'){
       segs.push({idx:i, nom:m.nom||('Station '+i),
         requis:(m.hyroxRequis!=null?parseInt(m.hyroxRequis,10):2)||2,
@@ -23014,7 +23017,7 @@ function buildHyroxJudges(jour){
     }
   });
   // Pool = bénévoles non-athlètes, filtrés par disponibilité si un jour est fourni
-  var pool=(BENEVOLES||[]).filter(function(b){
+  var pool=_arr(BENEVOLES).filter(function(b){
     if(!b || b.isAthlete) return false;
     if(jour){
       if(typeof benOnDay==='function' && !benOnDay(b,jour)) return false;   // dispo ce jour
@@ -23122,7 +23125,9 @@ function publishHyroxRace(){
   try{ db=(typeof LS_FB_DB!=='undefined'&&LS_FB_DB)||window.db||firebase.app().database(); }catch(e){}
   if(!db||typeof db.ref!=='function'){ console.warn('publishHyroxRace: pas de DB'); return; }
   var w=hyroxWod(); if(!w) return;
-  var stations=(w.mouvements||[]).map(function(m,i){
+  var _movs=Array.isArray(w.mouvements)?w.mouvements:(w.mouvements&&typeof w.mouvements==='object'?Object.keys(w.mouvements).map(function(k){return w.mouvements[k];}):[]);
+  var stations=_movs.map(function(m,i){
+    if(!m) return {idx:i, nom:'', seg:'run', qty:0, step:0, qtyParCat:{}, poids:{}, requis:2, diff:0};
     return {idx:i, nom:m.nom||'', seg:m.hyroxSeg||'station', qty:m.qty||0,
       step:hxStep(m), qtyParCat:m.qtyParCat||{}, poids:m.poids||{},
       requis:(m.hyroxRequis!=null?parseInt(m.hyroxRequis,10):2)||2,
@@ -23362,10 +23367,10 @@ setTimeout(ensureHyroxState, 3500);
 function renderHyrox(){
   ensureHyroxState();
   loadHyroxCfg();
-  renderHyroxDivisions();
-  renderHyroxWaves();
-  renderHyroxJudges();
-  renderHyroxStations();
+  try{ renderHyroxDivisions(); }catch(e){ console.error('hx divisions',e); }
+  try{ renderHyroxWaves(); }catch(e){ console.error('hx waves',e); }
+  try{ renderHyroxStations(); }catch(e){ console.error('hx stations',e); }
+  try{ renderHyroxJudges(); }catch(e){ console.error('hx judges',e); var _hj=document.getElementById('hx-judges'); if(_hj) _hj.innerHTML='<div style="color:#DC2626;font-size:11px;padding:8px;font-weight:700">⚠ Erreur affectation juges : '+e.message+'</div>'; }
 }
 </script>
 </body>

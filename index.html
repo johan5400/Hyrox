@@ -1466,14 +1466,14 @@ function checkPassword(){
 <div style="margin-bottom:24px">
   <div style="font-size:11px;font-weight:900;color:var(--ink3);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;padding-left:2px">🎯 Accès rapide — Jour J</div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-    <button onclick="window.open(window.location.href.split('/').slice(0,-1).join('/')+'/tk9delta.html','_blank')" style="padding:18px 10px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#E85D04,#F48C06);color:#fff;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(232,93,4,.3)">
+    <button onclick="window.open(window.location.href.split('/').slice(0,-1).join('/')+'/tk-hyrox.html','_blank')" style="padding:18px 10px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#E85D04,#F48C06);color:#fff;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(232,93,4,.3)">
       <span style="font-size:26px">⏱️</span>Time Keeper
     </button>
-    <button onclick="window.open(window.location.href.split('/').slice(0,-1).join('/')+'/live.html','_blank')" style="padding:18px 10px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#0369A1,#38BDF8);color:#fff;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(3,105,161,.3)">
+    <button onclick="window.open(window.location.href.split('/').slice(0,-1).join('/')+'/live-hyrox.html','_blank')" style="padding:18px 10px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#0369A1,#38BDF8);color:#fff;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(3,105,161,.3)">
       <span style="font-size:26px">📺</span>Live
     </button>
-    <button onclick="window.open(window.location.href.split('/').slice(0,-1).join('/')+'/podium.html','_blank')" style="padding:18px 10px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#FF8A00,#FFD166);color:#2a1c00;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(255,138,0,.35)">
-      <span style="font-size:26px">🏆</span>Podium
+    <button onclick="window.open(window.location.href.split('/').slice(0,-1).join('/')+'/depart.html','_blank')" style="padding:18px 10px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#059669,#34D399);color:#fff;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(5,150,105,.3)">
+      <span style="font-size:26px">🚀</span>Départ
     </button>
   </div>
 </div>
@@ -13167,7 +13167,7 @@ function printHyroxQRAll(){ _hxQRPrint(Object.keys(HX_APPS).map(_hxQRPage).join(
 function renderPublicQRs(){
   var base=location.href.split('/').slice(0,-1).join('/')+'/';
   // ★ Public = classement uniquement (le live multiplierait les connexions Firebase)
-  var publicUrl=base+'classement.html';
+  var publicUrl=base+'live-hyrox.html';
   var speakerUrl=base+'speaker.html';
   var el=document.getElementById('qr-public-single');
   if(el){
@@ -17012,8 +17012,47 @@ function renderJudgePlanningDayTable(day, records){
     + '</div>';
 }
 
+function renderHyroxJudgePlanning(){
+  var content=document.getElementById('judge-planning-content'); if(!content) return;
+  var _info=document.getElementById('judge-plan-info'); if(_info) _info.textContent='Vue par station (rotations · dispo · horaires respectés)';
+  try{ RESULT=computePlanning(); }catch(e){ content.innerHTML='<div style="color:#DC2626;padding:12px;font-weight:700">⚠ Erreur planning : '+e.message+'</div>'; return; }
+  if(!RESULT){ content.innerHTML='<div style="padding:16px;color:#888">Aucun planning — vérifie bénévoles et stations.</div>'; return; }
+  var stations=(typeof STATIONS!=='undefined'?STATIONS:[]);
+  var html='';
+  [{k:'day1',d:1},{k:'day2',d:2}].forEach(function(dd){
+    var R=RESULT[dd.k]; if(!R||!R.globalSlots||!R.globalSlots.length) return;
+    var slots=R.globalSlots;
+    var nJuges=Object.keys(R.assignCount||{}).filter(function(id){return R.assignCount[id]>0;}).length;
+    html+='<div style="margin-bottom:22px">';
+    html+='<div style="font-weight:900;font-size:15px;margin-bottom:8px;color:var(--ink)">Jour '+dd.d+' <span style="font-size:11px;color:var(--ink3);font-weight:600">· '+nJuges+' juges · '+slots.length+' rotations · par station</span></div>';
+    html+='<div style="overflow-x:auto;border:1px solid var(--brd2);border-radius:10px"><table style="border-collapse:collapse;width:100%;font-size:11px">';
+    html+='<tr><th style="text-align:left;padding:8px;background:#1e293b;color:#fff;position:sticky;left:0;z-index:1">Station <span style="opacity:.6">(requis)</span></th>'+slots.map(function(s){var cl=s.start<parseTime("12:00")?"#2563EB":s.start<parseTime("16:00")?"#0891B2":"#7C3AED";return '<th style="padding:8px;background:'+cl+';color:#fff;white-space:nowrap;font-size:10px">'+s.label+'</th>';}).join('')+'</tr>';
+    stations.forEach(function(sta){
+      html+='<tr><td style="padding:7px;font-weight:800;background:#F1F5F9;position:sticky;left:0;white-space:nowrap;border-top:1px solid var(--brd2)">'+sta.name+' <span style="color:var(--ink3);font-weight:600">('+(sta.requis||0)+')</span></td>';
+      slots.forEach(function(slot,si){
+        var ids=(R.schedule&&R.schedule[si]&&R.schedule[si][sta.id])||[];
+        var cells=ids.map(function(id){
+          var b=(BENEVOLES||[]).find(function(x){return x.id===id;});
+          var nm=b?((b.prenom||'')+' '+(b.nom||'')).trim():('#'+id);
+          var uq=b&&(parseInt(b.qualif,10)||0)<(sta.diff||0);
+          return '<div style="background:'+(uq?'#FEF3C7':'#EEF4FF')+';border-radius:4px;padding:2px 5px;margin-bottom:2px;font-weight:700;color:'+(uq?'#92400E':'#1e3a8a')+'">'+nm+(uq?' ⚠':'')+'</div>';
+        }).join('');
+        var miss=(sta.requis||0)-ids.length;
+        html+='<td style="padding:5px;border:1px solid var(--brd2);vertical-align:top;min-width:90px">'+cells+(miss>0?'<div style="color:#DC2626;font-size:9px;font-weight:800">manque '+miss+'</div>':'')+'</td>';
+      });
+      html+='</tr>';
+    });
+    html+='</table></div></div>';
+  });
+  content.innerHTML=html||'<div style="padding:16px;color:#888">Aucune rotation générée (vérifie les horaires de compétition et les dispos).</div>';
+}
+
 function renderJudgePlanningTab(){
   var content = document.getElementById('judge-planning-content');
+  if(content){
+    var _hxw=((typeof WODS!=='undefined'&&WODS)||[]).find(function(w){return w&&w.isHyrox;});
+    if(_hxw){ renderHyroxJudgePlanning(); return; }
+  }
   var info = document.getElementById('judge-plan-info');
   if(!content) return;
   syncJudgePlanningToolbar();

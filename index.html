@@ -1165,6 +1165,16 @@ function checkPassword(){
     <div id="hx-waves"></div>
   </div>
 
+  <!-- ── AFFECTATION JUGES ── -->
+  <div style="background:#fff;border:1px solid var(--brd2);border-radius:14px;padding:14px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <div style="font-size:11px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;flex:1">👨‍⚖️ Affectation juges → stations</div>
+      <button onclick="printHyroxJudges()" style="padding:6px 12px;background:#EBF0FA;border:1px solid var(--brd2);border-radius:8px;color:var(--ink2);font-size:11px;font-weight:800;cursor:pointer">🖨️ QR juges</button>
+    </div>
+    <div style="font-size:10px;color:var(--ink3);margin-bottom:10px;font-weight:600">2 juges/station · station préférée honorée. Publié vers l'app juge au clic sur <b>💾 Appliquer &amp; générer</b>. Chaque juge scanne son QR → verrouillé sur sa station.</div>
+    <div id="hx-judges"></div>
+  </div>
+
   <!-- ── PARCOURS / STATIONS ── -->
   <div style="background:#fff;border:1px solid var(--brd2);border-radius:14px;padding:14px;margin-bottom:16px">
     <div style="display:flex;align-items:center;margin-bottom:10px">
@@ -5688,7 +5698,10 @@ function editBen(id){
     var mp=document.getElementById("m-pref-station");
     if(mp){
       mp.innerHTML='<option value="">Aucune</option>';
-      STATIONS.forEach(function(s){mp.innerHTML+='<option value="'+s.name+'">'+s.name+'</option>';});
+      var _w=(typeof hyroxWod==='function')?hyroxWod():null;
+      var _st=((_w&&_w.mouvements)||[]).filter(function(m){return (m.hyroxSeg||'station')==='station';});
+      if(_st.length){ _st.forEach(function(m){mp.innerHTML+='<option value="'+(m.nom||'')+'">'+(m.nom||'')+'</option>';}); }
+      else { STATIONS.forEach(function(s){mp.innerHTML+='<option value="'+s.name+'">'+s.name+'</option>';}); }
       mp.value=b.prefStation||"";
     }
     // Select lien
@@ -22633,7 +22646,7 @@ function exportClassementCSV(){
             <option>Pas de repas</option>
           </select>
         </div>
-        <div style="display:none"><select id="m-pref-station"></select></div>
+        <div class="form-group"><label>⭐ Station préférée (HYROX)</label><select id="m-pref-station"></select></div>
       </div>
       <div class="form-group" style="margin-bottom:10px">
         <div class="form-group"><label>📍 Zone assignée</label>
@@ -22946,6 +22959,13 @@ function renderHyroxStations(){
       + '<input type="number" step="any" value="'+hxStep(m)+'" onchange="hxSetMov('+idx+',\'judgeStep\',this.value)" title="Valeur ajoutée à chaque clic du juge (ex: 12.5 = 1 longueur de sled)" style="width:58px;background:#F3EEFF;border:1px solid #C4B5FD;border-radius:6px;padding:3px 6px;font-size:11px;font-weight:900;text-align:center;font-family:inherit;outline:none;color:#7C3AED">'
       + '<span style="font-size:9px;color:#7C3AED;font-weight:800">/clic · '+(hxStep(m)>0?Math.ceil((m.qty||0)/hxStep(m))+' clics':'—')+'</span>'
       + '</div>'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 8px;background:#EEF4FF;border:1px solid #C7D8F5;border-radius:8px;flex-wrap:wrap">'
+      +   '<span style="font-size:9px;color:#2563EB;font-weight:900">👥 Juges requis</span>'
+      +   '<input type="number" min="1" max="6" value="'+(m.hyroxRequis!=null?m.hyroxRequis:2)+'" onchange="hxSetMov('+idx+',\'hyroxRequis\',this.value)" title="Nombre de juges sur cette station" style="width:52px;background:#fff;border:1px solid #C7D8F5;border-radius:6px;padding:3px 6px;font-size:12px;font-weight:900;text-align:center;font-family:inherit;outline:none;color:#2563EB">'
+      +   '<span style="font-size:9px;color:#2563EB;font-weight:900;margin-left:6px">⭐ Qualif min</span>'
+      +   '<input type="number" min="0" max="10" value="'+(m.hyroxDiff!=null?m.hyroxDiff:0)+'" onchange="hxSetMov('+idx+',\'hyroxDiff\',this.value)" title="Qualification minimale requise (0 = aucune exigence)" style="width:52px;background:#fff;border:1px solid #C7D8F5;border-radius:6px;padding:3px 6px;font-size:12px;font-weight:900;text-align:center;font-family:inherit;outline:none;color:#2563EB">'
+      +   '<span style="font-size:9px;color:var(--ink3);font-weight:700;margin-left:auto">0 = pas d\'exigence</span>'
+      + '</div>'
       + '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px">'+cells+'</div>'
       + '</div>';
   });
@@ -22956,10 +22976,13 @@ function hxSetMov(idx, key, val){
   var w = hyroxWod(); if(!w||!w.mouvements||!w.mouvements[idx]) return;
   if(key==='qty') w.mouvements[idx][key] = parseInt(val,10)||0;
   else if(key==='judgeStep') w.mouvements[idx][key] = parseFloat(String(val).replace(',','.'))||0;
+  else if(key==='hyroxRequis') w.mouvements[idx][key] = Math.max(1, parseInt(val,10)||1);
+  else if(key==='hyroxDiff') w.mouvements[idx][key] = Math.max(0, parseInt(val,10)||0);
   else w.mouvements[idx][key] = val;
   w.validated = false;
   if(typeof autoSave==='function') autoSave();
   renderHyroxStations();
+  if(typeof renderHyroxJudges==='function') renderHyroxJudges();
 }
 
 function hxSetStd(idx, catId, kind, val){
@@ -22976,6 +22999,124 @@ function hxSetStd(idx, catId, kind, val){
    Consommé par tk-hyrox.html, juge-hyrox.html, arrivee.html */
 function hxFbKey(v){ return String(v).replace(/[.#$\[\]\/]/g,'_'); }
 
+/* ── Affectation juges → stations HYROX (équivalent buildJugeAssignment de Delta) ──
+   2 juges/station, station préférée (prefStation) honorée, reste en renfort.
+   Sortie : { bySeg:{segIdx:{station,juges[]}}, byBen:{benId:segIdx}, spare:[] } */
+function buildHyroxJudges(jour){
+  var w=hyroxWod();
+  if(!w) return {bySeg:{}, byBen:{}, spare:[]};
+  var segs=[];
+  (w.mouvements||[]).forEach(function(m,i){
+    if((m.hyroxSeg||'station')==='station'){
+      segs.push({idx:i, nom:m.nom||('Station '+i),
+        requis:(m.hyroxRequis!=null?parseInt(m.hyroxRequis,10):2)||2,
+        diff:(m.hyroxDiff!=null?parseInt(m.hyroxDiff,10):0)||0});
+    }
+  });
+  // Pool = bénévoles non-athlètes, filtrés par disponibilité si un jour est fourni
+  var pool=(BENEVOLES||[]).filter(function(b){
+    if(!b || b.isAthlete) return false;
+    if(jour){
+      if(typeof benOnDay==='function' && !benOnDay(b,jour)) return false;   // dispo ce jour
+      if(typeof getPres==='function' && getPres(b.id,jour)==='absent') return false; // présence jour J
+    }
+    return true;
+  }).slice();
+  pool.sort(function(a,b){ return (parseInt(b.qualif,10)||0)-(parseInt(a.qualif,10)||0); }); // les plus qualifiés d'abord
+  var used={};
+  function qOf(b){ return parseInt(b.qualif,10)||0; }
+  // needQualif=true → n'accepte que qualif >= diff ; station préférée honorée en priorité
+  function take(seg, needQualif){
+    var pref=pool.find(function(b){ return !used[b.id] && b.prefStation && String(seg.nom).indexOf(b.prefStation)>=0 && (!needQualif || qOf(b)>=seg.diff); });
+    if(pref){ used[pref.id]=true; return pref; }
+    var any=pool.find(function(b){ return !used[b.id] && (!needQualif || qOf(b)>=seg.diff); });
+    if(any){ used[any.id]=true; return any; }
+    return null;
+  }
+  var bySeg={}, byBen={};
+  // On sert les stations les plus exigeantes en premier → les mieux qualifiés vont où il faut
+  var order = segs.slice().sort(function(a,b){ return b.diff-a.diff; });
+  order.forEach(function(s){
+    var juges=[];
+    while(juges.length<s.requis){
+      var b = take(s,true) || take(s,false); // qualifié d'abord, sinon sous-qualifié (secours)
+      if(!b) break;
+      juges.push({id:String(b.id), prenom:b.prenom||'', nom:b.nom||'', qualif:qOf(b), underQ:qOf(b)<s.diff});
+      byBen[String(b.id)]=s.idx;
+    }
+    bySeg[String(s.idx)]={station:s.nom, requis:s.requis, diff:s.diff, juges:juges, manque:Math.max(0,s.requis-juges.length)};
+  });
+  var spare=pool.filter(function(b){return !used[b.id];})
+    .map(function(b){return {id:String(b.id), prenom:b.prenom||'', nom:b.nom||'', qualif:qOf(b)};});
+  return {bySeg:bySeg, byBen:byBen, spare:spare};
+}
+
+var _hxJDay=1;
+function hxJudgeDay(d){ _hxJDay=d; renderHyroxJudges(); }
+function renderHyroxJudges(){
+  var el=document.getElementById('hx-judges'); if(!el) return;
+  var J=buildHyroxJudges(_hxJDay);
+  var toggle='<div style="display:flex;gap:6px;margin-bottom:10px">'
+    +[1,2].map(function(d){ var on=(_hxJDay===d);
+      return '<button onclick="hxJudgeDay('+d+')" style="flex:1;padding:6px;border-radius:8px;border:1px solid '+(on?'#2563EB':'var(--brd2)')+';background:'+(on?'#2563EB':'#fff')+';color:'+(on?'#fff':'var(--ink2)')+';font-size:11px;font-weight:900;cursor:pointer">Jour '+d+'</button>';
+    }).join('')+'</div>';
+  var keys=Object.keys(J.bySeg);
+  if(!keys.length){ el.innerHTML=toggle+'<div style="text-align:center;color:#aaa;padding:16px;font-size:12px">Aucune station — applique le parcours HYROX</div>'; return; }
+  var h=toggle+'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px">';
+  keys.forEach(function(k){
+    var e=J.bySeg[k];
+    h+='<div style="background:#F5F8FF;border:1px solid '+(e.manque?'#FCA5A5':'var(--brd2)')+';border-radius:10px;padding:10px">'
+      +'<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">'
+      +  '<span style="font-size:12px;font-weight:900;color:var(--ink);flex:1">'+e.station+'</span>'
+      +  '<span style="font-size:9px;font-weight:800;color:var(--ink3);white-space:nowrap">'+e.juges.length+'/'+e.requis+' 👥'+(e.diff>0?' · ⭐≥'+e.diff:'')+'</span>'
+      +'</div>'
+      +(e.juges.length? e.juges.map(function(j){
+          var uq=!!j.underQ;
+          return '<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:'+(uq?'#D97706':'var(--ink2)')+';margin-bottom:3px">'
+            +'<span style="color:'+(uq?'#D97706':'#10B981')+'">'+(uq?'▲':'●')+'</span>'
+            +'<span style="flex:1">'+((j.prenom||'')+' '+(j.nom||'')).trim()+'</span>'
+            +'<span style="font-size:8px;color:var(--ink3)">q'+j.qualif+(uq?' ⚠':'')+'</span></div>';
+        }).join('') : '')
+      +(e.manque? '<div style="font-size:10px;color:#DC2626;font-weight:800;margin-top:2px">⚠ manque '+e.manque+' juge'+(e.manque>1?'s':'')+'</div>' : '')
+      +'</div>';
+  });
+  h+='</div>';
+  if(J.spare.length){
+    h+='<div style="margin-top:8px;font-size:10px;color:var(--ink3);font-weight:700">🔄 Renfort ('+J.spare.length+') : '+J.spare.map(function(j){return ((j.prenom||'')+' '+(j.nom||'')).trim();}).join(', ')+'</div>';
+  }
+  el.innerHTML=h;
+}
+
+function printHyroxJudges(){
+  var J1=buildHyroxJudges(1), J2=buildHyroxJudges(2);
+  var base=location.origin+location.pathname.replace(/[^/]*$/,'');
+  var map={}; // id -> {name, j1, j2}
+  function addDay(J, dk){
+    Object.keys(J.bySeg).forEach(function(k){ var e=J.bySeg[k]; e.juges.forEach(function(j){ var id=String(j.id); map[id]=map[id]||{name:((j.prenom||'')+' '+(j.nom||'')).trim()}; map[id][dk]=e.station; }); });
+    (J.spare||[]).forEach(function(j){ var id=String(j.id); map[id]=map[id]||{name:((j.prenom||'')+' '+(j.nom||'')).trim()}; if(!map[id][dk]) map[id][dk]='Renfort'; });
+  }
+  addDay(J1,'j1'); addDay(J2,'j2');
+  var ids=Object.keys(map);
+  if(!ids.length){ toast('Aucun juge à imprimer','#E65100'); return; }
+  var cards=ids.map(function(id){
+    var r=map[id];
+    var url=base+'juge-hyrox.html?ben='+encodeURIComponent(id);
+    var qr='https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data='+encodeURIComponent(url);
+    return '<div class="card"><div class="st">J1 · '+(r.j1||'—')+'<br>J2 · '+(r.j2||'—')+'</div><img src="'+qr+'"><div class="nm">'+r.name+'</div><div class="url">'+url+'</div></div>';
+  }).join('');
+  var w=window.open('','_blank'); if(!w){ toast('Autorise les pop-ups pour imprimer','#E65100'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR Juges · HYROX</title><style>'
+    +'body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#fff}h1{font-size:18px;margin:0 0 12px}'
+    +'.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}'
+    +'.card{border:1px solid #ccc;border-radius:10px;padding:12px;text-align:center;page-break-inside:avoid}'
+    +'.st{font-size:11px;font-weight:900;color:#2563EB;text-transform:uppercase;margin-bottom:6px}'
+    +'.card img{width:180px;height:180px}.nm{font-size:14px;font-weight:900;margin-top:6px}'
+    +'.url{font-size:8px;color:#888;word-break:break-all;margin-top:4px}@media print{.card{border-color:#000}}'
+    +'</style></head><body><h1>QR Juges HYROX — 1 scan = station verrouillée</h1><div class="grid">'+cards+'</div>'
+    +'<scr'+'ipt>setTimeout(function(){window.print();},700);</scr'+'ipt></body></html>');
+  w.document.close();
+}
+
 function publishHyroxRace(){
   var db=null;
   try{ db=(typeof LS_FB_DB!=='undefined'&&LS_FB_DB)||window.db||firebase.app().database(); }catch(e){}
@@ -22983,7 +23124,9 @@ function publishHyroxRace(){
   var w=hyroxWod(); if(!w) return;
   var stations=(w.mouvements||[]).map(function(m,i){
     return {idx:i, nom:m.nom||'', seg:m.hyroxSeg||'station', qty:m.qty||0,
-      step:hxStep(m), qtyParCat:m.qtyParCat||{}, poids:m.poids||{}};
+      step:hxStep(m), qtyParCat:m.qtyParCat||{}, poids:m.poids||{},
+      requis:(m.hyroxRequis!=null?parseInt(m.hyroxRequis,10):2)||2,
+      diff:(m.hyroxDiff!=null?parseInt(m.hyroxDiff,10):0)||0};
   });
   var divisions={};
   (CATEGORIES||[]).forEach(function(c){
@@ -23002,6 +23145,10 @@ function publishHyroxRace(){
         athletes:(wv.athletes||[]).map(function(a){return {id:hxFbKey(a.id), nom:a.nom||'—'};})};
     });
   });
+  var JUD1=buildHyroxJudges(1), JUD2=buildHyroxJudges(2);
+  var byBen={}; // { benId: {1:seg, 2:seg} }
+  Object.keys(JUD1.byBen).forEach(function(k){ (byBen[k]=byBen[k]||{})['1']=JUD1.byBen[k]; });
+  Object.keys(JUD2.byBen).forEach(function(k){ (byBen[k]=byBen[k]||{})['2']=JUD2.byBen[k]; });
   Promise.all([
     db.ref('race/config').set({
       nom:(document.getElementById('ev-nom')||{}).value||'HYROX',
@@ -23010,10 +23157,14 @@ function publishHyroxRace(){
       autoStart:!!HYROX_CFG.autoStart,
       publishedAt:Date.now()
     }),
-    db.ref('race/waves').set(waves)
+    db.ref('race/waves').set(waves),
+    db.ref('race/judges').set({j1:JUD1.bySeg, j2:JUD2.bySeg}),
+    db.ref('race/judgeByBen').set(byBen),
+    db.ref('race/judgesSpare').set({j1:JUD1.spare, j2:JUD2.spare})
   ]).then(function(){
+    var nJuges=Object.keys(byBen).length;
     var noDate = HYROX_CFG.autoStart && Object.values(waves).some(function(w){return !w.schedAt;});
-    toast('📡 Course publiée ('+Object.keys(waves).length+' vagues)'+(HYROX_CFG.autoStart?' · départs AUTO':''),'#059669');
+    toast('📡 Course publiée ('+Object.keys(waves).length+' vagues · '+nJuges+' juges affectés)'+(HYROX_CFG.autoStart?' · départs AUTO':''),'#059669');
     if(noDate) setTimeout(function(){ toast('⚠️ Départs auto : renseigne les dates J1/J2 dans ⚙️ Config puis republie','#D97706'); },1600);
   }).catch(function(e){
     toast('❌ Publication Firebase échouée : '+(e&&e.message||e),'#DC2626');
@@ -23213,6 +23364,7 @@ function renderHyrox(){
   loadHyroxCfg();
   renderHyroxDivisions();
   renderHyroxWaves();
+  renderHyroxJudges();
   renderHyroxStations();
 }
 </script>

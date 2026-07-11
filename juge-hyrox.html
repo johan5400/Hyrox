@@ -45,6 +45,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
   <button class="back" id="backBtn" style="display:none" onclick="goBack()">← Retour</button>
   <h1 id="title">👨‍⚖️ Juge · choisis ta station</h1>
 </div>
+<div id="jbanner" style="display:none"></div>
 <div id="view"><div class="empty">Connexion…</div></div>
 
 <script>
@@ -57,27 +58,72 @@ var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0;
 var SCREEN='stations'; // stations | teams | counter | ok
 var MY_STATION=null, CUR=null; // CUR={waveKey,teamId,nom,cat...}
 var COUNT=0;
+var JUDGES_ALL={}, JUDGES={}, JBYBEN={};
+var BEN=(function(){ try{ var u=new URLSearchParams(location.search); return u.get('ben')||u.get('id')||null; }catch(e){ return null; } })();
+var MANUAL=false; // le juge a changé de station manuellement (repli secours)
 
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
 function now(){ return Date.now()+OFFSET; }
 
-db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
-db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
-db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; if(SCREEN==='teams') render(); });
+// Jour courant déduit des vagues : vague live, sinon prochaine vague, sinon J1
+function curDay(){
+  var cap=(((CFG&&CFG.capMinutes)||100)*60000), t=now();
+  var liveDay=null, nextDay=null, nextAt=Infinity;
+  Object.keys(WAVES||{}).forEach(function(k){
+    var w=WAVES[k]; if(!w) return; var jr=parseInt(w.jour,10)||1;
+    if(w.startAt && t>=w.startAt && (t-w.startAt)<cap) liveDay=jr;
+    var at=w.schedAt||w.startAt;
+    if(at && at>t && at<nextAt){ nextAt=at; nextDay=jr; }
+  });
+  return liveDay || nextDay || 1;
+}
+function refreshDayJudges(){ JUDGES = (JUDGES_ALL && JUDGES_ALL['j'+curDay()]) || {}; }
+function mySeg(){
+  if(!BEN) return null;
+  var p=JBYBEN && JBYBEN[String(BEN)];
+  if(p==null) return null;
+  if(typeof p==='object'){ var v=p[String(curDay())]; return (v==null?null:v); }
+  return p; // rétro-compat ancien format (segment direct)
+}
 
-try{ MY_STATION = JSON.parse(localStorage.getItem('hxj-station')||'null'); if(MY_STATION!=null) SCREEN='teams'; }catch(e){}
+db.ref(R+'/config').on('value',function(s){ CFG=s.val(); refreshDayJudges(); render(); });
+db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; refreshDayJudges(); applyAssignment(); render(); });
+db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; if(SCREEN==='teams') render(); });
+db.ref(R+'/judges').on('value',function(s){ JUDGES_ALL=s.val()||{}; refreshDayJudges(); render(); });
+db.ref(R+'/judgeByBen').on('value',function(s){ JBYBEN=s.val()||{}; applyAssignment(); });
+
+// Verrouille le juge identifié (?ben=) sur sa station affectée DU JOUR — comme Delta
+function applyAssignment(){
+  if(!BEN || MANUAL) return;
+  var seg = mySeg();
+  if(seg==null) return;
+  MY_STATION=seg;
+  if(SCREEN==='stations') SCREEN='teams';
+  render();
+}
+function stationJuges(idx){ return (JUDGES&&JUDGES[idx]&&JUDGES[idx].juges)||[]; }
+function myName(){
+  if(!BEN) return '';
+  var e=JUDGES&&JUDGES[MY_STATION];
+  if(e&&e.juges){ var f=e.juges.find(function(j){return String(j.id)===String(BEN);}); if(f) return ((f.prenom||'')+' '+(f.nom||'')).trim(); }
+  return 'Juge '+BEN;
+}
+
+// Repli auto-sélection si aucune affectation (mode secours)
+try{ if(MY_STATION==null){ var _ls=JSON.parse(localStorage.getItem('hxj-station')||'null'); if(_ls!=null){ MY_STATION=_ls; SCREEN='teams'; } } }catch(e){}
 
 function stations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){ return st.seg==='station'; }); }
 function stationByIdx(i){ return ((CFG&&CFG.stations)||[]).find(function(st){ return st.idx===i; }); }
 
 function goBack(){
   if(SCREEN==='counter'){ SCREEN='teams'; CUR=null; }
-  else { SCREEN='stations'; MY_STATION=null; localStorage.removeItem('hxj-station'); }
+  else { SCREEN='stations'; MY_STATION=null; localStorage.removeItem('hxj-station'); if(BEN) MANUAL=true; }
   render();
 }
 
 function pickStation(idx){
   MY_STATION=idx; localStorage.setItem('hxj-station', JSON.stringify(idx));
+  if(BEN && JBYBEN[String(BEN)]!==idx) MANUAL=true; // choix différent de l'affectation
   SCREEN='teams'; render();
 }
 
@@ -160,15 +206,35 @@ function validate(){
 
 function fmt(ms){ var s=Math.floor(ms/1000); return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2); }
 
+function updateBanner(){
+  var b=document.getElementById('jbanner'); if(!b) return;
+  if(BEN && MY_STATION!=null){
+    var st=stationByIdx(MY_STATION)||{};
+    b.style.display='block';
+    b.innerHTML='<div style="background:linear-gradient(135deg,#2563EB,#4C1D95);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:20px">👤</span>'
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:900">'+myName()+'</div>'
+      +'<div style="font-size:10px;color:#C7D2FE;font-weight:800">Station : '+(st.nom||'—')+(MANUAL?' · choix manuel':'')+'</div></div>'
+      +(MANUAL?'':'<span style="font-size:9px;background:#10B981;color:#03170e;font-weight:900;border-radius:6px;padding:3px 8px">AFFECTÉ</span>')
+      +'</div>';
+  } else { b.style.display='none'; b.innerHTML=''; }
+}
+
 function render(){
   var el=document.getElementById('view'), ttl=document.getElementById('title'), bk=document.getElementById('backBtn');
   if(!CFG){ el.innerHTML='<div class="empty">En attente de la config course…<br>Publie depuis l\'admin (🏃 HYROX → Appliquer).</div>'; return; }
   bk.style.display = SCREEN==='stations' ? 'none':'inline-block';
+  updateBanner();
 
   if(SCREEN==='stations'){
-    ttl.textContent='👨‍⚖️ Juge · choisis ta station';
+    ttl.textContent = BEN ? '👨‍⚖️ Choisis ta station (secours)' : '👨‍⚖️ Juge · choisis ta station';
     el.innerHTML = stations().map(function(st){
-      return '<div class="tile" onclick="pickStation('+st.idx+')"><div class="n">'+st.nom+'</div>'
+      var jg=stationJuges(st.idx);
+      var jgTxt = jg.length ? jg.map(function(j){return ((j.prenom||'')+' '+(j.nom||'')).trim();}).join(', ') : '—';
+      var mine = BEN && String(mySeg())===String(st.idx);
+      return '<div class="tile" style="'+(mine?'border-color:#10B981;border-left:5px solid #10B981':'')+'" onclick="pickStation('+st.idx+')">'
+        +'<div class="n" style="flex:1">'+st.nom
+        +'<div class="s">👨‍⚖️ '+jgTxt+(mine?' · <span style="color:#10B981;font-weight:900">TON POSTE</span>':'')+'</div></div>'
         +'<div class="s">'+st.qty+' · '+st.step+'/clic</div></div>';
     }).join('') || '<div class="empty">Aucune station publiée</div>';
     return;

@@ -4099,7 +4099,7 @@ function show(id,btn){
   if(id==='classement-tk'){ setTimeout(function(){ if(typeof startClassementAutoRefresh==='function') startClassementAutoRefresh(); },50); }
   if(id==="config"){ setTimeout(function(){ if(typeof loadCountdownDuration==='function') loadCountdownDuration(); }, 100); }
   if(id==="categories"){setTimeout(function(){renderCategories();},80);}
-  if(id==="planning"){generateHeatsSilent();computeHorairesOnly();syncHeatsToFirebase();setPlanDay(activePlanDay);setTimeout(function(){if(typeof syncJudgeAssignmentsNow==='function')syncJudgeAssignmentsNow();},2000);setTimeout(renderPlanningCF,50);}
+  if(id==="planning"){generateHeatsSilent();computeHorairesOnly();syncHeatsToFirebase();setPlanDay(activePlanDay);try{RESULT=computePlanning();renderPlanningView();renderCoverageAlerts();}catch(e){console.error('planning auto-gen',e);}setTimeout(function(){if(typeof syncJudgeAssignmentsNow==='function')syncJudgeAssignmentsNow();},2000);setTimeout(renderPlanningCF,50);}
   if(id==="planning-juge"){generateHeatsSilent();computeHorairesOnly();setTimeout(function(){if(typeof syncJudgeAssignmentsNow==='function')syncJudgeAssignmentsNow();},1200);setTimeout(renderJudgePlanningTab,60);}
   if(id==="programme"){setTimeout(function(){renderProgWodsList();computeProgramme();},50);}
   if(id==="recap") setTimeout(function(){if(typeof renderRecapView==='function')renderRecapView();},50);
@@ -5493,7 +5493,8 @@ function isSpeakerQrRole(ben){
 
 function isJudgeQrRole(ben){
   var role=normalizeQrRoleLabel(ben&&ben.role);
-  return role.indexOf('juge')!==-1 || role.indexOf('judge')!==-1;
+  // Hyrox : un bénévole EST un juge de station → on accepte juge/judge ET benevole
+  return role.indexOf('juge')!==-1 || role.indexOf('judge')!==-1 || role.indexOf('benevole')!==-1;
 }
 
 function hasDedicatedQrRole(ben){

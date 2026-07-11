@@ -1111,7 +1111,7 @@ function checkPassword(){
         <span style="font-size:18px">🌅</span>
         <div style="flex:1">
           <div style="font-size:10px;font-weight:800;color:var(--blue);text-transform:uppercase">1ère vague · Jour 1</div>
-          <input id="hx-start-j1" type="time" value="08:00" oninput="saveHyroxCfg();renderHyroxWaves()"
+          <input id="hx-start-j1" type="time" value="09:00" oninput="saveHyroxCfg();renderHyroxWaves()"
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
@@ -1119,7 +1119,7 @@ function checkPassword(){
         <span style="font-size:18px">☀️</span>
         <div style="flex:1">
           <div style="font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase">1ère vague · Jour 2</div>
-          <input id="hx-start-j2" type="time" value="08:00" oninput="saveHyroxCfg();renderHyroxWaves()"
+          <input id="hx-start-j2" type="time" value="09:00" oninput="saveHyroxCfg();renderHyroxWaves()"
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--amber);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
@@ -1127,7 +1127,7 @@ function checkPassword(){
         <span style="font-size:18px">⏲️</span>
         <div style="flex:1">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase">Intervalle vagues (min)</div>
-          <input id="hx-interval" type="number" min="5" max="60" value="10" oninput="saveHyroxCfg();renderHyroxWaves()"
+          <input id="hx-interval" type="number" min="5" max="60" value="20" oninput="saveHyroxCfg();renderHyroxWaves()"
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
@@ -1135,7 +1135,7 @@ function checkPassword(){
         <span style="font-size:18px">👥</span>
         <div style="flex:1">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase">Slots par vague</div>
-          <input id="hx-slots" type="number" min="1" max="40" value="10" oninput="saveHyroxCfg();renderHyroxWaves()"
+          <input id="hx-slots" type="number" min="1" max="40" value="5" oninput="saveHyroxCfg();renderHyroxWaves()"
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
@@ -3574,14 +3574,13 @@ var DEFAULT_BENEVOLES_BY_ID={};
 var DEFAULT_REAL_JUDGE_ROSTER=(function(){
   var list=[];
   for(var i=1;i<=20;i++){
-    var zone=i<=10?1:2;
     list.push({
       id:5000+i,
-      prenom:'Juge',
+      prenom:'Bénévole',
       nom:String(i).padStart(2,'0'),
-      role:zone===2?'Juge Z2':'Juge Z1',
-      zone:zone,
-      zoneAssign:String(zone),
+      role:'Bénévole',
+      zone:1,
+      zoneAssign:'1',
       qualif:6,
       qualification:6,
       slot:'Journée',
@@ -3600,7 +3599,7 @@ var DEFAULT_REAL_JUDGE_ROSTER=(function(){
   }
   return list;
 })();
-var REAL_JUDGE_ROSTER_SEED_KEY='zonek-real-judge-roster-seeded-v1';
+var REAL_JUDGE_ROSTER_SEED_KEY='zonek-real-judge-roster-seeded-v2';
 var LEGACY_DEMO_EMAIL_RE=/(@foc-demo\.invalid$|\.invalid$)/i;
 var LEGACY_DEMO_ROLE_RE=/^affectation prioritaire zone \d+/i;
 var LEGACY_DEMO_ID_MIN=4001;
@@ -22776,7 +22775,8 @@ function exportClassementCSV(){
    hyroxCapMinutes = time cap réel de la course (pour juge/live à venir)
    ═══════════════════════════════════════════════════════════════ */
 var HYROX_CFG = (function(){
-  try { return JSON.parse(localStorage.getItem('hyrox-cfg')||'{}'); } catch(e){ return {}; }
+  var d={startJ1:'09:00',startJ2:'09:00',interval:20,cap:100,slots:5,autoStart:false};
+  try { return Object.assign(d, JSON.parse(localStorage.getItem('hyrox-cfg')||'{}')); } catch(e){ return d; }
 })();
 
 function hyroxWod(){
@@ -23158,13 +23158,24 @@ function buildHyroxParcours(){
 }
 
 function buildHyroxDivisions(){
-  var defs=[[1001,'Open Hommes','#E8421A',1,1,'08:00'],[1002,'Open Femmes','#C62828',2,1,'10:00'],
-    [1005,'Doubles Hommes','#1D6DB5',3,1,'13:00'],[1006,'Doubles Femmes','#0891B2',4,1,'14:30'],
-    [1003,'Pro Hommes','#7C3AED',5,2,'08:00'],[1004,'Pro Femmes','#9333EA',6,2,'09:30'],
-    [1007,'Doubles Mixte','#059669',7,2,'11:00'],[1008,'Relay','#FF8A00',8,2,'13:30']];
+  // [id, nom, couleur, ordre, jour, hxStart, code]
+  // Départs décalés bout-à-bout : 10 équipes ÷ 5 slots = 2 vagues/cat,
+  // donc +40 min entre catégories → flux continu à 20 min dès 09:00.
+  var defs=[
+    [1001,'Open Hommes',   '#E8421A',1,1,'09:00','OH'],
+    [1002,'Open Femmes',   '#C62828',2,1,'09:40','OF'],
+    [1005,'Doubles Hommes','#1D6DB5',3,1,'10:20','DH'],
+    [1006,'Doubles Femmes','#0891B2',4,1,'11:00','DF'],
+    [1003,'Pro Hommes',    '#7C3AED',5,2,'09:00','PH'],
+    [1004,'Pro Femmes',    '#9333EA',6,2,'09:40','PF'],
+    [1007,'Doubles Mixte', '#059669',7,2,'10:20','DM'],
+    [1008,'Relay',         '#FF8A00',8,2,'11:00','RL']
+  ];
   return defs.map(function(d){
-    return {id:d[0],nom:d[1],couleur:d[2],ordre:d[3],jour:d[4],hxStart:d[5],nbHeats:1,nbLignes:10,
-      zone:'1',hyroxDiv:true,wodOrdres:{},teams:[]};
+    var teams=[];
+    for(var i=1;i<=10;i++){ teams.push({id:d[0]*100+i, nom:d[6]+' '+('0'+i).slice(-2)}); }
+    return {id:d[0],nom:d[1],couleur:d[2],ordre:d[3],jour:d[4],hxStart:d[5],code:d[6],
+      nbHeats:2,nbLignes:5,zone:'1',hyroxDiv:true,wodOrdres:{},teams:teams};
   });
 }
 

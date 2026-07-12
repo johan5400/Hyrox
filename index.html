@@ -23676,6 +23676,30 @@ function buildHyroxParcours(){
   return _hyroxApplyKids(_HXP);
 }
 
+// ── Base fictive : noms réalistes (genrés par catégorie) ──
+var HX_MF=['Thomas','Nicolas','Julien','Maxime','Antoine','Alexandre','Romain','Lucas','Hugo','Nathan','Théo','Enzo','Clément','Florian','Guillaume','Mathieu','Pierre','Sébastien','Damien','Quentin','Adrien','Benjamin','Vincent','Cédric','Jérémy'];
+var HX_FF=['Marie','Camille','Julie','Léa','Manon','Chloé','Sarah','Laura','Emma','Justine','Pauline','Océane','Marine','Clara','Anaïs','Charlotte','Élise','Audrey','Céline','Amandine','Mathilde','Lucie','Aurélie','Marion','Estelle'];
+var HX_KM=['Lucas','Hugo','Léo','Nathan','Ethan','Gabin','Sacha','Noah','Timéo','Raphaël','Jules','Louis','Adam','Arthur','Maël','Tom','Robin','Naël','Aaron','Liam'];
+var HX_KF=['Emma','Jade','Louise','Alice','Chloé','Léa','Manon','Lina','Rose','Ambre','Inès','Zoé','Mila','Anna','Juliette','Léna','Éva','Nina','Lou','Sarah'];
+var HX_LAST=['Martin','Bernard','Dubois','Robert','Petit','Durand','Leroy','Moreau','Simon','Laurent','Lefebvre','Michel','Garcia','David','Bertrand','Roux','Vincent','Fournier','Girard','Bonnet','Dupont','Lambert','Fontaine','Rousseau','Blanc','Guérin','Muller','Henry','Roussel','Perrin','Morel','Mercier','Blanchard','Faure','Chevalier','Masson','Denis','Marchand','Noël','Renaud'];
+var HX_TEAM=['Les Spartiates','Team Phoenix','Les Rafales','Iron Squad','Les Warriors','Team Titan','Les Fauves','Storm Team','Les Bisons','Team Vulcain'];
+function _hxPick(a,seed){ var x=Math.abs(Math.sin(seed*12.9898)*43758.5453); x=x-Math.floor(x); return a[Math.floor(x*a.length)%a.length]; }
+function _hxPerson(seed,fem,kids){ var first=kids?(fem?_hxPick(HX_KF,seed):_hxPick(HX_KM,seed)):(fem?_hxPick(HX_FF,seed):_hxPick(HX_MF,seed)); return first+' '+_hxPick(HX_LAST,seed*7+3); }
+function _hxGenTeams(d){
+  var nom=d[1]||'', kids=!!d[7], gen=d[9];
+  var fem=/Femmes|Filles/i.test(nom)||gen==='F';
+  var doubles=/Doubles/i.test(nom), relay=/Relay/i.test(nom);
+  var teams=[];
+  for(var i=1;i<=10;i++){
+    var id=d[0]*100+i, nm;
+    if(relay){ nm=_hxPick(HX_TEAM,id); }
+    else if(doubles){ nm=_hxPick(HX_LAST,id)+' / '+_hxPick(HX_LAST,id*3+17); }
+    else { nm=_hxPerson(id,fem,kids); }
+    teams.push({id:id,nom:nm});
+  }
+  return teams;
+}
+
 function buildHyroxDivisions(){
   // [id, nom, couleur, ordre, jour, hxStart, code]
   // Départs décalés bout-à-bout : 10 équipes ÷ 5 slots = 2 vagues/cat,
@@ -23700,8 +23724,7 @@ function buildHyroxDivisions(){
     [1108,'Youngstars Garçons 14-15', '#1E40AF',16,2,'15:20','G14-15', true,'14-15','G']
   ];
   return defs.map(function(d){
-    var teams=[];
-    for(var i=1;i<=10;i++){ teams.push({id:d[0]*100+i, nom:d[6]+' '+('0'+i).slice(-2)}); }
+    var teams=_hxGenTeams(d);
     return {id:d[0],nom:d[1],couleur:d[2],ordre:d[3],jour:d[4],hxStart:d[5],code:d[6],
       nbHeats:2,nbLignes:5,zone:'1',hyroxDiv:true,wodOrdres:{},teams:teams,
       kids:!!d[7],ageGroup:d[8]||null,gender:d[9]||null};

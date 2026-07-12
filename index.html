@@ -17718,6 +17718,18 @@ async function buildHyroxDebrief(){
     c.nFinished=fin.length; c.nTeams=c.teams.length;
     var sum={},cnt={}; fin.forEach(function(t){ t.splits.forEach(function(s,i){ if(s.ms!=null){sum[i]=(sum[i]||0)+s.ms;cnt[i]=(cnt[i]||0)+1;} }); });
     c.avg={}; Object.keys(sum).forEach(function(i){c.avg[i]=sum[i]/cnt[i];});
+    // Rang par segment (sur le split) + progression au classement (temps cumulé à chaque checkpoint)
+    var nSeg=(fin[0]&&Array.isArray(fin[0].splits))?fin[0].splits.length:0;
+    for(var si=0; si<nSeg; si++){
+      (function(si){
+        var ws=fin.filter(function(t){return t.splits[si]&&t.splits[si].ms!=null;});
+        ws.sort(function(a,b){return a.splits[si].ms-b.splits[si].ms;});
+        ws.forEach(function(t,idx){ t.splits[si].rank=idx+1; t.splits[si].outOf=ws.length; });
+        var cr=fin.map(function(t){ var cum=0,ok=true; for(var kk=0;kk<=si;kk++){ if(t.splits[kk]&&t.splits[kk].ms!=null)cum+=t.splits[kk].ms; else ok=false; } return {t:t,cum:cum,ok:ok}; });
+        cr.sort(function(a,b){return a.cum-b.cum;});
+        cr.forEach(function(o,idx){ o.t.cumRank=o.t.cumRank||[]; o.t.cumRank[si]=idx+1; });
+      })(si);
+    }
     c.ranked=c.teams.slice().sort(function(a,b){ if(a.finished&&!b.finished)return -1; if(!a.finished&&b.finished)return 1; return (a.officialMs||9e12)-(b.officialMs||9e12); });
   });
   return {cats:cats};
@@ -17765,15 +17777,36 @@ function _hxBuildReport(c,t){
   t.splits.forEach(function(s,i){
     if(s.ms==null) return; var isRun=s.seg==='run'; var avg=c.avg[i]; var diff=(avg!=null)?s.ms-avg:null;
     var cmp=(diff==null)?'':'<span style="font-size:10px;font-weight:800;color:'+(diff<=0?'#059669':'#DC2626')+';margin-right:8px">'+(diff<=0?'▼':'▲')+' '+_hxMs(Math.abs(diff))+'</span>';
-    h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;'+(i%2?'background:#F8FAFC':'')+'">'
+    var rankB=(s.rank?'<span title="Rang sur ce segment dans la catégorie" style="font-size:9px;font-weight:900;color:'+(s.rank===1?'#B45309':'#475569')+';background:'+(s.rank===1?'#FEF3C7':'#F1F5F9')+';border:1px solid '+(s.rank===1?'#FDE68A':'#E2E8F0')+';border-radius:5px;padding:2px 6px;margin-right:8px;white-space:nowrap">'+(s.rank===1?'🥇':'#'+s.rank)+'</span>':'');
+    h+='<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;'+(i%2?'background:#F8FAFC':'')+'">'
      +'<span style="width:18px;text-align:center">'+(isRun?'🏃':'🏋️')+'</span>'
-     +'<span style="flex:1;font-weight:'+(isRun?'600':'800')+';font-size:12px;color:var(--ink)'+(isRun?';font-style:italic':'')+'">'+_anEsc(s.nom)+'</span>'+cmp
+     +'<span style="flex:1;font-weight:'+(isRun?'600':'800')+';font-size:12px;color:var(--ink)'+(isRun?';font-style:italic':'')+'">'+_anEsc(s.nom)+'</span>'+cmp+rankB
      +'<span style="font-variant-numeric:tabular-nums;font-weight:900;font-size:13px;color:'+(isRun?'#2563EB':col)+';min-width:46px;text-align:right">'+_hxMs(s.ms)+'</span></div>';
   });
   h+='</div>';
   var bs=t.splits.filter(function(s){return s.ms!=null;});
   if(bs.length&&typeof _anBars==='function'){ h+='<div style="font-size:12px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 6px">Répartition des temps</div><div style="overflow-x:auto">'
     +_anBars(bs.map(function(s){return Math.round(s.ms/1000);}),{labels:bs.map(function(s){return s.nom;}),colors:bs.map(function(s){return s.seg==='run'?'#3B82F6':col;}),h:170,fmt:function(v){return _hxMs(v*1000);}})+'</div>'; }
+  // Progression au classement (rang cumulé checkpoint par checkpoint)
+  if(Array.isArray(t.cumRank)&&t.cumRank.length&&(c.nFinished||0)>1){
+    var cr=t.cumRank.filter(function(r){return r!=null;}), N=c.nFinished;
+    if(cr.length>1){
+      var W=Math.max(cr.length*34,280), Hc=130, pad=24;
+      var xs=function(i){return pad+i*((W-2*pad)/Math.max(1,cr.length-1));};
+      var ys=function(r){return pad+(r-1)*((Hc-2*pad)/Math.max(1,N-1));};
+      var pts=cr.map(function(r,i){return xs(i)+','+ys(r);}).join(' ');
+      var dots=cr.map(function(r,i){return '<circle cx="'+xs(i)+'" cy="'+ys(r)+'" r="3.5" fill="'+col+'"/>';}).join('');
+      var sR=cr[0], eR=cr[cr.length-1];
+      var trend=eR<sR?('▲ gagné '+(sR-eR)+' place'+(sR-eR>1?'s':'')):eR>sR?('▼ perdu '+(eR-sR)+' place'+(eR-sR>1?'s':'')):'classement stable';
+      var tcol=eR<sR?'#059669':eR>sR?'#DC2626':'#64748B';
+      h+='<div style="font-size:12px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 6px">Progression au classement <span style="font-size:10px;color:'+tcol+';font-weight:800">('+trend+')</span></div>'
+       +'<div style="overflow-x:auto"><svg viewBox="0 0 '+W+' '+Hc+'" width="'+W+'" height="'+Hc+'" xmlns="http://www.w3.org/2000/svg">'
+       +'<line x1="'+pad+'" y1="'+ys(1)+'" x2="'+(W-pad)+'" y2="'+ys(1)+'" stroke="#E2E8F0" stroke-dasharray="3 3"/><text x="'+(pad-5)+'" y="'+(ys(1)+3)+'" font-size="8" text-anchor="end" fill="#94A3B8">#1</text>'
+       +'<line x1="'+pad+'" y1="'+ys(N)+'" x2="'+(W-pad)+'" y2="'+ys(N)+'" stroke="#E2E8F0" stroke-dasharray="3 3"/><text x="'+(pad-5)+'" y="'+(ys(N)+3)+'" font-size="8" text-anchor="end" fill="#94A3B8">#'+N+'</text>'
+       +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round"/>'+dots+'</svg></div>'
+       +'<div style="font-size:10px;color:var(--ink3);margin-top:2px">Sa place dans la catégorie après chaque segment (plus haut = mieux).</div>';
+    }
+  }
   h+='<div style="background:'+col+'12;border:1px solid '+col+'40;border-radius:12px;padding:14px;margin-top:16px;font-size:12px;color:var(--ink2);line-height:1.5;font-weight:600">'+_hxVerdict(c,t,runs,stas)+'</div>'
    +'<div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:10px">FOC 2026 · Zone K — Débrief Hyrox</div>';
   return h;

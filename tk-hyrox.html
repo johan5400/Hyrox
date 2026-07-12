@@ -36,6 +36,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 <body>
 <div class="hdr">
   <h1>⏱ TK · Chrono général</h1>
+  <div id="tkclock" title="Heure réelle (synchronisée serveur)" style="margin-left:auto;font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;color:var(--green,#16A34A);background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:4px 12px;line-height:1">🕐 --:--:--</div>
   <button class="day-btn on" id="d1" onclick="setDay(1)">J1</button>
   <button class="day-btn" id="d2" onclick="setDay(2)">J2</button>
 </div>
@@ -137,6 +138,8 @@ function render(){
 }
 
 setInterval(function(){
+  var _ck=document.getElementById('tkclock');
+  if(_ck){ var d=new Date(now()); _ck.textContent='🕐 '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2); }
   document.querySelectorAll('.chrono').forEach(function(n){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });

@@ -877,8 +877,7 @@ function checkPassword(){
     <button class="tab" onclick="show('hyrox',this);setTimeout(function(){if(typeof renderHyrox==='function')renderHyrox();},40)">🏃 HYROX</button>
     <button class="tab" onclick="show('categories',this)">🏆 Catégories</button>
     <button class="tab" onclick="show('benevoles',this)">👥 Bénévoles</button>
-    <button class="tab" onclick="show('planning',this)">📋 Planning</button>
-    <button class="tab" onclick="show('planning-juge',this)">🧑‍⚖️ Planning juge</button>
+    <button class="tab" onclick="show('planning-juge',this)">📋 Planning</button>
     <button class="tab" onclick="show('printcenter',this);setTimeout(function(){if(typeof renderPrintCenter==='function')renderPrintCenter();},40)">🖨️ Impression</button>
     <button class="tab" onclick="show('mailcenter',this);setTimeout(function(){if(typeof renderMailCenter==='function')renderMailCenter();},40)">📧 Mails</button>
     <button class="tab" onclick="show('synoptique',this);setTimeout(function(){if(typeof renderSynoptique==='function')renderSynoptique();},40)">🗓 Synoptique</button>
@@ -1811,7 +1810,8 @@ function checkPassword(){
 
   <!-- TOOLBAR CRÉATION -->
   <div style="background:#FFFFFF;border:1px solid var(--brd);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-    <button onclick="openAddCatSafe()" style="padding:9px 20px;border:none;border-radius:9px;background:linear-gradient(135deg,#1565C0,#1E88E5);color:#fff;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px">➕ Créer une catégorie</button>
+    <button onclick="loadHyroxBaseCategories()" style="padding:9px 20px;border:none;border-radius:9px;background:linear-gradient(135deg,#1565C0,#1E88E5);color:#fff;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px">📥 Charger la base Hyrox + Kids</button>
+    <div style="font-size:11px;color:var(--ink3);font-weight:600;max-width:440px">Les catégories existent déjà — définis juste le <b>Jour</b> (J1/J2) et l'<b>heure de départ</b> 🌊 sur chaque carte. La même catégorie peut être sur les deux jours.</div>
     <div id="heats-summary" style="margin-left:auto;font-size:11px;color:var(--mid);font-weight:600"></div>
   </div>
 
@@ -7345,6 +7345,7 @@ function renderCatGrid(){
           +'</div>'
         +'</div>'
         +'<div style="font-size:18px;color:#3A5270;flex-shrink:0;transition:transform .2s;'+(isActive?'transform:rotate(90deg)':'')+'">›</div>'
+        +'<button onclick="event.stopPropagation();duplicateCatToOtherDay('+cat.id+')" title="Dupliquer cette catégorie sur l\'autre jour" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#2563EB;border-radius:7px;padding:5px 10px;font-size:13px;font-weight:900;cursor:pointer;flex-shrink:0;line-height:1;margin-right:6px">⧉ J'+((cat.jour||1)==1?'2':'1')+'</button>'
         +'<button onclick="event.stopPropagation();deleteCat('+cat.id+')" title="Supprimer cette catégorie" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#EF4444;border-radius:7px;padding:5px 10px;font-size:13px;font-weight:900;cursor:pointer;flex-shrink:0;line-height:1">🗑</button>'
       +'</div>'
       +(isActive?'<div id="cat-inline-detail" style="border-top:1px solid var(--brd,#EBF0FA);"></div>':'')
@@ -9027,6 +9028,33 @@ function startInlineRenameCat(catId){
   toast('✅ Renommé : '+val,'#16A34A');
 }
 
+function loadHyroxBaseCategories(){
+  if(typeof buildHyroxDivisions!=='function'){ toast('Base Hyrox indisponible','#D32F2F'); return; }
+  var base=buildHyroxDivisions();
+  if(!Array.isArray(window.CATEGORIES)) CATEGORIES=[];
+  var existing={}; CATEGORIES.forEach(function(c){ if(c&&c.nom) existing[c.nom]=true; });
+  var added=0;
+  base.forEach(function(d){ if(!existing[d.nom]){ CATEGORIES.push(d); added++; } });
+  if(typeof renderCategories==='function') renderCategories();
+  if(typeof generateHeats==='function') generateHeats();
+  if(typeof autoSave==='function') autoSave();
+  toast(added?('✅ '+added+' catégorie(s) de base ajoutée(s)'):'Toutes les catégories de base sont déjà présentes','#059669');
+}
+function duplicateCatToOtherDay(catId){
+  var src=(window.CATEGORIES||[]).find(function(c){return String(c.id)===String(catId);});
+  if(!src){ toast('Catégorie introuvable','#D32F2F'); return; }
+  var otherDay=((src.jour||1)==1)?2:1;
+  var maxId=0; CATEGORIES.forEach(function(c){ var n=parseInt(c.id,10)||0; if(n>maxId)maxId=n; });
+  var newId=maxId+1;
+  var copy=JSON.parse(JSON.stringify(src));
+  copy.id=newId; copy.jour=otherDay; copy.ordre=(CATEGORIES.length+1);
+  if(Array.isArray(copy.teams)) copy.teams=copy.teams.map(function(t,i){ return {id:newId*100+(i+1), nom:(t&&t.nom)||''}; });
+  CATEGORIES.push(copy);
+  if(typeof renderCategories==='function') renderCategories();
+  if(typeof generateHeats==='function') generateHeats();
+  if(typeof autoSave==='function') autoSave();
+  toast('✅ « '+(src.nom||'')+' » dupliquée sur Jour '+otherDay,'#059669');
+}
 function openAddCat(){
   editCatId = null;
   document.getElementById('cat-modal-title').textContent = 'Nouvelle catégorie';
@@ -17066,7 +17094,13 @@ function renderHyroxJudgePlanning(){
   try{ RESULT=computePlanning(); }catch(e){ content.innerHTML='<div style="color:#DC2626;padding:12px;font-weight:700">⚠ Erreur planning : '+e.message+'</div>'; return; }
   if(!RESULT){ content.innerHTML='<div style="padding:16px;color:#888">Aucun planning — vérifie bénévoles et stations.</div>'; return; }
   var stations=(typeof STATIONS!=='undefined'?STATIONS:[]).filter(function(s){return (s.requis||0)>0;});
-  var html='';
+  var html='<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#1E3A8A;line-height:1.5">'
+    +'<b>Comment lire ce planning</b><br>'
+    +'Chaque <b>ligne</b> = une station · chaque <b>colonne</b> = un créneau horaire · chaque <b>case</b> = le(s) juge(s) qui tiennent cette station à ce moment. '
+    +'Le chiffre entre parenthèses après la station = nombre de juges requis. '
+    +'<span style="color:#DC2626;font-weight:700">« manque N »</span> en rouge = station pas assez couverte · '
+    +'<span style="color:#92400E;font-weight:700">⚠ orange</span> = juge sous-qualifié pour cette station.'
+    +'</div>';
   [{k:'day1',d:1},{k:'day2',d:2}].forEach(function(dd){
     var R=RESULT[dd.k]; if(!R||!R.globalSlots||!R.globalSlots.length) return;
     var slots=R.globalSlots;
@@ -17092,7 +17126,7 @@ function renderHyroxJudgePlanning(){
     });
     html+='</table></div></div>';
   });
-  content.innerHTML=html||'<div style="padding:16px;color:#888">Aucune rotation générée (vérifie les horaires de compétition et les dispos).</div>';
+  content.innerHTML=html+((html.indexOf('<table')<0)?'<div style="padding:16px;color:#888;text-align:center">Aucune rotation générée — vérifie les <b>horaires de compétition</b>, les <b>stations</b> (requis &gt; 0) et les <b>dispos des bénévoles</b>, puis reviens sur cet onglet.</div>':'');
 }
 
 function renderJudgePlanningTab(){
@@ -17661,7 +17695,7 @@ function classementHasStarted(heatsData){
 var _ANALYSE={cats:null};
 var _HXDBRIEF=null;
 function _isHyroxEvt(){ return ((typeof WODS!=='undefined'&&WODS)||[]).some(function(w){return w&&w.isHyrox;}); }
-function _hxMs(ms){ ms=parseInt(ms||0,10)||0; var s=Math.round(ms/1000); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+function _hxMs(ms){ ms=parseInt(ms||0,10)||0; if(ms<0)ms=0; var s=Math.round(ms/1000); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
 async function buildHyroxDebrief(){
   var _db=window.db||null; if(!_db) return null;
   var waves=(await _db.ref('race/waves').once('value')).val()||{};
@@ -17707,7 +17741,8 @@ function renderHyroxDebrief(){
   document.getElementById('analyse-content').innerHTML=_hxBuildReport(c,t);
 }
 function _hxBuildReport(c,t){
-  var col=c.couleur||'#E85D04', shade=(typeof _kidsShade==='function'?_kidsShade(col):col);
+  if(!t) return ''; if(!Array.isArray(t.splits)) t.splits=[]; c=c||{};
+  var col=(typeof c.couleur==='string'&&/^#|^rgb/i.test(c.couleur))?c.couleur:'#E85D04', shade=(typeof _kidsShade==='function'?_kidsShade(col):col);
   var runs=t.splits.filter(function(s){return s.seg==='run'&&s.ms!=null;});
   var stas=t.splits.filter(function(s){return s.seg==='station'&&s.ms!=null;});
   var runTot=runs.reduce(function(a,s){return a+s.ms;},0), staTot=stas.reduce(function(a,s){return a+s.ms;},0);
@@ -17744,6 +17779,7 @@ function _hxBuildReport(c,t){
   return h;
 }
 function _hxVerdict(c,t,runs,stas){
+  if(!t) return ''; if(!Array.isArray(t.splits)) t.splits=[]; c=c||{};
   if(!t.finished) return t.dnf?'Équipe marquée DNF (n\'a pas terminé).':'Équipe encore en course — le débrief sera complet à l\'arrivée.';
   var msgs=[];
   if(t.rank===1) msgs.push('🥇 Victoire dans '+c.nom+' !');
@@ -23489,10 +23525,11 @@ function printHyroxPlanning(){
 // ═══ HYROX Youngstars (Kids) — valeurs officielles rulebook 25/26 par âge/genre ═══
 // Ordre des 8 catégories : F8-9,G8-9, F10-11,G10-11, F12-13,G12-13, F14-15,G14-15
 function _hyroxApplyKids(P){
+  if(!P||!Array.isArray(P.mouvements)) return P||{};
   var K=[1101,1102,1103,1104,1105,1106,1107,1108];
   function setSta(kw, qty, poids){
     (P.mouvements||[]).forEach(function(m){
-      if(m.hyroxSeg==='station' && m.nom && m.nom.toLowerCase().indexOf(kw)>=0){
+      if(m && m.hyroxSeg==='station' && m.nom && String(m.nom).toLowerCase().indexOf(kw)>=0){
         m.qtyParCat=m.qtyParCat||{}; m.poids=m.poids||{};
         K.forEach(function(id,i){ m.qtyParCat[id]=qty[i]; if(poids) m.poids[id]=poids[i]; });
       }
@@ -23510,7 +23547,7 @@ function _hyroxApplyKids(P){
   // Course : structure par âge (rulebook §5.2, 1 tour ≈ 250m)
   //  8-9 & 10-11 : 1 tour entrée + 1 tour sortie ; 12-13 : 2+2 ; 14-15 : 1 tour entre chaque station
   var lap=250;
-  var runs=(P.mouvements||[]).filter(function(m){return m.hyroxSeg==='run';});
+  var runs=(P.mouvements||[]).filter(function(m){return m && m.hyroxSeg==='run';});
   runs.forEach(function(m,ri){
     m.qtyParCat=m.qtyParCat||{};
     var isEntry=(ri===0), isExit=(ri===runs.length-1);
@@ -23558,7 +23595,7 @@ function closeKidsModal(){ var m=document.getElementById('kids-modal'); if(!m)re
 function _kidsEsc(e){ if(e.key==='Escape') closeKidsModal(); }
 function kidsPickAge(a){ _kidsAge=a; renderKidsModal(); }
 function kidsPickGen(g){ _kidsGen=g; renderKidsModal(); }
-function _kidsShade(hex){ try{ var n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255,f=.72; return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')'; }catch(e){ return hex; } }
+function _kidsShade(hex){ try{ hex=String(hex); var n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255,f=.72; if(isNaN(n)) return '#334155'; return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')'; }catch(e){ return '#334155'; } }
 function renderKidsModal(){
   var age=KIDS_DATA.ages.find(function(x){return x.k===_kidsAge;})||KIDS_DATA.ages[0]; var col=age.col;
   var hero=document.getElementById('kids-hero'); if(hero) hero.style.background='linear-gradient(135deg,'+col+','+_kidsShade(col)+')';

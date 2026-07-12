@@ -877,10 +877,11 @@ function checkPassword(){
     <button class="tab" onclick="show('hyrox',this);setTimeout(function(){if(typeof renderHyrox==='function')renderHyrox();},40)">🏃 HYROX</button>
     <button class="tab" onclick="show('categories',this)">🏆 Catégories</button>
     <button class="tab" onclick="show('benevoles',this)">👥 Bénévoles</button>
-    <button class="tab" onclick="show('planning-hyrox',this);setTimeout(function(){if(typeof renderHyroxPlanning==='function')renderHyroxPlanning();},40)">📋 Planning</button>
+    <button class="tab" onclick="show('planning',this)">📋 Planning</button>
     <button class="tab" onclick="show('planning-juge',this)">🧑‍⚖️ Planning juge</button>
     <button class="tab" onclick="show('printcenter',this);setTimeout(function(){if(typeof renderPrintCenter==='function')renderPrintCenter();},40)">🖨️ Impression</button>
     <button class="tab" onclick="show('mailcenter',this);setTimeout(function(){if(typeof renderMailCenter==='function')renderMailCenter();},40)">📧 Mails</button>
+    <button class="tab" onclick="show('synoptique',this);setTimeout(function(){if(typeof renderSynoptique==='function')renderSynoptique();},40)">🗓 Synoptique</button>
     <button class="tab" onclick="show('jourj',this)">🎯 Jour J</button>
     <button class="tab" onclick="showQRCodes(this)">📱 QR Codes</button>
     <button class="tab" onclick="showClassement(this)">🏆 Classement</button>
@@ -1101,6 +1102,53 @@ function checkPassword(){
       <div style="font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600">8× (Run 1000m + Station) · For Time · départs par vagues</div>
     </div>
     <button class="btn btn-blue" onclick="applyHyroxToEngine()" style="font-size:12px;font-weight:800">💾 Appliquer &amp; générer les vagues</button>
+  </div>
+
+  <!-- ── SÉLECTEUR ADULTES / KIDS ── -->
+  <div style="display:flex;gap:10px;margin-bottom:18px">
+    <button id="hxmode-adult" onclick="hxPickMode('adult')" style="flex:1;padding:15px 12px;border-radius:16px;border:2px solid var(--blue);background:var(--blue);color:#fff;font-weight:900;font-size:14px;cursor:pointer;transition:.18s;display:flex;align-items:center;justify-content:center;gap:8px">🏋️ Adultes</button>
+    <button id="hxmode-kids" onclick="hxPickMode('kids')" style="flex:1;padding:15px 12px;border-radius:16px;border:2px solid #EC4899;background:#fff;color:#DB2777;font-weight:900;font-size:14px;cursor:pointer;transition:.18s;display:flex;align-items:center;justify-content:center;gap:8px">🧒 Kids · Youngstars</button>
+  </div>
+
+  <!-- ── POP-UP HYROX YOUNGSTARS ── -->
+  <style>
+    #kids-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}
+    #kids-modal .kids-back{position:absolute;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);opacity:0;transition:opacity .22s}
+    #kids-modal .kids-card{position:relative;width:100%;max-width:520px;max-height:90vh;overflow:hidden auto;background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.4);transform:translateY(24px) scale(.96);opacity:0;transition:transform .26s cubic-bezier(.2,.9,.3,1.2),opacity .22s;-webkit-overflow-scrolling:touch}
+    #kids-modal.open .kids-back{opacity:1}
+    #kids-modal.open .kids-card{transform:none;opacity:1}
+    #kids-modal .kids-x{position:absolute;top:14px;right:14px;z-index:3;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:15px;font-weight:900;cursor:pointer;backdrop-filter:blur(4px)}
+    #kids-modal .kids-hero{padding:26px 24px 22px;color:#fff;transition:background .3s}
+    #kids-modal .kids-body{padding:18px 20px 22px}
+    #kids-modal .kids-ages{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+    #kids-modal .kids-age{padding:12px 4px;border-radius:14px;border:2px solid var(--brd2);background:#fff;cursor:pointer;text-align:center;transition:.15s;font-family:inherit}
+    #kids-modal .kids-age b{display:block;font-size:16px;font-weight:900;line-height:1}
+    #kids-modal .kids-age span{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+    #kids-modal .kids-gender{display:flex;gap:6px;margin-bottom:16px;background:var(--bg2,#F1F5F9);border-radius:12px;padding:4px}
+    #kids-modal .kids-gender button{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;font-weight:800;font-size:12px;cursor:pointer;color:var(--ink2);font-family:inherit;transition:.15s}
+    #kids-modal .kids-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;background:#F8FAFC;margin-bottom:7px;opacity:0;transform:translateX(-10px);animation:kidsIn .32s forwards}
+    #kids-modal .kids-row .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    #kids-modal .kids-row .nm{flex:1;font-weight:800;font-size:13px;color:var(--ink)}
+    #kids-modal .kids-row .vl{font-weight:900;font-size:13px;white-space:nowrap}
+    @keyframes kidsIn{to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){#kids-modal *{transition:none!important;animation:none!important;opacity:1!important;transform:none!important}}
+  </style>
+  <div id="kids-modal" role="dialog" aria-modal="true" aria-label="HYROX Youngstars">
+    <div class="kids-back" onclick="closeKidsModal()"></div>
+    <div class="kids-card">
+      <button class="kids-x" onclick="closeKidsModal()" aria-label="Fermer">✕</button>
+      <div class="kids-hero" id="kids-hero">
+        <div style="font-size:11px;letter-spacing:3px;opacity:.85;font-weight:800">HYROX</div>
+        <div style="font-size:28px;font-weight:900;line-height:1;margin-top:2px">YOUNGSTARS</div>
+        <div style="font-size:11px;opacity:.92;margin-top:6px" id="kids-hero-sub">Le format Kids officiel — 8 à 15 ans · 8 stations</div>
+      </div>
+      <div class="kids-body">
+        <div id="kids-ages" class="kids-ages"></div>
+        <div id="kids-gender" class="kids-gender"></div>
+        <div id="kids-parcours"></div>
+        <div id="kids-foot" style="margin-top:16px"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ── CONFIG VAGUES ── -->
@@ -1556,18 +1604,18 @@ function checkPassword(){
   <div style="font-size:12px;font-weight:900;color:#1E88E5;letter-spacing:1.5px;text-transform:uppercase;margin:4px 0 10px;display:flex;align-items:center;gap:8px"><span>📋</span> Planning</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px">
     <div class="card">
-      <div class="sh-card-title">📋 Planning par WOD</div>
-      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Catégories, heats, horaires, équipes et juges, WOD par WOD.</div>
+      <div class="sh-card-title">📋 Planning bénévoles</div>
+      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Catégories, vagues, horaires, équipes et juges par station.</div>
       <button class="btn btn-blue" onclick="printPlanningWodCat()" style="width:100%;justify-content:center;font-size:12px">🖨️ Imprimer</button>
     </div>
     <div class="card">
       <div class="sh-card-title">🗓 Synoptique global</div>
-      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Vue d'ensemble de la journée, toutes zones sur une page.</div>
+      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Vue d'ensemble de la journée sur une page.</div>
       <button class="btn" onclick="printSynoptique()" style="width:100%;justify-content:center;font-size:12px;background:linear-gradient(135deg,#0E7490,#0891B2);color:#fff">🖨️ Imprimer</button>
     </div>
     <div class="card">
       <div class="sh-card-title">🧑‍⚖️ Planning des juges</div>
-      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Tableau d'affectation des juges par zone et par heat.</div>
+      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Tableau d'affectation des juges par station et par créneau.</div>
       <button class="btn" onclick="printJudgePlanning()" style="width:100%;justify-content:center;font-size:12px;background:linear-gradient(135deg,#1E3A5F,#2563EB);color:#fff">🖨️ Imprimer</button>
     </div>
   </div>
@@ -1590,7 +1638,7 @@ function checkPassword(){
       <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">QR vers le live et le classement, pour les spectateurs.</div>
       <button class="btn" onclick="printPublicQR()" style="width:100%;justify-content:center;font-size:12px;background:linear-gradient(135deg,#1565C0,#1E88E5);color:#fff">🖨️ Imprimer</button>
     </div>
-    <div class="card">
+    <div class="card" style="display:none">
       <div class="sh-card-title">🆘 QR Juge secours</div>
       <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">QR d'accès secours (entry) pour prendre une ligne sans juge.</div>
       <button class="btn btn-orange" onclick="printEntryQR()" style="width:100%;justify-content:center;font-size:12px">🖨️ Imprimer</button>
@@ -1601,11 +1649,11 @@ function checkPassword(){
   <div style="font-size:12px;font-weight:900;color:#EA580C;letter-spacing:1.5px;text-transform:uppercase;margin:4px 0 10px;display:flex;align-items:center;gap:8px"><span>📝</span> Scorecards & fiches</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px">
     <div class="card" style="grid-column:1/-1">
-      <div class="sh-card-title">📝 Scorecards par WOD</div>
-      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Feuilles de score à remplir par les juges. Choisis le WOD.</div>
+      <div class="sh-card-title">📝 Scorecards par station</div>
+      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Feuilles de score à remplir par les juges. Choisis le parcours.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
         <div style="flex:1;min-width:200px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink2);margin-bottom:6px">WOD</div>
+          <div style="font-size:10px;font-weight:800;color:var(--ink2);margin-bottom:6px">Parcours</div>
           <select id="print-center-wod-select" style="width:100%;background:#FFF7ED;border:1px solid var(--brd2);border-radius:8px;color:var(--ink);padding:9px 10px;font-size:12px;outline:none;font-family:inherit"></select>
         </div>
         <button class="btn btn-orange" onclick="printScorecardFromCenter()" style="font-size:12px">🖨️ Imprimer les scorecards</button>
@@ -1768,7 +1816,7 @@ function checkPassword(){
   </div>
 
   <!-- PLANNING PAR WOD -->
-  <div style="background:#fff;border:1px solid var(--brd2);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+  <div style="display:none;background:#fff;border:1px solid var(--brd2);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
       <div style="font-size:11px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:1px;">🗓 Ordre de passage par WOD</div>
       <div style="font-size:10px;color:var(--mid);flex:1">Glisse les catégories dans l'ordre voulu pour chaque WOD</div>
@@ -1778,8 +1826,8 @@ function checkPassword(){
     <div id="planning-wod-grid" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;"></div>
   </div>
 
-  <!-- Ordre WODs par zone (conservé) -->
-  <div id="zones-synoptic" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;"></div>
+  <!-- Ordre WODs par zone (masqué en Hyrox) -->
+  <div id="zones-synoptic" style="display:none;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;"></div>
 
   <!-- LISTE CATÉGORIES -->
   <div id="cat-list-grid" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -1840,7 +1888,7 @@ function checkPassword(){
     <div class="form-group" style="margin-bottom:14px">
       <label>Équipes (une par ligne)</label>
       <textarea id="cat-teams" rows="6" placeholder="Team Alpha&#10;Team Beta&#10;Team Gamma&#10;..." style="width:100%;background:#F0F9FF;border:1px solid #ccc;border-radius:7px;color:var(--ink);padding:9px 12px;font-size:12px;font-family:inherit;outline:none;resize:vertical"></textarea>
-      <div style="font-size:10px;color:#888;margin-top:3px">Chaque équipe gardera sa ligne assignée pour toute la compétition</div>
+      <div style="font-size:10px;color:#888;margin-top:3px">Chaque équipe sera placée dans une vague de départ</div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-dark" onclick="closeModal('cat-modal')">Annuler</button>
@@ -3563,8 +3611,8 @@ var STATIONS=[
   {id:6, name:"Farmers Carry 200m",    diff:5,desc:"Portés kettlebells · parcours",              requis:2},
   {id:7, name:"Sandbag Lunges 100m",   diff:7,desc:"Fentes sandbag · profondeur genou",          requis:2},
   {id:8, name:"Wall Balls",            diff:7,desc:"Comptage · cible · profondeur squat",        requis:2},
-  {id:9, name:"Roxzone / Transitions", diff:3,desc:"Circulation athlètes entre runs et stations",requis:1},
-  {id:10,name:"Run / Parcours 1000m",  diff:2,desc:"Signaleurs sécurité · AUCUNE saisie (run auto-validé à la station suivante)",requis:1},
+  {id:9, name:"Roxzone / Transitions", diff:3,desc:"Circulation athlètes entre runs et stations · AUCUN juge",requis:0},
+  {id:10,name:"Run / Parcours 1000m",  diff:2,desc:"Signaleurs sécurité · AUCUN juge (run auto-validé à la station suivante)",requis:0},
   {id:11,name:"🏁 Arrivée",            diff:4,desc:"Ligne d'arrivée · temps officiel",           requis:2}
 ];
 // ★ Postes requis = lignes réelles de la compèt (1 juge / ligne), pas la somme des stations.
@@ -17017,7 +17065,7 @@ function renderHyroxJudgePlanning(){
   var _info=document.getElementById('judge-plan-info'); if(_info) _info.textContent='Vue par station (rotations · dispo · horaires respectés)';
   try{ RESULT=computePlanning(); }catch(e){ content.innerHTML='<div style="color:#DC2626;padding:12px;font-weight:700">⚠ Erreur planning : '+e.message+'</div>'; return; }
   if(!RESULT){ content.innerHTML='<div style="padding:16px;color:#888">Aucun planning — vérifie bénévoles et stations.</div>'; return; }
-  var stations=(typeof STATIONS!=='undefined'?STATIONS:[]);
+  var stations=(typeof STATIONS!=='undefined'?STATIONS:[]).filter(function(s){return (s.requis||0)>0;});
   var html='';
   [{k:'day1',d:1},{k:'day2',d:2}].forEach(function(dd){
     var R=RESULT[dd.k]; if(!R||!R.globalSlots||!R.globalSlots.length) return;
@@ -17334,6 +17382,13 @@ async function generateAndPublishAll(){
     toast('⚠️ Timeout — réessaie ou vérifie Firebase','#E65100');
   }, 30000);
 
+  // ★ HYROX — publier les vagues EN PRIORITÉ, indépendamment du flux heats Delta
+  //   (sinon un événement Hyrox sans heat Delta ne publierait jamais ses vagues)
+  try{
+    var _isHyroxEvt = ((typeof WODS!=='undefined'&&WODS)||[]).some(function(w){return w&&w.isHyrox;});
+    if(_isHyroxEvt && typeof publishHyroxRace==='function') publishHyroxRace();
+  }catch(e){ console.error('hyrox waves publish:', e); }
+
   // 1 — Planning bénévoles
   try{
     if(typeof computePlanning==='function'){
@@ -17357,7 +17412,8 @@ async function generateAndPublishAll(){
 
   var heats = (typeof HEATS_RESULT!=='undefined' ? HEATS_RESULT : null) || [];
   if(!heats.length){
-    toast('⚠️ Aucun heat — vérifie WODs et catégories','#E65100');
+    var _hx = ((typeof WODS!=='undefined'&&WODS)||[]).some(function(w){return w&&w.isHyrox;});
+    toast(_hx ? '📡 Vagues HYROX publiées' : '⚠️ Aucun heat — vérifie WODs et catégories', _hx ? '#059669' : '#E65100');
     if(btn){ btn.disabled=false; btn.textContent='🚀 Générer & Publier'; }
     if(btnA){ btnA.disabled=false; btnA.style.opacity='1'; }
     return;
@@ -17603,6 +17659,104 @@ function classementHasStarted(heatsData){
 ═══════════════════════════════════════════════ */
 /* ===================== ANALYSE / DÉBRIEF PAR ÉQUIPE ===================== */
 var _ANALYSE={cats:null};
+var _HXDBRIEF=null;
+function _isHyroxEvt(){ return ((typeof WODS!=='undefined'&&WODS)||[]).some(function(w){return w&&w.isHyrox;}); }
+function _hxMs(ms){ ms=parseInt(ms||0,10)||0; var s=Math.round(ms/1000); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+async function buildHyroxDebrief(){
+  var _db=window.db||null; if(!_db) return null;
+  var waves=(await _db.ref('race/waves').once('value')).val()||{};
+  var progress=(await _db.ref('race/progress').once('value')).val()||{};
+  var def=(((typeof hyroxWod==='function'&&hyroxWod())||{}).mouvements)||[];
+  var segIdx=[]; def.forEach(function(s,i){ if(s.hyroxSeg==='run'||s.hyroxSeg==='station') segIdx.push({i:i,seg:s.hyroxSeg,nom:s.nom||(s.hyroxSeg==='run'?'Run':'Station')}); });
+  var cats={};
+  Object.keys(waves).forEach(function(wk){
+    var w=waves[wk]; if(!w||!w.catId) return; var key=String(w.catId);
+    if(!cats[key]) cats[key]={id:w.catId,nom:w.catNom||('Cat '+w.catId),couleur:w.couleur||'#E85D04',teams:[]};
+    (w.athletes||[]).forEach(function(a){
+      var p=progress[a.id]||{}; var splits=[],prev=0;
+      segIdx.forEach(function(sd){ var st=p.stations&&p.stations[sd.i]; var ms=(st&&st.elapsedMs!=null)?Math.max(0,st.elapsedMs-prev):null; if(st&&st.elapsedMs!=null) prev=st.elapsedMs; splits.push({seg:sd.seg,nom:sd.nom,ms:ms}); });
+      cats[key].teams.push({id:a.id,nom:a.nom,waveNum:w.num,officialMs:(p.officialMs||null),dnf:!!p.dnf,finished:!!p.finishedAt,splits:splits});
+    });
+  });
+  Object.keys(cats).forEach(function(k){
+    var c=cats[k]; var fin=c.teams.filter(function(t){return t.finished&&!t.dnf&&t.officialMs;});
+    fin.sort(function(a,b){return a.officialMs-b.officialMs;}); fin.forEach(function(t,i){t.rank=i+1;});
+    c.nFinished=fin.length; c.nTeams=c.teams.length;
+    var sum={},cnt={}; fin.forEach(function(t){ t.splits.forEach(function(s,i){ if(s.ms!=null){sum[i]=(sum[i]||0)+s.ms;cnt[i]=(cnt[i]||0)+1;} }); });
+    c.avg={}; Object.keys(sum).forEach(function(i){c.avg[i]=sum[i]/cnt[i];});
+    c.ranked=c.teams.slice().sort(function(a,b){ if(a.finished&&!b.finished)return -1; if(!a.finished&&b.finished)return 1; return (a.officialMs||9e12)-(b.officialMs||9e12); });
+  });
+  return {cats:cats};
+}
+async function initHyroxDebrief(){
+  var sel=document.getElementById('an-cat'); if(!sel) return;
+  sel.innerHTML='<option>⏳ Chargement…</option>'; document.getElementById('analyse-content').innerHTML='';
+  _HXDBRIEF=await buildHyroxDebrief(); var cats=_HXDBRIEF&&_HXDBRIEF.cats;
+  if(!cats||!Object.keys(cats).length){ sel.innerHTML='<option value="">— aucune donnée —</option>'; document.getElementById('analyse-content').innerHTML='<div style="text-align:center;padding:30px;color:var(--ink3)">Aucun résultat. Lance des vagues et fais franchir la ligne d\'arrivée d\'abord.</div>'; return; }
+  var keys=Object.keys(cats).sort(function(a,b){return (cats[a].id||0)-(cats[b].id||0);});
+  sel.innerHTML=keys.map(function(k){return '<option value="'+_anEsc(k)+'">'+_anEsc(cats[k].nom)+'</option>';}).join(''); _anFillTeams();
+}
+function _hxFillTeams(){
+  var c=_HXDBRIEF&&_HXDBRIEF.cats[document.getElementById('an-cat').value]; var ts=document.getElementById('an-team'); if(!c||!ts) return;
+  ts.innerHTML=c.ranked.map(function(t){return '<option value="'+_anEsc(t.id)+'">'+(t.rank?('#'+t.rank+' · '):'')+_anEsc(t.nom)+(t.finished?(' — '+_hxMs(t.officialMs)):(t.dnf?' — DNF':' — (en course)'))+'</option>';}).join(''); renderAnalyse();
+}
+function renderHyroxDebrief(){
+  var c=_HXDBRIEF&&_HXDBRIEF.cats[document.getElementById('an-cat').value]; if(!c){document.getElementById('analyse-content').innerHTML='';return;}
+  var tid=document.getElementById('an-team').value; var t=c.ranked.find(function(x){return String(x.id)===String(tid);});
+  if(!t){document.getElementById('analyse-content').innerHTML='';return;}
+  document.getElementById('analyse-content').innerHTML=_hxBuildReport(c,t);
+}
+function _hxBuildReport(c,t){
+  var col=c.couleur||'#E85D04', shade=(typeof _kidsShade==='function'?_kidsShade(col):col);
+  var runs=t.splits.filter(function(s){return s.seg==='run'&&s.ms!=null;});
+  var stas=t.splits.filter(function(s){return s.seg==='station'&&s.ms!=null;});
+  var runTot=runs.reduce(function(a,s){return a+s.ms;},0), staTot=stas.reduce(function(a,s){return a+s.ms;},0);
+  var bestLap=runs.length?Math.min.apply(null,runs.map(function(s){return s.ms;})):0;
+  var avgLap=runs.length?runTot/runs.length:0, avgWk=stas.length?staTot/stas.length:0;
+  var rox=(t.officialMs!=null)?Math.max(0,t.officialMs-runTot-staTot):0;
+  var h='<div style="background:linear-gradient(135deg,'+col+','+shade+');border-radius:18px;padding:20px;color:#fff;margin-bottom:16px">'
+   +'<div style="font-size:12px;font-weight:800;opacity:.92">'+_anEsc(t.nom)+' · '+_anEsc(c.nom)+' · vague '+t.waveNum+'</div>'
+   +'<div style="display:flex;gap:24px;margin-top:12px;flex-wrap:wrap">'
+   +'<div><div style="font-size:34px;font-weight:900;line-height:1">'+(t.finished?_hxMs(t.officialMs):(t.dnf?'DNF':'—'))+'</div><div style="font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Temps total</div></div>'
+   +'<div><div style="font-size:34px;font-weight:900;line-height:1">'+(t.rank?'#'+t.rank:'—')+'</div><div style="font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Classement · '+c.nFinished+' arrivés</div></div>'
+   +'</div></div>';
+  function card(v,lbl){return '<div style="flex:1;min-width:88px;background:#fff;border:1px solid var(--brd2);border-radius:12px;padding:12px 8px;text-align:center"><div style="font-size:19px;font-weight:900;color:'+col+';font-variant-numeric:tabular-nums">'+v+'</div><div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:3px">'+lbl+'</div></div>';}
+  h+='<div style="font-size:12px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 10px">Points forts de la performance</div>'
+   +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">'
+   +card(_hxMs(runTot),'Run Total')+card(_hxMs(avgLap),'Avg Lap')+card(_hxMs(bestLap),'Best Lap')
+   +card(_hxMs(staTot),'Workout Total')+card(_hxMs(avgWk),'Avg Workout')+card(_hxMs(rox),'Roxzone')+'</div>';
+  h+='<div style="font-size:12px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 10px">Tous les segments</div>'
+   +'<div style="border:1px solid var(--brd2);border-radius:12px;overflow:hidden">';
+  t.splits.forEach(function(s,i){
+    if(s.ms==null) return; var isRun=s.seg==='run'; var avg=c.avg[i]; var diff=(avg!=null)?s.ms-avg:null;
+    var cmp=(diff==null)?'':'<span style="font-size:10px;font-weight:800;color:'+(diff<=0?'#059669':'#DC2626')+';margin-right:8px">'+(diff<=0?'▼':'▲')+' '+_hxMs(Math.abs(diff))+'</span>';
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;'+(i%2?'background:#F8FAFC':'')+'">'
+     +'<span style="width:18px;text-align:center">'+(isRun?'🏃':'🏋️')+'</span>'
+     +'<span style="flex:1;font-weight:'+(isRun?'600':'800')+';font-size:12px;color:var(--ink)'+(isRun?';font-style:italic':'')+'">'+_anEsc(s.nom)+'</span>'+cmp
+     +'<span style="font-variant-numeric:tabular-nums;font-weight:900;font-size:13px;color:'+(isRun?'#2563EB':col)+';min-width:46px;text-align:right">'+_hxMs(s.ms)+'</span></div>';
+  });
+  h+='</div>';
+  var bs=t.splits.filter(function(s){return s.ms!=null;});
+  if(bs.length&&typeof _anBars==='function'){ h+='<div style="font-size:12px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 6px">Répartition des temps</div><div style="overflow-x:auto">'
+    +_anBars(bs.map(function(s){return Math.round(s.ms/1000);}),{labels:bs.map(function(s){return s.nom;}),colors:bs.map(function(s){return s.seg==='run'?'#3B82F6':col;}),h:170,fmt:function(v){return _hxMs(v*1000);}})+'</div>'; }
+  h+='<div style="background:'+col+'12;border:1px solid '+col+'40;border-radius:12px;padding:14px;margin-top:16px;font-size:12px;color:var(--ink2);line-height:1.5;font-weight:600">'+_hxVerdict(c,t,runs,stas)+'</div>'
+   +'<div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:10px">FOC 2026 · Zone K — Débrief Hyrox</div>';
+  return h;
+}
+function _hxVerdict(c,t,runs,stas){
+  if(!t.finished) return t.dnf?'Équipe marquée DNF (n\'a pas terminé).':'Équipe encore en course — le débrief sera complet à l\'arrivée.';
+  var msgs=[];
+  if(t.rank===1) msgs.push('🥇 Victoire dans '+c.nom+' !');
+  else if(t.rank<=3) msgs.push('🏅 Podium ('+t.rank+'ᵉ) sur '+c.nFinished+' arrivés.');
+  else msgs.push(t.rank+'ᵉ sur '+c.nFinished+' arrivés en '+c.nom+'.');
+  var best=null,worst=null;
+  t.splits.forEach(function(s,i){ if(s.seg!=='station'||s.ms==null||c.avg[i]==null)return; var d=s.ms-c.avg[i]; if(best==null||d<best.d)best={nom:s.nom,d:d}; if(worst==null||d>worst.d)worst={nom:s.nom,d:d}; });
+  if(best&&best.d<0) msgs.push('💪 Point fort : '+best.nom+' ('+_hxMs(Math.abs(best.d))+' plus rapide que la moyenne de la catégorie).');
+  if(worst&&worst.d>0) msgs.push('🔧 À travailler : '+worst.nom+' ('+_hxMs(worst.d)+' au-dessus de la moyenne).');
+  var rt=runs.reduce(function(a,s){return a+s.ms;},0), st=stas.reduce(function(a,s){return a+s.ms;},0), tot=rt+st;
+  if(tot) msgs.push('⚖️ Répartition : '+Math.round(rt/tot*100)+'% run / '+Math.round(st/tot*100)+'% stations.');
+  return msgs.join(' ');
+}
 function _anFmtTime(s){s=parseInt(s||0,10)||0;return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 function _anBool(v){return v===true||v===1||v==='true'||v==='1';}
 function _anCfPts(r){var g=[100,95,90,85,80,75,70,65,60,55,50,45,40,35,30,25,20,15,10,0];return (r>=1&&r<=g.length)?g[r-1]:0;}
@@ -17671,6 +17825,7 @@ async function buildAnalysisData(){
 }
 
 async function initAnalyse(){
+  if(_isHyroxEvt()) return initHyroxDebrief();
   var sel=document.getElementById('an-cat'); if(!sel) return;
   sel.innerHTML='<option>⏳ Chargement…</option>';
   document.getElementById('analyse-content').innerHTML='';
@@ -17681,11 +17836,13 @@ async function initAnalyse(){
   _anFillTeams();
 }
 function _anFillTeams(){
+  if(_isHyroxEvt()) return _hxFillTeams();
   var cat=_ANALYSE.cats[document.getElementById('an-cat').value]; var ts=document.getElementById('an-team'); if(!cat||!ts) return;
   ts.innerHTML=cat.ranked.map(function(t){return '<option value="'+_anEsc(t.name)+'">'+(t.rank?('#'+t.rank+' · '):'')+_anEsc(t.name)+(t.validated?(' — '+t.points+' pts'):' — (pas de score)')+'</option>';}).join('');
   renderAnalyse();
 }
 function renderAnalyse(){
+  if(_isHyroxEvt()) return renderHyroxDebrief();
   var cat=_ANALYSE.cats&&_ANALYSE.cats[document.getElementById('an-cat').value]; if(!cat) return;
   var tname=document.getElementById('an-team').value;
   var t=cat.ranked.find(function(x){return x.name===tname;}); if(!t){document.getElementById('analyse-content').innerHTML='';return;}
@@ -23190,7 +23347,11 @@ function publishHyroxRace(){
         athletes:(wv.athletes||[]).map(function(a){return {id:hxFbKey(a.id), nom:a.nom||'—'};})};
     });
   });
-  var JUD1=buildHyroxJudges(1), JUD2=buildHyroxJudges(2);
+  if(!Object.keys(waves).length){ toast('⚠️ Aucune vague générée — vérifie catégories, équipes et créneaux','#DC2626'); }
+  // Les affectations juges ne doivent JAMAIS bloquer la publication des vagues
+  var JUD1={bySeg:{},byBen:{},spare:[]}, JUD2={bySeg:{},byBen:{},spare:[]};
+  try{ JUD1=buildHyroxJudges(1); JUD2=buildHyroxJudges(2); }
+  catch(e){ console.error('buildHyroxJudges (publish)',e); toast('⚠️ Affectation juges en erreur — vagues publiées quand même','#D97706'); }
   var byBen={}; // { benId: {1:seg, 2:seg} }
   Object.keys(JUD1.byBen).forEach(function(k){ (byBen[k]=byBen[k]||{})['1']=JUD1.byBen[k]; });
   Object.keys(JUD2.byBen).forEach(function(k){ (byBen[k]=byBen[k]||{})['2']=JUD2.byBen[k]; });
@@ -23325,6 +23486,97 @@ function printHyroxPlanning(){
 
 /* ── Garde-fou : si un state Delta/CrossFit a été restauré (localStorage ou
      Firebase backup), on reconstruit le parcours et les divisions HYROX. ── */
+// ═══ HYROX Youngstars (Kids) — valeurs officielles rulebook 25/26 par âge/genre ═══
+// Ordre des 8 catégories : F8-9,G8-9, F10-11,G10-11, F12-13,G12-13, F14-15,G14-15
+function _hyroxApplyKids(P){
+  var K=[1101,1102,1103,1104,1105,1106,1107,1108];
+  function setSta(kw, qty, poids){
+    (P.mouvements||[]).forEach(function(m){
+      if(m.hyroxSeg==='station' && m.nom && m.nom.toLowerCase().indexOf(kw)>=0){
+        m.qtyParCat=m.qtyParCat||{}; m.poids=m.poids||{};
+        K.forEach(function(id,i){ m.qtyParCat[id]=qty[i]; if(poids) m.poids[id]=poids[i]; });
+      }
+    });
+  }
+  // Stations (distance/reps + charge). Voir rulebook §6.
+  setSta('skierg',   [300,300,400,400,500,500,600,600]);
+  setSta('sled push',[15,15,15,15,30,30,30,30],   ['35kg','35kg','45kg','45kg','60kg','70kg','70kg','102kg']);
+  setSta('sled pull',[15,15,15,15,30,30,30,30],   ['25kg','25kg','40kg','40kg','25kg','50kg','50kg','78kg']);
+  setSta('burpee',   [20,20,20,20,40,40,40,40]);   // 8-9 = Frogger (même distance)
+  setSta('row',      [200,200,300,300,400,400,500,500]);
+  setSta('farmers',  [50,50,50,50,100,100,100,100],['2×4kg','2×4kg','2×6kg','2×6kg','2×8kg','2×12kg','2×12kg','2×16kg']);
+  setSta('lunges',   [20,20,20,20,40,40,40,40],    ['—','—','—','—','5kg','7.5kg','7.5kg','10kg']);
+  setSta('wall ball',[50,50,50,50,50,50,50,50],    ['1kg','1kg','2kg','2kg','2kg','3kg','3kg','4kg']); // 8-9/10-11 = Squats
+  // Course : structure par âge (rulebook §5.2, 1 tour ≈ 250m)
+  //  8-9 & 10-11 : 1 tour entrée + 1 tour sortie ; 12-13 : 2+2 ; 14-15 : 1 tour entre chaque station
+  var lap=250;
+  var runs=(P.mouvements||[]).filter(function(m){return m.hyroxSeg==='run';});
+  runs.forEach(function(m,ri){
+    m.qtyParCat=m.qtyParCat||{};
+    var isEntry=(ri===0), isExit=(ri===runs.length-1);
+    K.forEach(function(id){
+      var age=(id<=1102)?'8-9':(id<=1104)?'10-11':(id<=1106)?'12-13':'14-15';
+      var v;
+      if(age==='14-15'){ v=lap; }
+      else if(isEntry||isExit){ v=(age==='12-13')?2*lap:lap; }
+      else { v=0; }
+      m.qtyParCat[id]=v;
+    });
+  });
+  return P;
+}
+
+// ═══ Pop-up HYROX Youngstars (sélecteur Kids) ═══
+var KIDS_DATA={
+  ages:[
+    {k:'8-9',   lbl:'8-9',   col:'#EC4899', run:'1 tour entrée + 1 tour sortie'},
+    {k:'10-11', lbl:'10-11', col:'#F59E0B', run:'1 tour entrée + 1 tour sortie'},
+    {k:'12-13', lbl:'12-13', col:'#14B8A6', run:'2 tours entrée + 2 tours sortie'},
+    {k:'14-15', lbl:'14-15', col:'#8B5CF6', run:'1 tour entre chaque station'}
+  ],
+  st:[
+    {ic:'🎿',nom:'SkiErg',           v:{'8-9':['300m','300m'],'10-11':['400m','400m'],'12-13':['500m','500m'],'14-15':['600m','600m']}},
+    {ic:'🛷',nom:'Sled Push',        v:{'8-9':['15m · 35kg','15m · 35kg'],'10-11':['15m · 45kg','15m · 45kg'],'12-13':['30m · 60kg','30m · 70kg'],'14-15':['30m · 70kg','30m · 102kg']}},
+    {ic:'🪢',nom:'Sled Pull / Drag', v:{'8-9':['15m · 25kg','15m · 25kg'],'10-11':['15m · 40kg','15m · 40kg'],'12-13':['30m · 25kg','30m · 50kg'],'14-15':['30m · 50kg','30m · 78kg']}},
+    {ic:'🐸',nom:'Burpee / Frogger', v:{'8-9':['20m Frogger','20m Frogger'],'10-11':['20m','20m'],'12-13':['40m','40m'],'14-15':['40m','40m']}},
+    {ic:'🚣',nom:'Row',              v:{'8-9':['200m','200m'],'10-11':['300m','300m'],'12-13':['400m','400m'],'14-15':['500m','500m']}},
+    {ic:'🧺',nom:'Farmers Carry',    v:{'8-9':['50m · 2×4kg','50m · 2×4kg'],'10-11':['50m · 2×6kg','50m · 2×6kg'],'12-13':['100m · 2×8kg','100m · 2×12kg'],'14-15':['100m · 2×12kg','100m · 2×16kg']}},
+    {ic:'🦵',nom:'Lunges',           v:{'8-9':['20m','20m'],'10-11':['20m','20m'],'12-13':['40m · 5kg','40m · 7.5kg'],'14-15':['40m · 7.5kg','40m · 10kg']}},
+    {ic:'⚽',nom:'Wall Ball / Squat', v:{'8-9':['50 · 1kg squats','50 · 1kg squats'],'10-11':['50 · 2kg squats','50 · 2kg squats'],'12-13':['50 · 2kg','50 · 3kg'],'14-15':['50 · 3kg','50 · 4kg']}}
+  ]
+};
+var _kidsAge='8-9', _kidsGen=0; // 0=Filles, 1=Garçons
+function hxPickMode(m){
+  var a=document.getElementById('hxmode-adult'), k=document.getElementById('hxmode-kids');
+  if(m==='kids') openKidsModal();
+  if(a&&k){ var on=(m==='adult');
+    a.style.background=on?'var(--blue)':'#fff'; a.style.color=on?'#fff':'var(--blue)';
+    k.style.background=on?'#fff':'#EC4899';    k.style.color=on?'#DB2777':'#fff'; }
+}
+function openKidsModal(){ var m=document.getElementById('kids-modal'); if(!m)return; m.style.display='flex'; renderKidsModal(); requestAnimationFrame(function(){m.classList.add('open');}); document.addEventListener('keydown',_kidsEsc); }
+function closeKidsModal(){ var m=document.getElementById('kids-modal'); if(!m)return; m.classList.remove('open'); document.removeEventListener('keydown',_kidsEsc); setTimeout(function(){m.style.display='none'; hxPickMode('adult');},220); }
+function _kidsEsc(e){ if(e.key==='Escape') closeKidsModal(); }
+function kidsPickAge(a){ _kidsAge=a; renderKidsModal(); }
+function kidsPickGen(g){ _kidsGen=g; renderKidsModal(); }
+function _kidsShade(hex){ try{ var n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255,f=.72; return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')'; }catch(e){ return hex; } }
+function renderKidsModal(){
+  var age=KIDS_DATA.ages.find(function(x){return x.k===_kidsAge;})||KIDS_DATA.ages[0]; var col=age.col;
+  var hero=document.getElementById('kids-hero'); if(hero) hero.style.background='linear-gradient(135deg,'+col+','+_kidsShade(col)+')';
+  var sub=document.getElementById('kids-hero-sub'); if(sub) sub.textContent=(_kidsGen?'Garçons':'Filles')+' '+age.k+' ans · course : '+age.run;
+  var ac=document.getElementById('kids-ages');
+  if(ac) ac.innerHTML=KIDS_DATA.ages.map(function(a){ var on=(a.k===_kidsAge);
+    return '<button class="kids-age" onclick="kidsPickAge(\''+a.k+'\')" style="'+(on?'border-color:'+a.col+';background:'+a.col+'14':'')+'"><b style="'+(on?'color:'+a.col:'')+'">'+a.lbl+'</b><span>ans</span></button>'; }).join('');
+  var gc=document.getElementById('kids-gender');
+  if(gc) gc.innerHTML=['Filles','Garçons'].map(function(g,i){ var on=(i===_kidsGen);
+    return '<button onclick="kidsPickGen('+i+')" style="'+(on?'background:#fff;color:'+col+';box-shadow:0 1px 4px rgba(0,0,0,.12)':'')+'">'+(i?'👦 ':'👧 ')+g+'</button>'; }).join('');
+  var pc=document.getElementById('kids-parcours');
+  if(pc) pc.innerHTML='<div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin:2px 0 10px">Parcours station par station</div>'+
+    KIDS_DATA.st.map(function(s,i){ var val=s.v[_kidsAge][_kidsGen];
+      return '<div class="kids-row" style="animation-delay:'+(i*40)+'ms"><div class="ic" style="background:'+col+'1f">'+s.ic+'</div><div class="nm">'+s.nom+'</div><div class="vl" style="color:'+col+'">'+val+'</div></div>'; }).join('');
+  var ft=document.getElementById('kids-foot');
+  if(ft) ft.innerHTML='<div style="background:'+col+'12;border:1px solid '+col+'40;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">✅</div><div style="flex:1;font-size:11px;font-weight:700;color:var(--ink2);line-height:1.35">Les 8 catégories Youngstars (Filles/Garçons × 4 âges) sont déjà dans ton event — Jour 2, départs 13:00 → 15:20.</div></div><button onclick="closeKidsModal();show(\'categories\',document.querySelector(\'[onclick*=categories]\'));" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:13px;background:'+col+';color:#fff;font-weight:900;font-size:13px;cursor:pointer;font-family:inherit">Voir les catégories Kids →</button>';
+}
+
 function buildHyroxParcours(){
   function pc(oh,of,ph,pf,dh,df,dm,rl){ return {"1001":oh,"1002":of,"1003":ph,"1004":pf,"1005":dh,"1006":df,"1007":dm,"1008":rl}; }
   function q(v){ return pc(v,v,v,v,v,v,v,v); }
@@ -23335,7 +23587,7 @@ function buildHyroxParcours(){
       judgeStep:(step!=null?step:null)};
   }
   function RUN(n){ return mov('Run 1000m — R'+n,1000,null,null,'run'); }
-  return {id:2001,nom:'Parcours HYROX',desc:'8× (Run 1000m + Station) · For Time',
+  var _HXP={id:2001,nom:'Parcours HYROX',desc:'8× (Run 1000m + Station) · For Time',
     zone:'1',jour:1,ordreZone:1,duree:(HYROX_CFG.interval||10)*60,interHeat:0,coupureApres:0,
     wodFormat:'fortime',workMin:0,restMin:0,rounds:1,capMinutes:HYROX_CFG.cap||100,
     hyroxCapMinutes:HYROX_CFG.cap||100,isHyrox:true,scoreType:'time',scoreFields:['time'],
@@ -23351,6 +23603,7 @@ function buildHyroxParcours(){
       RUN(8), mov('8 · Wall Balls',100,pc('6kg','4kg','9kg','6kg','6kg','4kg','4kg','4/6kg'),q(100),'station',1),
       {nom:'🏁 Arrivée',qty:1,type:'reps',ergoTarget:0,ergoUnit:'m',poids:{},qtyParCat:{},timeParCat:{},distParCat:{},hyroxSeg:'finish'}
     ]};
+  return _hyroxApplyKids(_HXP);
 }
 
 function buildHyroxDivisions(){
@@ -23365,13 +23618,23 @@ function buildHyroxDivisions(){
     [1003,'Pro Hommes',    '#7C3AED',5,2,'09:00','PH'],
     [1004,'Pro Femmes',    '#9333EA',6,2,'09:40','PF'],
     [1007,'Doubles Mixte', '#059669',7,2,'10:20','DM'],
-    [1008,'Relay',         '#FF8A00',8,2,'11:00','RL']
+    [1008,'Relay',         '#FF8A00',8,2,'11:00','RL'],
+    // ── HYROX Youngstars (Kids) — 4 âges × 2 genres, jour 2 après-midi ──
+    [1101,'Youngstars Filles 8-9',    '#EC4899', 9,2,'13:00','F8-9',   true,'8-9','F'],
+    [1102,'Youngstars Garçons 8-9',   '#3B82F6',10,2,'13:20','G8-9',   true,'8-9','G'],
+    [1103,'Youngstars Filles 10-11',  '#DB2777',11,2,'13:40','F10-11', true,'10-11','F'],
+    [1104,'Youngstars Garçons 10-11', '#2563EB',12,2,'14:00','G10-11', true,'10-11','G'],
+    [1105,'Youngstars Filles 12-13',  '#BE185D',13,2,'14:20','F12-13', true,'12-13','F'],
+    [1106,'Youngstars Garçons 12-13', '#1D4ED8',14,2,'14:40','G12-13', true,'12-13','G'],
+    [1107,'Youngstars Filles 14-15',  '#9D174D',15,2,'15:00','F14-15', true,'14-15','F'],
+    [1108,'Youngstars Garçons 14-15', '#1E40AF',16,2,'15:20','G14-15', true,'14-15','G']
   ];
   return defs.map(function(d){
     var teams=[];
     for(var i=1;i<=10;i++){ teams.push({id:d[0]*100+i, nom:d[6]+' '+('0'+i).slice(-2)}); }
     return {id:d[0],nom:d[1],couleur:d[2],ordre:d[3],jour:d[4],hxStart:d[5],code:d[6],
-      nbHeats:2,nbLignes:5,zone:'1',hyroxDiv:true,wodOrdres:{},teams:teams};
+      nbHeats:2,nbLignes:5,zone:'1',hyroxDiv:true,wodOrdres:{},teams:teams,
+      kids:!!d[7],ageGroup:d[8]||null,gender:d[9]||null};
   });
 }
 

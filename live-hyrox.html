@@ -68,6 +68,31 @@ function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){retur
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
 function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0; }
 
+var EXPANDED={};
+function toggleSplits(id){ EXPANDED[id]=!EXPANDED[id]; render(); }
+// Détail des temps par segment (run + station) — split = elapsedMs cumulé − précédent
+function splitsHTML(p){
+  var segs=(CFG&&CFG.stations)||[];
+  var prev=0, runTot=0, staTot=0, out='';
+  segs.forEach(function(s,i){
+    if(s.seg!=='run' && s.seg!=='station') return;
+    var st=p.stations&&p.stations[i];
+    var has=st && st.elapsedMs!=null;
+    var split=has?Math.max(0, st.elapsedMs-prev):null;
+    if(has) prev=st.elapsedMs;
+    if(split!=null){ if(s.seg==='run') runTot+=split; else staTot+=split; }
+    var isRun=(s.seg==='run');
+    out+='<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:11px">'
+      +'<span style="width:16px;text-align:center">'+(isRun?'🏃':'🏋️')+'</span>'
+      +'<span style="flex:1;color:#334155;'+(isRun?'font-style:italic;opacity:.85':'font-weight:700')+'">'+(s.nom||(isRun?'Run':'Station'))+'</span>'
+      +'<span style="font-variant-numeric:tabular-nums;font-weight:800;color:'+(isRun?'#2563EB':'#0F172A')+'">'+(split!=null?fmt(split):'—')+'</span>'
+      +'</div>';
+  });
+  return '<div style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:8px 4px 4px;margin:-2px 0 8px">'+out
+    +'<div style="display:flex;gap:10px;padding:8px 12px 2px;border-top:1px solid #E2E8F0;margin-top:4px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#64748B">'
+    +'<span style="flex:1">🏃 Runs '+fmt(runTot)+'</span><span>🏋️ Stations '+fmt(staTot)+'</span></div></div>';
+}
+
 function setFilter(f){ FILTER=f; render(); }
 
 function render(){
@@ -92,7 +117,7 @@ function render(){
     if(!byDiv[w.catId]) byDiv[w.catId]={nom:w.catNom,couleur:w.couleur,finished:[],running:[]};
     (w.athletes||[]).forEach(function(a){
       var p=prog(a.id);
-      var item={nom:a.nom,waveNum:w.num,startAt:w.startAt,p:p,done:doneCount(a.id)};
+      var item={id:a.id,nom:a.nom,waveNum:w.num,startAt:w.startAt,p:p,done:doneCount(a.id)};
       if(p.finishedAt) byDiv[w.catId].finished.push(item);
       else byDiv[w.catId].running.push(item);
     });
@@ -108,10 +133,12 @@ function render(){
     var rows='';
     d.finished.forEach(function(t,i){
       var r=i+1;
-      rows+='<div class="row"><div class="rank'+(r<=3&&!t.p.dnf?' r'+r:'')+'">'+(t.p.dnf?'—':r)+'</div>'
-        +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+'</div></div>'
-        +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(t.p.officialMs)+'</span>')
+      var open=!t.p.dnf && EXPANDED[t.id];
+      rows+='<div class="row"'+(t.p.dnf?'':' style="cursor:pointer" onclick="toggleSplits(\''+t.id+'\')"')+'><div class="rank'+(r<=3&&!t.p.dnf?' r'+r:'')+'">'+(t.p.dnf?'—':r)+'</div>'
+        +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+(t.p.dnf?'':' · touche pour le détail')+'</div></div>'
+        +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(t.p.officialMs)+' <span style="opacity:.45;font-size:10px">'+(open?'▲':'▼')+'</span></span>')
         +'</div>';
+      if(open) rows+=splitsHTML(t.p);
     });
     d.running.forEach(function(t){
       var pct=total?Math.round(t.done/total*100):0;

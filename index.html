@@ -736,7 +736,7 @@ function renderMobilePlanningCard(ben, data, wrap){
   var jours = ben.jours==='12'?'J1 + J2':ben.jours==='2'?'Jour 2':'Jour 1';
   var base=location.href.split('#')[0].split('?')[0];
   var baseDir=base.split('/').slice(0,-1).join('/')+'/'; 
-  var qrUrl = baseDir+'entry.html?id='+encodeURIComponent(ben.id||'');
+  var qrUrl = baseDir+'juge-hyrox.html?id='+encodeURIComponent(ben.id||'');
   var qrImg = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(qrUrl);
 
   var html = '<div style="background:#e4eaf7;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:16px;margin-bottom:14px;">'
@@ -774,7 +774,7 @@ function renderMobilePlanningCard(ben, data, wrap){
           +'<span style="color:#3A5270;">'+escHtml(a.wod)+'</span>'
         +'</div>'
         +'<div style="margin-top:8px;">'
-          +'<a href="judge.html#juge/'+ben.id+'" style="display:block;text-align:center;background:linear-gradient(135deg,#B71C1C,#FF5722);color:#fff;text-decoration:none;border-radius:8px;padding:10px;font-size:13px;font-weight:900;letter-spacing:2px;">⚡ ACCÉDER AU JUDGING</a>'
+          +'<a href="juge-hyrox.html?ben='+ben.id+'" style="display:block;text-align:center;background:linear-gradient(135deg,#B71C1C,#FF5722);color:#fff;text-decoration:none;border-radius:8px;padding:10px;font-size:13px;font-weight:900;letter-spacing:2px;">⚡ ACCÉDER AU JUDGING</a>'
         +'</div>'
         +'</div>';
     });
@@ -977,7 +977,7 @@ function checkPassword(){
     <!-- PIN Accès Juges -->
     <div class="card" style="grid-column:1/-1">
       <div class="sh-card-title">🔐 Code PIN — Accès Juges</div>
-      <div style="font-size:11px;color:var(--ink2);margin-bottom:14px;">Ce code PIN est demandé aux juges lors de leur première connexion via <strong>entry.html</strong>. Il protège l&rsquo;accès à l&rsquo;interface de scoring.</div>
+      <div style="font-size:11px;color:var(--ink2);margin-bottom:14px;">Ce code PIN est demandé aux juges lors de leur première connexion via <strong>juge-hyrox.html</strong>. Il protège l&rsquo;accès à l&rsquo;interface de scoring.</div>
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:180px;">
           <label>Code PIN (4 chiffres)</label>
@@ -1644,20 +1644,9 @@ function checkPassword(){
     </div>
   </div>
 
-  <!-- ░░ SCORECARDS & FICHES ░░ -->
-  <div style="font-size:12px;font-weight:900;color:#EA580C;letter-spacing:1.5px;text-transform:uppercase;margin:4px 0 10px;display:flex;align-items:center;gap:8px"><span>📝</span> Scorecards & fiches</div>
+  <!-- ░░ FICHES & URGENCE ░░ -->
+  <div style="font-size:12px;font-weight:900;color:#DC2626;letter-spacing:1.5px;text-transform:uppercase;margin:4px 0 10px;display:flex;align-items:center;gap:8px"><span>🚨</span> Fiches & urgence</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px">
-    <div class="card" style="grid-column:1/-1">
-      <div class="sh-card-title">📝 Scorecards par station</div>
-      <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Feuilles de score à remplir par les juges. Choisis le parcours.</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
-        <div style="flex:1;min-width:200px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink2);margin-bottom:6px">Parcours</div>
-          <select id="print-center-wod-select" style="width:100%;background:#FFF7ED;border:1px solid var(--brd2);border-radius:8px;color:var(--ink);padding:9px 10px;font-size:12px;outline:none;font-family:inherit"></select>
-        </div>
-        <button class="btn btn-orange" onclick="printScorecardFromCenter()" style="font-size:12px">🖨️ Imprimer les scorecards</button>
-      </div>
-    </div>
     <div class="card">
       <div class="sh-card-title">🚨 Fiche réflexe</div>
       <div style="font-size:11px;color:var(--ink2);margin-bottom:12px">Procédures et contacts d'urgence à afficher au PC course.</div>
@@ -2145,7 +2134,7 @@ function checkPassword(){
         <div id="qr-public-single"></div>
       </div>
       <div>
-        <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:4px">classement.html</div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:4px">live-hyrox.html</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:10px">Classement public<br>pour les spectateurs</div>
         <button onclick="printPublicQR()" style="padding:8px 16px;background:linear-gradient(135deg,#1565C0,#1E88E5);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;">🖨️ Imprimer A4</button>
       </div>
@@ -2153,7 +2142,7 @@ function checkPassword(){
         <div id="qr-speaker-single"></div>
       </div>
       <div>
-        <div style="font-size:12px;font-weight:700;color:#7C3AED;margin-bottom:4px">speaker.html</div>
+        <div style="font-size:12px;font-weight:700;color:#7C3AED;margin-bottom:4px">live-hyrox.html</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:10px">Interface speaker<br>commentateur / animateur</div>
       </div>
     </div>
@@ -2173,7 +2162,7 @@ function checkPassword(){
         <div id="qr-superviseur-single"></div>
       </div>
       <div style="flex:1;min-width:180px">
-        <div style="font-size:12px;font-weight:700;color:#FF8A00;margin-bottom:4px">superviseur.html</div>
+        <div style="font-size:12px;font-weight:700;color:#FF8A00;margin-bottom:4px">live-hyrox.html</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:10px">👁 Zones, juges, scores et anomalies en direct<br>📡 Radar d'alertes intelligent</div>
       </div>
     </div>
@@ -2193,7 +2182,7 @@ function checkPassword(){
         <div id="qr-planning-single"></div>
       </div>
       <div style="flex:1;min-width:180px">
-        <div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:4px">planning.html</div>
+        <div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:4px">live-hyrox.html</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:10px">
           🔍 Recherche d'équipe<br>
           📅 Filtre Jour 1 / Jour 2<br>
@@ -2220,7 +2209,7 @@ function checkPassword(){
           <img id="qr-entry-img" src="" width="160" height="160" style="border-radius:6px;display:block">
         </div>
         <div style="font-size:10px;color:var(--mid);margin-top:6px;font-weight:700">Accès juges</div>
-        <div style="font-size:9px;color:var(--ink2)">entry.html</div>
+        <div style="font-size:9px;color:var(--ink2)">juge-hyrox.html</div>
       </div>
       <!-- QR secours — même taille -->
       <div style="text-align:center">
@@ -2228,7 +2217,7 @@ function checkPassword(){
           <img id="qr-backup-img" src="" width="160" height="160" style="border-radius:6px;display:block">
         </div>
         <div style="font-size:10px;color:var(--fire2);margin-top:6px;font-weight:700">🚨 Juge secours</div>
-        <div style="font-size:9px;color:var(--ink2)">entry.html#backup</div>
+        <div style="font-size:9px;color:var(--ink2)">juge-hyrox.html#backup</div>
       </div>
       <!-- Infos -->
       <div style="flex:1;min-width:160px">
@@ -2747,7 +2736,7 @@ function checkPassword(){
   <div class="gc tip">
     <div class="gc-title">📺 Affichage sur le Live et le TK</div>
     <div class="gc-body">
-      Sur <strong>live.html</strong> et <strong>tk9delta.html</strong>, les équipes invitées sont affichées avec un <strong>badge coloré</strong> indiquant leur catégorie d'origine :<br><br>
+      Sur <strong>live-hyrox.html</strong> et <strong>tk-hyrox.html</strong>, les équipes invitées sont affichées avec un <strong>badge coloré</strong> indiquant leur catégorie d'origine :<br><br>
       <code>Nom de l'équipe  <span style="font-size:10px;background:#1565C020;color:#1565C0;border:1px solid #1565C033;border-radius:999px;padding:1px 6px">Invitée · Masters H</span></code><br><br>
       Le badge reprend exactement la couleur de la catégorie d'origine. Identique visuellement au badge utilisé dans le planning.
     </div>
@@ -2758,7 +2747,7 @@ function checkPassword(){
     <div class="gc-body">
       Les scores d'une équipe invitée sont comptabilisés dans le classement de <strong>sa propre catégorie d'origine</strong>, pas dans celle du heat hôte.<br><br>
       Exemple : une équipe <strong>Masters H</strong> invitée dans un heat Scaled Hommes → son score apparaît dans le classement <strong>Masters H</strong>, pas dans Scaled Hommes.<br><br>
-      Cela s'applique à la fois dans l'onglet <strong>🏆 Classement</strong> (admin) et sur <strong>classement.html</strong> (public).
+      Cela s'applique à la fois dans l'onglet <strong>🏆 Classement</strong> (admin) et sur <strong>live-hyrox.html</strong> (public).
     </div>
   </div>
 </div>
@@ -2880,32 +2869,32 @@ function checkPassword(){
   <div class="groles">
     <div class="grole">
       <div class="gri">🎛️</div>
-      <div class="grn">TK — tk9delta.html</div>
+      <div class="grn">TK — tk-hyrox.html</div>
       <div class="grd">Tableau de bord du timekeeper. Lance les heats, gère les chronos Z1+Z2, valide les scores, déclenche les inter-heat et coupures. Affiche les lanes avec le détail mouvement par mouvement.</div>
-      <div class="gru">tk9delta.html</div>
+      <div class="gru">tk-hyrox.html</div>
     </div>
     <div class="grole">
       <div class="gri">📺</div>
-      <div class="grn">Live — live.html</div>
+      <div class="grn">Live — live-hyrox.html</div>
       <div class="grd">Écran public affiché sur les télés. Chrono partagé en grand, scores en temps réel, classement heat et WOD. Se met à jour automatiquement.</div>
-      <div class="gru">live.html</div>
+      <div class="gru">live-hyrox.html</div>
     </div>
     <div class="grole">
       <div class="gri">⚖️</div>
-      <div class="grn">Juge — judge.html</div>
+      <div class="grn">Juge — juge-hyrox.html</div>
       <div class="grd">Interface du juge sur téléphone. Saisie des reps mouvement par mouvement, chrono, validation du score final.</div>
-      <div class="gru">judge.html</div>
+      <div class="gru">juge-hyrox.html</div>
     </div>
     <div class="grole">
       <div class="gri">🏆</div>
-      <div class="grn">Classement — classement.html</div>
+      <div class="grn">Classement — live-hyrox.html</div>
       <div class="grd">Classement public par catégorie. Se met à jour en temps réel. Les équipes invitées apparaissent dans leur catégorie d'origine.</div>
-      <div class="gru">classement.html</div>
+      <div class="gru">live-hyrox.html</div>
     </div>
   </div>
 
   <div class="gc info">
-    <div class="gc-title">🎙️ Speaker — speaker.html</div>
+    <div class="gc-title">🎙️ Speaker — live-hyrox.html</div>
     <div class="gc-body">
       Interface dédiée au speaker. Vue synthétique des heats en cours, scores en direct, classements WOD. Permet de commenter sans regarder le TK.
     </div>
@@ -3023,7 +3012,7 @@ function checkPassword(){
     <div class="gstep ok"><div class="gsn ok">1</div><div><div class="gst">Relis le planning juge</div><div class="gsd">Confirme passages, pauses et coupures dans <strong>🧑‍⚖️ Planning juge</strong>.</div></div></div>
     <div class="gstep ok"><div class="gsn ok">2</div><div><div class="gst">Imprime si besoin</div><div class="gsd">Feuilles staff / planning via <strong>🖨️ Impression</strong>, scorecards par WOD.</div></div></div>
     <div class="gstep ok"><div class="gsn ok">3</div><div><div class="gst">Affiche les QR</div><div class="gsd">QR juges et accès utiles dans <strong>📱 QR Codes</strong>.</div></div></div>
-    <div class="gstep ok"><div class="gsn ok">4</div><div><div class="gst">Ouvre les écrans d'exploitation</div><div class="gsd">TK (tk9delta.html), Live (live.html), Classement (classement.html), Speaker (speaker.html). Le setup ne doit plus bouger.</div></div></div>
+    <div class="gstep ok"><div class="gsn ok">4</div><div><div class="gst">Ouvre les écrans d'exploitation</div><div class="gsd">TK (tk-hyrox.html), Live (live-hyrox.html), Classement (live-hyrox.html), Speaker (live-hyrox.html). Le setup ne doit plus bouger.</div></div></div>
     <div class="gstep ok"><div class="gsn ok">5</div><div><div class="gst">Suis la journée</div><div class="gsd">TK pour lancer, Live pour afficher, Classement pour suivre les scores.</div></div></div>
   </div>
 </div>
@@ -3542,7 +3531,7 @@ function saveSponsors(){
 }
 function previewSponsorLive(){
   var base=window.location.href.split('/').slice(0,-1).join('/')+'/';
-  window.open(base+'live.html#sponsors-preview','_blank');
+  window.open(base+'live-hyrox.html#sponsors-preview','_blank');
 }
 
 function getDb(){ return (typeof LS_FB_DB!=='undefined'&&LS_FB_DB)||window.db||db||null; }
@@ -5585,16 +5574,16 @@ function renderBenQRPane(){
   var actionHref='';
   var actionLabel='';
   if(judgeMode){
-    targetUrl=base+'entry.html?id='+encodeURIComponent(ben.id||'');
+    targetUrl=base+'juge-hyrox.html?id='+encodeURIComponent(ben.id||'');
     qrTitle='📱 QR INTERFACE JUGE';
     qrDesc='Ce QR donne accès direct à l’interface de scoring';
-    actionHref='judge.html#juge/'+ben.id;
+    actionHref='juge-hyrox.html?ben='+ben.id;
     actionLabel='⚡ ACCEDER AU JUDGING';
   } else {
-    targetUrl=base+'speaker.html';
+    targetUrl=base+'live-hyrox.html';
     qrTitle='🎤 QR INTERFACE SPEAKER';
     qrDesc='Ce QR ouvre directement l’interface speaker';
-    actionHref='speaker.html';
+    actionHref='live-hyrox.html';
     actionLabel='⚡ OUVRIR SPEAKER';
   }
   var qrJuge='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(targetUrl);
@@ -6426,7 +6415,7 @@ function getStateToSave(){
 }
 
 // ── SYNC BENEVOLES → FIREBASE ──
-// Utilisé par entry.html et judge.html pour la liste des juges
+// Utilisé par juge-hyrox.html et juge-hyrox.html pour la liste des juges
 var _syncBenTimer = null;
 var _syncHeatsTimer = null;
 var _syncTimer = null;
@@ -9546,6 +9535,9 @@ function forceTeamLine(catId, teamId){
 }
 
 function printPlanningWodCat(){
+  // ★ HYROX : imprimer le planning des vagues (et non les heats/zones CrossFit)
+  try{ closeModal('print-modal'); }catch(e){}
+  if(typeof printHyroxPlanning==='function'){ printHyroxPlanning(); return; }
   if((!HEATS_RESULT || !HEATS_RESULT.length) && typeof generateHeats==='function'){
     generateHeats();
   }
@@ -13244,7 +13236,7 @@ function renderPublicQRs(){
   var base=location.href.split('/').slice(0,-1).join('/')+'/';
   // ★ Public = classement uniquement (le live multiplierait les connexions Firebase)
   var publicUrl=base+'live-hyrox.html';
-  var speakerUrl=base+'speaker.html';
+  var speakerUrl=base+'live-hyrox.html';
   var el=document.getElementById('qr-public-single');
   if(el){
     var img=document.createElement('img');
@@ -13262,12 +13254,12 @@ function renderPublicQRs(){
   var elSup=document.getElementById('qr-superviseur-single');
   if(elSup){
     var imgSup=document.createElement('img');
-    imgSup.src='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=FF8A00&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(base+'superviseur.html');
+    imgSup.src='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=FF8A00&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(base+'live-hyrox.html');
     imgSup.style.cssText='width:140px;height:140px;border-radius:6px;display:block;';
     elSup.innerHTML='';elSup.appendChild(imgSup);
   }
   // QR Planning équipes
-  var planningUrl=base+'planning.html';
+  var planningUrl=base+'live-hyrox.html';
   var elP=document.getElementById('qr-planning-single');
   if(elP){
     var imgP=document.createElement('img');
@@ -14604,8 +14596,8 @@ function buildMailBody(b){
   var resp   = (document.getElementById('ev-resp')||{}).value || '';
   var emailR = (document.getElementById('ev-email')||{}).value || '';
   var base   = location.href.split('/').slice(0,-1).join('/') + '/';
-  var judgeUrl = base + 'entry.html?id=' + encodeURIComponent(b.id||'');
-  var entryUrl = base + 'entry.html';
+  var judgeUrl = base + 'juge-hyrox.html?id=' + encodeURIComponent(b.id||'');
+  var entryUrl = base + 'juge-hyrox.html';
   var judgeQr = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(judgeUrl);
   var entryQr = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(entryUrl);
 
@@ -15759,8 +15751,8 @@ function renderJugeQRGrid(){
   var base=window.location.href.split('#')[0].split('?')[0];
   var baseDir=base.split('/').slice(0,-1).join('/')+'/';
 
-  // ── QR unique d accès juge (portail entry.html) ──
-  var entryUrl=baseDir+'entry.html';
+  // ── QR unique d accès juge (portail juge-hyrox.html) ──
+  var entryUrl=baseDir+'juge-hyrox.html';
   var qrEntry='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(entryUrl);
 
   var html='<div style="background:var(--s2,#e2e9f7);border:1px solid var(--brd,#EBF0FA);border-radius:12px;padding:16px;margin-bottom:16px;">'
@@ -15768,7 +15760,7 @@ function renderJugeQRGrid(){
     +'<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">'
       +'<div style="text-align:center;">'
         +'<img src="'+qrEntry+'" style="width:160px;height:160px;border-radius:8px;border:3px solid #E2E8F0;display:block;">'
-        +'<div style="font-size:9px;color:#3A5270;margin-top:6px;">entry.html</div>'
+        +'<div style="font-size:9px;color:#3A5270;margin-top:6px;">juge-hyrox.html</div>'
       +'</div>'
       +'<div style="flex:1;min-width:160px;">'
         +'<div style="font-size:14px;font-weight:800;color:#3A5270;margin-bottom:8px;">Un seul QR pour tous les juges</div>'
@@ -15782,7 +15774,7 @@ function renderJugeQRGrid(){
   html+='<div style="font-size:9px;font-weight:800;color:var(--ink2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">QR NOMINATIFS (optionnel · 1 par juge)</div>';
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">';
   juges.forEach(function(b){
-    var url=baseDir+'entry.html?id='+encodeURIComponent(b.id||'');
+    var url=baseDir+'juge-hyrox.html?id='+encodeURIComponent(b.id||'');
     var qr='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(url);
     var jours=b.jours==='12'?'J1+J2':b.jours==='2'?'J2':'J1';
     html+='<div style="background:var(--s1,#FFFFFF);border:1px solid var(--brd,#EBF0FA);border-radius:10px;padding:12px;text-align:center;">'
@@ -15797,7 +15789,7 @@ function renderJugeQRGrid(){
 
 function printJugeQR(){
   var baseDir=window.location.href.split('#')[0].split('?')[0].split('/').slice(0,-1).join('/')+'/';
-  var entryUrl=baseDir+'entry.html';
+  var entryUrl=baseDir+'juge-hyrox.html';
   var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=400x400&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(entryUrl);
   var w=window.open('','_blank');
   w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR Juges · FOC 2026</title>'
@@ -15858,9 +15850,9 @@ function printGuide(){
   var baseUrl = window.location.href.split('/').slice(0,-1).join('/');
   html += '<div class="urls"><h2>🔗 URLs du système</h2>';
   html += '<div class="url-row"><span class="url-lbl">Admin</span><span class="url-val">'+baseUrl+'/index.html · mot de passe : Delta</span></div>';
-  html += '<div class="url-row"><span class="url-lbl">Juge</span><span class="url-val">'+baseUrl+'/judge.html#juge/ID</span></div>';
-  html += '<div class="url-row"><span class="url-lbl">Écran public</span><span class="url-val">'+baseUrl+'/live.html</span></div>';
-  html += '<div class="url-row"><span class="url-lbl">Time Keeper</span><span class="url-val">'+baseUrl+'/tk9delta.html</span></div>';
+  html += '<div class="url-row"><span class="url-lbl">Juge</span><span class="url-val">'+baseUrl+'/juge-hyrox.html?ben=ID</span></div>';
+  html += '<div class="url-row"><span class="url-lbl">Écran public</span><span class="url-val">'+baseUrl+'/live-hyrox.html</span></div>';
+  html += '<div class="url-row"><span class="url-lbl">Time Keeper</span><span class="url-val">'+baseUrl+'/tk-hyrox.html</span></div>';
   html += '</div>';
 
   var sections = [
@@ -15870,7 +15862,7 @@ function printGuide(){
     ['4','🏆 Catégories & Équipes','Créer catégories → ajouter équipes (coller liste, une par ligne).<br>J1+J2 = participe les deux jours avec même ordre. Lignes fixes pour toute la compétition.'],
     ['5','👥 Bénévoles & Juges','Ne pas cocher "Athlète" pour les juges. Mails de planning disponibles.<br><b>QR Juges</b> : 1 scan le matin → identifié toute la journée → lane automatique.'],
     ['6','📱 QR Codes','Imprimer les QR speaker et QR juges depuis l&rsquo;onglet QR Codes après avoir cliqué GÉNÉRER.<br>Flux juge : scan → sélection nom → mémorisé → lane auto à chaque heat.'],
-    ['7','🎯 Jour J — Live Scoring','PRÉ → START (3-2-1) → juges saisissent → TC si timecap → DONE.<br>Écran public : /live.html · Time Keeper : /tk9delta.html'],
+    ['7','🎯 Jour J — Live Scoring','PRÉ → START (3-2-1) → juges saisissent → TC si timecap → DONE.<br>Écran public : /live-hyrox.html · Time Keeper : /tk-hyrox.html'],
     ['8','📄 Scores & Scorecard','JUGE OK = score validé sur Firebase.<br><b>La scorecard papier signée fait foi</b> en cas de litige.'],
   ];
 
@@ -15896,11 +15888,11 @@ function printJugeQRSheet(){
   if(!juges.length){ toast('Aucun bénévole/juge trouvé — ajoute-les dans l\'onglet Bénévoles','#E65100'); return; }
   var nomEv=(document.getElementById('ev-nom')||{}).value||'FOC 2026';
   var baseDir=window.location.href.split('#')[0].split('?')[0].split('/').slice(0,-1).join('/')+'/';
-  var entryUrl=baseDir+'entry.html';
+  var entryUrl=baseDir+'juge-hyrox.html';
   var qrEntry='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(entryUrl);
   var cards='';
   juges.forEach(function(b){
-    var url=baseDir+'entry.html?id='+encodeURIComponent(b.id||'');
+    var url=baseDir+'juge-hyrox.html?id='+encodeURIComponent(b.id||'');
     var qr='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(url);
     var jours=b.jours==='12'?'J1+J2':b.jours==='2'?'J2':'J1';
     cards+='<div class="card"><img src="'+qr+'"><div class="nm">'+escHtml(b.prenom||'')+' '+escHtml(b.nom||'')+'</div><div class="jr">'+jours+'</div></div>';
@@ -15959,12 +15951,12 @@ function updateQRBadge(){
 function showQRCodes(btn){
   show('qrcodes', btn);
   scheduleJudgeAssignmentsSync(100);
-  // Generate entry.html QR dynamically
-  var entryUrl = window.location.href.split('/').slice(0,-1).join('/') + '/entry.html';
+  // Generate juge-hyrox.html QR dynamically
+  var entryUrl = window.location.href.split('/').slice(0,-1).join('/') + '/juge-hyrox.html';
   var qrImg = document.getElementById('qr-entry-img');
   if (qrImg) qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(entryUrl);
   // QR backup juge de secours
-  var backupUrl = window.location.href.split('/').slice(0,-1).join('/') + '/entry.html?backup=1';
+  var backupUrl = window.location.href.split('/').slice(0,-1).join('/') + '/juge-hyrox.html?backup=1';
   var qrBackup = document.getElementById('qr-backup-img');
   if(qrBackup) qrBackup.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=C04000&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(backupUrl);
   renderJugeQRGrid();
@@ -16501,8 +16493,8 @@ function updateJudgePlanningSearch(val){
 function printJudgePlanning(){
   var content = document.getElementById('judge-planning-content');
   // ★ Générer le planning juge si pas encore affiché (impression depuis le centre)
-  if((!content || !content.innerHTML) && typeof renderJudgePlanningTab==='function'){
-    try{ renderJudgePlanningTab(); }catch(e){}
+  if(typeof renderHyroxJudgePlanning==='function'){
+    try{ renderHyroxJudgePlanning(); }catch(e){}
     content = document.getElementById('judge-planning-content');
   }
   if(!content || !content.innerHTML){
@@ -17235,13 +17227,13 @@ function renderJudgePlanningTab(){
 
 
 function buildBenQRUrlDynamic(b){
-  // ★ FIX FIABILITÉ : toujours pointer vers entry.html?prenom=NOM
-  // entry.html est léger, sans cache SW admin, charge depuis Firebase par prénom.
+  // ★ FIX FIABILITÉ : toujours pointer vers juge-hyrox.html?prenom=NOM
+  // juge-hyrox.html est léger, sans cache SW admin, charge depuis Firebase par prénom.
   // Supprime tous les bugs "Bénévole introuvable" liés au cache de index.html.
   // ★ FIX QR : query string au lieu de hash — robuste à tous les scanners QR
   //   (certaines apps strippent le fragment "#..." de l'URL, pas les query strings).
   var base=location.href.split('#')[0].split('?')[0];
-  var entryBase=base.replace(/index\.html$/,'')+'entry.html';
+  var entryBase=base.replace(/index\.html$/,'')+'juge-hyrox.html';
   var url=entryBase+'?id='+encodeURIComponent(String(b.id||''))+'&mode=planning';
   return encodeURIComponent(url);
 }
@@ -20652,7 +20644,7 @@ function lsSetStatus(heatId, status) {
     var jugeMap = buildJugeAssignment();
     var heatJugeMap = jugeMap[heatId] || {};
 
-    // All juges for this heat (for the selection list on judge.html)
+    // All juges for this heat (for the selection list on juge-hyrox.html)
     var allHeatJuges = [];
     Object.keys(heatJugeMap).forEach(function(lnum) {
       var j = heatJugeMap[lnum];
@@ -20665,7 +20657,7 @@ function lsSetStatus(heatId, status) {
       (h.slots || []).filter(function(s) { return s.team && !s.empty; }).forEach(function(s) {
         var primaryJuge = heatJugeMap[s.ligne] || null;
         // ★ FIX : assignedJuges ne doit contenir QUE le juge de cette lane,
-        // sinon chaque juge apparaît sur toutes les lanes du heat (entry.html planning).
+        // sinon chaque juge apparaît sur toutes les lanes du heat (juge-hyrox.html planning).
         var laneJuges = primaryJuge
           ? [{ id: primaryJuge.id, prenom: primaryJuge.prenom, nom: primaryJuge.nom, lane: parseInt(s.ligne) }]
           : [];
@@ -20805,7 +20797,7 @@ function lsRenderQR() {
     c.innerHTML = '<div style="color:#636366;font-size:12px;text-align:center;padding:24px">Générez d&rsquo;abord les heats dans Catégories</div>';
     return;
   }
-  var baseURL = window.location.href.split('/').slice(0,-1).join('/') + '/judge.html';
+  var baseURL = window.location.href.split('/').slice(0,-1).join('/') + '/juge-hyrox.html';
   var judgeURL = function(laneNum) { return baseURL + '#lane/' + laneNum; };
 
   // Helper: get earliest debut of a heat in minutes
@@ -21009,7 +21001,7 @@ function lsResetConfirm() {
 }
 
 function lsOpenJudgeInterface() {
-  var url = window.location.href.split('/').slice(0,-1).join('/') + '/live.html';
+  var url = window.location.href.split('/').slice(0,-1).join('/') + '/live-hyrox.html';
   window.open(url,'_blank');
 }
 
@@ -21063,7 +21055,7 @@ function lsPushAllHeatsToFirebase() {
     (h.slots || []).filter(function(s) { return s.team && !s.empty; }).forEach(function(s) {
       var pj = heatJugeMap[s.ligne] || null;
       // ★ FIX : assignedJuges ne doit contenir QUE le juge de cette lane,
-      // sinon chaque juge apparaît sur toutes les lanes du heat (entry.html planning).
+      // sinon chaque juge apparaît sur toutes les lanes du heat (juge-hyrox.html planning).
       var laneJuges = pj
         ? [{ id:pj.id, prenom:pj.prenom, nom:pj.nom, lane:parseInt(s.ligne) }]
         : [];
@@ -21116,7 +21108,7 @@ function lsPushAllHeatsToFirebase() {
   };
 
   // Lire l'état Firebase existant avant d'écrire
-  // pour ne jamais écraser les scores/status écrits par judge.html ou TK
+  // pour ne jamais écraser les scores/status écrits par juge-hyrox.html ou TK
   LS_FB_DB.ref('heats').once('value').then(function(snap){
     var existing = snap.val() || {};
     Object.keys(updates).forEach(function(path){
@@ -22110,7 +22102,7 @@ function lsPrintOneCard(heatNum, lane){
 // ── printPublicQR : impression A4 QR spectateurs ──────────────────
 function printPlanningQR(){
   var base = window.location.href.split('/').slice(0,-1).join('/') + '/';
-  var planningUrl = base + 'planning.html';
+  var planningUrl = base + 'live-hyrox.html';
   var qr = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&color=065F46&bgcolor=FFFFFF&margin=14&ecc=M&data='+encodeURIComponent(planningUrl);
   var nom_ev = (document.getElementById('ev-nom')||{}).value||'FOC 2026';
   var w = window.open('','_blank','width=700,height=700');
@@ -22139,10 +22131,10 @@ function printPlanningQR(){
 
 function printPublicQR(){
   // ★ Public = CLASSEMENT uniquement. Le live n'est pas distribué au public :
-  //   chaque téléphone sur live.html ouvre une connexion Firebase temps réel
+  //   chaque téléphone sur live-hyrox.html ouvre une connexion Firebase temps réel
   //   de plus — le classement est beaucoup plus léger.
   var base = window.location.href.split('/').slice(0,-1).join('/') + '/';
-  var classUrl = base + 'classement.html';
+  var classUrl = base + 'live-hyrox.html';
   var qrClass = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&color=0D1B2A&bgcolor=FFFFFF&margin=14&ecc=M&data='+encodeURIComponent(classUrl);
   var nom_ev = (document.getElementById('ev-nom')||{}).value||'FOC 2026';
   var w = window.open('','_blank','width=800,height=600');
@@ -22178,11 +22170,11 @@ function printEntryQR(){
   var rawSrcBk = imgBk ? (imgBk.getAttribute('src')||'') : '';
   var baseDir = window.location.href.split('#')[0].split('?')[0].split('/').slice(0,-1).join('/');
   if(img && rawSrc.indexOf('api.qrserver')===-1){
-    var entryUrl = baseDir + '/entry.html';
+    var entryUrl = baseDir + '/juge-hyrox.html';
     img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(entryUrl);
   }
   if(imgBk && rawSrcBk.indexOf('api.qrserver')===-1){
-    var backupUrl = baseDir + '/entry.html?backup=1';
+    var backupUrl = baseDir + '/juge-hyrox.html?backup=1';
     imgBk.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=C04000&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(backupUrl);
   }
   if(!img) return;
@@ -22206,8 +22198,8 @@ function printEntryQR(){
     + '<h2>⚖️ Accès Juges · '+nom_ev+'</h2>'
     + '<p class="sub">Chaque juge scanne le QR principal → sélectionne son prénom → accès direct</p>'
     + '<div class="pair">'
-    + '<div class="item"><img src="' + img.src + '" width="220" height="220"><div class="lbl">Interface Juges</div><div class="url">entry.html</div></div>'
-    + (imgBk && imgBk.src ? '<div class="item"><img src="' + imgBk.src + '" width="220" height="220" style="border:3px solid #FF6D00;border-radius:8px"><div class="lbl secours">🚨 Juge Secours</div><div class="url">entry.html#backup</div></div>' : '')
+    + '<div class="item"><img src="' + img.src + '" width="220" height="220"><div class="lbl">Interface Juges</div><div class="url">juge-hyrox.html</div></div>'
+    + (imgBk && imgBk.src ? '<div class="item"><img src="' + imgBk.src + '" width="220" height="220" style="border:3px solid #FF6D00;border-radius:8px"><div class="lbl secours">🚨 Juge Secours</div><div class="url">juge-hyrox.html#backup</div></div>' : '')
     + '</div>'
     + '<p style="margin-top:20px;font-size:10px;color:#94A3B8">Zone K · Hybride Center · Toul</p>'
     + '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print();},600)}<\/scr' + 'ipt>'
@@ -23357,6 +23349,9 @@ function renderHyroxJudges(){
 }
 
 function printHyroxJudges(){
+  // ★ Sécurité : publier la course AVANT de distribuer les QR, sinon les juges
+  //   scannent et tombent sur « En attente de la config course ».
+  try{ if(typeof publishHyroxRace==='function') publishHyroxRace(); }catch(e){ console.warn('publish avant QR',e); }
   var J1=buildHyroxJudges(1), J2=buildHyroxJudges(2);
   var base=location.origin+location.pathname.replace(/[^/]*$/,'');
   var map={}; // id -> {name, j1, j2}

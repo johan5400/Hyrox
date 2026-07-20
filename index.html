@@ -3602,14 +3602,10 @@ function setCompDay(d){
 }
 
 function getSlotTimes(day){
-  var startId=day>=3?"comp-start"+day:(day===2?"comp-start2":"comp-start");
-  var endId=day>=3?"comp-end"+day:(day===2?"comp-end2":"comp-end");
-  var startEl=document.getElementById(startId)||document.getElementById("comp-start");
-  var endEl=document.getElementById(endId)||document.getElementById("comp-end");
-  var cs=parseTime(startEl.value||"08:00");
-  var ce=parseTime(endEl.value||"18:00");
-  var mid=cs+240;
-  return{"Matin":{start:cs,end:Math.min(mid,ce)},"Après-Midi":{start:Math.min(mid,ce),end:ce},"Journée":{start:cs,end:ce}};
+  // ★ Créneaux de disponibilité juges — bornes FIXES et larges (couvre les tests nocturnes)
+  //   Matin 06:00–12:00 · Après-Midi 12:00–23:59 · Journée 06:00–23:59
+  var M0=6*60, MID=12*60, END=23*60+59;
+  return {"Matin":{start:M0,end:MID},"Après-Midi":{start:MID,end:END},"Journée":{start:M0,end:END}};
 }
 
 var STATIONS=[
@@ -7313,14 +7309,14 @@ function importData(ev){
 // CATÉGORIES & HEATS
 // ═══════════════════════════════════════════
 var CATEGORIES=[
-{"id": 1001, "nom": "Open Hommes", "couleur": "#E8421A", "ordre": 1, "nbHeats": 3, "nbLignes": 10, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3001, "nom": "Athlète OH 1", "ligne": null}, {"id": 3002, "nom": "Athlète OH 2", "ligne": null}, {"id": 3003, "nom": "Athlète OH 3", "ligne": null}, {"id": 3004, "nom": "Athlète OH 4", "ligne": null}]},
-{"id": 1002, "nom": "Open Femmes", "couleur": "#C62828", "ordre": 2, "nbHeats": 2, "nbLignes": 10, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3005, "nom": "Athlète OF 1", "ligne": null}, {"id": 3006, "nom": "Athlète OF 2", "ligne": null}, {"id": 3007, "nom": "Athlète OF 3", "ligne": null}, {"id": 3008, "nom": "Athlète OF 4", "ligne": null}]},
-{"id": 1003, "nom": "Pro Hommes", "couleur": "#7C3AED", "ordre": 3, "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3009, "nom": "Athlète PH 1", "ligne": null}, {"id": 3010, "nom": "Athlète PH 2", "ligne": null}]},
-{"id": 1004, "nom": "Pro Femmes", "couleur": "#9333EA", "ordre": 4, "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3011, "nom": "Athlète PF 1", "ligne": null}, {"id": 3012, "nom": "Athlète PF 2", "ligne": null}]},
-{"id": 1005, "nom": "Doubles Hommes", "couleur": "#1D6DB5", "ordre": 5, "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3013, "nom": "Duo H 1", "ligne": null}, {"id": 3014, "nom": "Duo H 2", "ligne": null}]},
-{"id": 1006, "nom": "Doubles Femmes", "couleur": "#0891B2", "ordre": 6, "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3015, "nom": "Duo F 1", "ligne": null}, {"id": 3016, "nom": "Duo F 2", "ligne": null}]},
-{"id": 1007, "nom": "Doubles Mixte", "couleur": "#059669", "ordre": 7, "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3017, "nom": "Duo Mixte 1", "ligne": null}, {"id": 3018, "nom": "Duo Mixte 2", "ligne": null}]},
-{"id": 1008, "nom": "Relay", "couleur": "#FF8A00", "ordre": 8, "nbHeats": 1, "nbLignes": 6, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3019, "nom": "Relay Team 1", "ligne": null}, {"id": 3020, "nom": "Relay Team 2", "ligne": null}]}
+{"id": 1001, "nom": "Open Hommes", "couleur": "#E8421A", "ordre": 1, "hxStart": "23:30", "nbHeats": 3, "nbLignes": 10, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3001, "nom": "Athlète OH 1", "ligne": null}, {"id": 3002, "nom": "Athlète OH 2", "ligne": null}, {"id": 3003, "nom": "Athlète OH 3", "ligne": null}, {"id": 3004, "nom": "Athlète OH 4", "ligne": null}]},
+{"id": 1002, "nom": "Open Femmes", "couleur": "#C62828", "ordre": 2, "hxStart": "23:45", "nbHeats": 2, "nbLignes": 10, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3005, "nom": "Athlète OF 1", "ligne": null}, {"id": 3006, "nom": "Athlète OF 2", "ligne": null}, {"id": 3007, "nom": "Athlète OF 3", "ligne": null}, {"id": 3008, "nom": "Athlète OF 4", "ligne": null}]},
+{"id": 1003, "nom": "Pro Hommes", "couleur": "#7C3AED", "ordre": 3, "hxStart": "09:00", "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3009, "nom": "Athlète PH 1", "ligne": null}, {"id": 3010, "nom": "Athlète PH 2", "ligne": null}]},
+{"id": 1004, "nom": "Pro Femmes", "couleur": "#9333EA", "ordre": 4, "hxStart": "09:40", "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3011, "nom": "Athlète PF 1", "ligne": null}, {"id": 3012, "nom": "Athlète PF 2", "ligne": null}]},
+{"id": 1005, "nom": "Doubles Hommes", "couleur": "#1D6DB5", "ordre": 5, "hxStart": "23:54", "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3013, "nom": "Duo H 1", "ligne": null}, {"id": 3014, "nom": "Duo H 2", "ligne": null}]},
+{"id": 1006, "nom": "Doubles Femmes", "couleur": "#0891B2", "ordre": 6, "hxStart": "10:30", "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 1, "wodOrdres": {}, "teams": [{"id": 3015, "nom": "Duo F 1", "ligne": null}, {"id": 3016, "nom": "Duo F 2", "ligne": null}]},
+{"id": 1007, "nom": "Doubles Mixte", "couleur": "#059669", "ordre": 7, "hxStart": "09:00", "nbHeats": 1, "nbLignes": 8, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3017, "nom": "Duo Mixte 1", "ligne": null}, {"id": 3018, "nom": "Duo Mixte 2", "ligne": null}]},
+{"id": 1008, "nom": "Relay", "couleur": "#FF8A00", "ordre": 8, "hxStart": "10:00", "nbHeats": 1, "nbLignes": 6, "zone": "1", "jour": 2, "wodOrdres": {}, "teams": [{"id": 3019, "nom": "Relay Team 1", "ligne": null}, {"id": 3020, "nom": "Relay Team 2", "ligne": null}]}
 ]; // HYROX — 8 divisions (exemples, à remplacer par les inscriptions)
 var HEATS_RESULT = null;
 var editCatId = null;

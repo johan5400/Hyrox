@@ -3633,6 +3633,32 @@ function _neededPostes(){
   return keys.reduce(function(s,k){return s+zoneMax[k];},0);
 }
 var BENEVOLES=[];
+
+// ── Base de test : 20 bénévoles dispo Journée sur J1 + J2 (seed si vide) ──
+function seedBenevolesTest(){
+  if(Array.isArray(BENEVOLES) && BENEVOLES.length) return; // ne pas écraser une liste existante
+  var PRENOMS=['Lucas','Emma','Hugo','Léa','Nathan','Chloé','Louis','Manon','Jules','Sarah','Adam','Camille','Tom','Julie','Enzo','Marie','Théo','Laura','Noah','Pauline'];
+  var NOMS=['Martin','Bernard','Dubois','Petit','Durand','Leroy','Moreau','Simon','Laurent','Michel','Garcia','Roux','Fournier','Girard','Bonnet','Dupont','Lambert','Rousseau','Blanc','Henry'];
+  var arr=[];
+  for(var i=0;i<20;i++){
+    arr.push({
+      id: 900001+i,
+      prenom: PRENOMS[i], nom: NOMS[i],
+      qualif: 2, qualification: 2,
+      slotJ1:'Journée', slotJ2:'Journée', slotJ3:'absent', slotJ4:'absent',
+      slot:'Journée', jours:'12',
+      email:'', tel:'', tshirt:'M', repas:'', exp:'',
+      notes:'(bénévole test)', isAthlete:false, dossard:'', wave:'', ligne:null,
+      raceDay:'', raceDur:12, zoneAssign:'', prefStation:'', linkedId:null
+    });
+  }
+  BENEVOLES=arr;
+  try{ if(typeof reactiveUpdate==='function') reactiveUpdate(); }catch(e){}
+  try{ if(typeof syncBenevolesToFirebase==='function') syncBenevolesToFirebase(); }catch(e){}
+  console.log('✅ 20 bénévoles test ajoutés (Journée J1+J2)');
+}
+setTimeout(seedBenevolesTest, 1200);
+setTimeout(seedBenevolesTest, 4000);
 var DEFAULT_BENEVOLES_SEED=JSON.parse(JSON.stringify(BENEVOLES));
 var DEFAULT_BENEVOLES_BY_ID={};
 var DEFAULT_REAL_JUDGE_ROSTER=(function(){

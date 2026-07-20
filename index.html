@@ -17,7 +17,11 @@
     if(!Db || !Db.ref) return;
     var _ref = Db.ref;
     Db.ref = function(p){
-      var path = (p==null || p==='') ? 'hyrox' : ('hyrox/' + String(p).replace(/^\/+/, ''));
+      var s = (p==null) ? '' : String(p).replace(/^\/+/, '');
+      // ★ Les chemins réservés Firebase (.info/connected, .info/serverTimeOffset…)
+      //   ne doivent JAMAIS être préfixés — sinon "hyrox/.info/..." = chemin invalide → crash.
+      if(s.indexOf('.info')===0 || s.indexOf('.info/')>=0){ return _ref.call(this, s); }
+      var path = (s==='') ? 'hyrox' : ('hyrox/' + s);
       return _ref.call(this, path);
     };
     firebase.database.__hyroxPatched = true;
@@ -866,7 +870,8 @@ function checkPassword(){
       <span id="save-indicator"></span>
       
       
-      <button class="btn btn-dark" onclick="fbClear()" style="background:rgba(211,47,47,.15);color:#EF5350;border-color:rgba(211,47,47,.3)" title="Purge totale Firebase : efface tout sur le cloud puis repush tes données locales actuelles">🗑 Firebase</button>
+      <!-- Bouton 🗑 Firebase (purge totale) retiré de l'accueil — risque d'accident + protection Delta -->
+
       <button onclick="deconnexion()" title="Déconnexion" style="padding:7px 14px;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:12px;font-weight:700;cursor:pointer">🚪 Quitter</button>
       <button id="gen-btn" onclick="generateAndPublishAll()" style="padding:8px 20px;border:1.5px solid rgba(255,255,255,0.6);border-radius:10px;background:rgba(255,255,255,0.15);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;font-weight:900;font-size:13px;cursor:pointer;letter-spacing:.3px;box-shadow:0 2px 12px rgba(0,0,0,.15);transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">🚀 Générer & Publier</button>
     </div>

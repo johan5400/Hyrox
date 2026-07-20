@@ -33,6 +33,19 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .empty{text-align:center;color:var(--ink2);padding:24px;font-size:12px}
 .badge{font-size:9px;font-weight:900;border-radius:5px;padding:1px 6px;border:1px solid}
 .foot{text-align:center;font-size:10px;color:var(--ink2);font-weight:700;margin-top:18px}
+/* ── Visuels course (pastilles stations, run, damier) ── */
+.segs{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.seg-dot{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:6px;font-size:9px;font-weight:900;padding:0 4px;border:1.5px solid #334155;color:#64748B;background:#0b1220}
+.seg-dot.done{background:#10B981;border-color:#10B981;color:#03170e}
+.seg-dot.cur{background:#F59E0B;border-color:#FCD34D;color:#1a1205;box-shadow:0 0 0 2px #F59E0B55}
+.seg-run{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:900;color:#93C5FD;background:#1e3a8a44;border:1.5px solid #3B82F6;border-radius:6px;padding:0 6px;height:20px}
+.seg-run.active{animation:runblink .8s ease-in-out infinite}
+@keyframes runblink{0%,100%{background:#1e3a8a44;color:#93C5FD}50%{background:#3B82F6;color:#fff;box-shadow:0 0 8px #3B82F6}}
+.repnow{font-size:10px;font-weight:900;color:#FCD34D;margin-left:2px}
+.flag{display:inline-block;width:15px;height:15px;vertical-align:middle;margin-right:4px;
+  background-image:linear-gradient(45deg,#111 25%,transparent 25%),linear-gradient(-45deg,#111 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#111 75%),linear-gradient(-45deg,transparent 75%,#111 75%);
+  background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0px;background-color:#fff;border-radius:2px;border:1px solid #999}
+.fin-score{font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px}
 </style>
 </head>
 <body>
@@ -71,6 +84,58 @@ function fmt(ms){
   return (h?h+':':'')+('0'+m).slice(-2)+':'+('0'+sec).slice(-2);
 }
 function nSegments(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';}).length; }
+
+// ── Où en est une équipe : segments faits, segment en cours, reps en direct ──
+function courseState(id){
+  var segs=((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';});
+  var p=prog(id); var pst=(p&&p.stations)||{};
+  var out=[]; var curLabel=null; var runActive=false; var repNow=null; var stIndexInStations=0;
+  var stationsTotal=segs.filter(function(s){return s.seg==='station';}).length;
+  for(var k=0;k<segs.length;k++){
+    var s=segs[k]; var rec=pst[s.idx]; var done=!!(rec&&rec.done);
+    if(s.seg==='station'){
+      stIndexInStations++;
+      out.push({type:'station',num:stIndexInStations,done:done,idx:s.idx,nom:s.nom});
+    } else {
+      out.push({type:'run',done:done,idx:s.idx});
+    }
+  }
+  // segment "en cours" = premier non-fini ; run actif s'il suit une station finie et précède une station non finie
+  var curPos=-1;
+  for(var i=0;i<out.length;i++){ if(!out[i].done){ curPos=i; break; } }
+  if(curPos>=0){
+    var seg=out[curPos];
+    if(seg.type==='run'){ runActive=true; }
+    else {
+      seg.current=true;
+      // reps en cours sur cette station (val écrit par le juge)
+      var rec2=pst[seg.idx];
+      if(rec2 && rec2.val!=null){
+        var target=null;
+        var sdef=segs.find(function(x){return x.idx===seg.idx;});
+        if(sdef){ var q=(sdef.qtyParCat&&WAVEcat(id)!=null&&sdef.qtyParCat[String(WAVEcat(id))]!=null)?sdef.qtyParCat[String(WAVEcat(id))]:sdef.qty; target=parseFloat(q)||null; }
+        repNow={val:rec2.val, target:target, nom:seg.nom};
+      }
+    }
+  }
+  return {segs:out, runActive:runActive, repNow:repNow, stationsTotal:stationsTotal};
+}
+function WAVEcat(id){ var w=Object.values(WAVES).find(function(w){return (w.athletes||[]).some(function(a){return a.id===id;});}); return w?w.catId:null; }
+
+// ── DÉPART AUTOMATIQUE : le live surveille l'heure et lance les vagues à schedAt ──
+var _autoFired={};
+setInterval(function(){
+  if(!CFG || !CFG.autoStart) return;
+  var t=now();
+  Object.keys(WAVES||{}).forEach(function(k){
+    var w=WAVES[k]; if(!w||w.startAt||!w.schedAt) return;      // déjà partie ou pas d'heure planifiée
+    if(_autoFired[k]) return;                                   // déjà déclenchée localement
+    if(t >= w.schedAt && t - w.schedAt < 5*60000){              // heure atteinte (fenêtre 5 min anti-rattrapage massif)
+      _autoFired[k]=true;
+      db.ref(R+'/waves/'+k+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+    }
+  });
+},1000);
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
 function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
@@ -141,19 +206,34 @@ function render(){
     d.finished.forEach(function(t,i){
       var r=i+1;
       var open=!t.p.dnf && EXPANDED[t.id];
+      var flag=t.p.dnf?'':'<span class="flag" title="Arrivée"></span>';
       rows+='<div class="row"'+(t.p.dnf?'':' style="cursor:pointer" onclick="toggleSplits(\''+t.id+'\')"')+'><div class="rank'+(r<=3&&!t.p.dnf?' r'+r:'')+'">'+(t.p.dnf?'—':r)+'</div>'
-        +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+(t.p.dnf?'':' · touche pour le détail')+'</div></div>'
+        +'<div class="nom">'+flag+t.nom+'<div class="sub">vague '+t.waveNum+(t.p.dnf?'':' · terminé · touche pour le détail')+'</div>'
+        +(t.p.dnf?'':'<div class="fin-score">'+doneCount(t.id)+'/'+nStations()+' stations validées'+(penMs(t.id)?' · pénalité +'+Math.round(penMs(t.id)/1000)+'s':'')+'</div>')
+        +'</div>'
         +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(offMs(t.id,t.p))+(penMs(t.id)?'<span style="font-size:9px;color:#F87171;font-weight:900"> +pén.</span>':'')+' <span style="opacity:.45;font-size:10px">'+(open?'▲':'▼')+'</span></span>')
         +'</div>';
       if(open) rows+=splitsHTML(t.p);
     });
     d.running.forEach(function(t){
       var pct=total?Math.round(t.done/total*100):0;
-      rows+='<div class="row" style="border-left:3px solid '+d.couleur+'"><div class="rank">🏃</div>'
-        +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+' · '+t.done+'/'+total+' segments</div></div>'
-        +'<div class="pbar"><div style="width:'+pct+'%;background:linear-gradient(90deg,'+d.couleur+',#10B981)"></div></div>'
-        +'<div class="pct">'+pct+'%</div>'
-        +'<span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span>'
+      var cs=courseState(t.id);
+      var dots=cs.segs.map(function(sg){
+        if(sg.type==='run'){
+          var act=cs.runActive && !sg.done && cs.segs.filter(function(x){return x.type==='run'&&!x.done;})[0]===sg;
+          return '<span class="seg-run'+(act?' active':'')+'">🏃'+(act?' RUN':'')+'</span>';
+        }
+        return '<span class="seg-dot'+(sg.done?' done':(sg.current?' cur':''))+'">'+sg.num+'</span>';
+      }).join('');
+      var repTxt='';
+      if(cs.repNow){ repTxt='<span class="repnow">'+cs.repNow.val+(cs.repNow.target?('/'+cs.repNow.target):'')+' '+(cs.repNow.nom||'')+'</span>'; }
+      rows+='<div class="row" style="border-left:3px solid '+d.couleur+';flex-wrap:wrap">'
+        +'<div class="rank">'+(cs.runActive?'🏃':'🏋️')+'</div>'
+        +'<div class="nom" style="flex:1">'+t.nom
+          +'<div class="sub">vague '+t.waveNum+' · '+t.done+'/'+cs.stationsTotal+' stations'+repTxt+'</div>'
+          +'<div class="segs">'+dots+'</div>'
+        +'</div>'
+        +'<span class="chrono" data-start="'+t.startAt+'" style="align-self:flex-start">'+fmt(now()-t.startAt)+'</span>'
         +'</div>';
     });
     return '<div class="card"><h2><span class="badge" style="color:'+d.couleur+';border-color:'+d.couleur+'55;background:'+d.couleur+'22">'+d.nom+'</span>'
@@ -184,6 +264,20 @@ setInterval(function(){
 <script>
 /* ★ offline : cache des apps via service worker (sw.js) */
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
+
+/* ── ANTI-VEILLE : l'écran géant ne doit JAMAIS s'endormir (départs auto) ── */
+(function(){
+  var wl=null;
+  function acquire(){
+    if('wakeLock' in navigator){
+      navigator.wakeLock.request('screen').then(function(l){ wl=l; l.addEventListener('release',function(){ wl=null; }); }).catch(function(){});
+    }
+  }
+  acquire();
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') acquire(); });
+  // Réacquisition périodique (certains navigateurs relâchent)
+  setInterval(acquire, 30000);
+})();
 </script>
 </body>
 </html>

@@ -1209,6 +1209,10 @@ function checkPassword(){
   <!-- ── PLANNING VAGUES ── -->
   <div style="background:#fff;border:1px solid var(--brd2);border-radius:14px;padding:14px;margin-bottom:16px">
     <div style="font-size:11px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📅 Horaire des vagues</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+      <button onclick="calageDeparts()" style="padding:8px 16px;border:none;border-radius:9px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">⏱ Caler les départs (zéro conflit)</button>
+      <span style="font-size:10px;color:var(--ink3);font-weight:600">Réécrit les heures bout à bout — une seule zone, jamais 2 vagues en même temps.</span>
+    </div>
     <div id="hx-waves"></div>
   </div>
 
@@ -23231,7 +23235,7 @@ function exportClassementCSV(){
    hyroxCapMinutes = time cap réel de la course (pour juge/live à venir)
    ═══════════════════════════════════════════════════════════════ */
 var HYROX_CFG = (function(){
-  var d={startJ1:'09:00',startJ2:'09:00',interval:20,cap:100,slots:5,autoStart:false};
+  var d={startJ1:'09:00',startJ2:'09:00',interval:3,cap:100,slots:2,autoStart:false};
   try { return Object.assign(d, JSON.parse(localStorage.getItem('hyrox-cfg')||'{}')); } catch(e){ return d; }
 })();
 
@@ -23309,6 +23313,34 @@ function syncHyroxEngineCats(){
 }
 
 /* ── Horaire des vagues (calcul autonome : start + k×intervalle par jour) ── */
+function calageDeparts(){
+  if(!confirm('⏱ Caler tous les départs bout à bout ?\n\nLes divisions gardent leur ORDRE actuel (par heure puis nom), mais leurs heures sont réécrites pour qu\'AUCUNE vague ne parte en même temps qu\'une autre (une seule zone de départ).\n\nIntervalle appliqué entre chaque vague : '+(HYROX_CFG.interval||10)+' min.')) return;
+  var iv=HYROX_CFG.interval||10;
+  [1,2].forEach(function(day){
+    // divisions du jour, dans l'ordre voulu : heure actuelle puis ordre puis nom
+    var cats=(CATEGORIES||[]).filter(function(c){return (c.jour||1)===day;});
+    cats.sort(function(a,b){
+      var ma=_hxStartMin(a), mb=_hxStartMin(b);
+      return ma-mb || (a.ordre||99)-(b.ordre||99) || String(a.nom||'').localeCompare(String(b.nom||''));
+    });
+    if(!cats.length) return;
+    // point de départ du jour = heure de la 1ère division (ou hx-start-jX)
+    var startEl=document.getElementById('hx-start-j'+day);
+    var cur=_hxStartMin(cats[0]);
+    if(startEl && startEl.value){ var s=startEl.value.split(':'); cur=(parseInt(s[0],10)||8)*60+(parseInt(s[1],10)||0); }
+    cats.forEach(function(c){
+      c.hxStart=('0'+Math.floor(cur/60)).slice(-2)+':'+('0'+(cur%60)).slice(-2);
+      var nW=(typeof hyroxWaveCount==='function')?hyroxWaveCount(c):1;
+      cur += Math.max(1,nW)*iv; // on réserve le temps de TOUTES les vagues de la division
+    });
+  });
+  if(typeof autoSave==='function') autoSave();
+  if(typeof renderCategories==='function') renderCategories();
+  renderHyroxWaves();
+  if(typeof toast==='function') toast('✅ Départs calés — aucun conflit','#059669');
+}
+function _hxStartMin(c){ var t=(c.hxStart||'08:00').split(':'); return (parseInt(t[0],10)||8)*60+(parseInt(t[1],10)||0); }
+
 function renderHyroxWaves(){
   var el = document.getElementById('hx-waves'); if(!el) return;
   var html='';
@@ -23885,7 +23917,7 @@ function buildHyroxDivisions(){
   // Départs décalés bout-à-bout : 10 équipes ÷ 5 slots = 2 vagues/cat,
   // donc +40 min entre catégories → flux continu à 20 min dès 09:00.
   var defs=[
-    [1001,'Open Hommes',   '#E8421A',1,1,'09:00','OH'],
+    [1001,'Open Hommes',   '#E8421A',1,1,'23:30','OH'],
     [1002,'Open Femmes',   '#C62828',2,1,'09:40','OF'],
     [1005,'Doubles Hommes','#1D6DB5',3,1,'10:20','DH'],
     [1006,'Doubles Femmes','#0891B2',4,1,'11:00','DF'],

@@ -90,6 +90,34 @@ db.ref(R+'/config').on('value',function(s){ CFG=s.val()||{}; render();
   document.getElementById('foot').textContent=(CFG.nom||'HYROX')+' · intervalle '+(CFG.interval||10)+' min · cap '+(CFG.capMinutes||100)+' min'; });
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
 
+/* ── DÉPART AUTOMATIQUE — le TK est le MAÎTRE ──
+   Surveille l'heure serveur (now, calé) et lance chaque vague à son heure planifiée,
+   sans intervention. Visible ensuite sur le live. Ne dépend d'aucun autre appareil.
+   Utilise schedAt si les dates J1/J2 sont saisies, sinon l'heure du jour depuis w.time. */
+var _autoFired={};
+function _schedForWave(w){
+  if(w.schedAt) return w.schedAt;
+  if(!w.time) return null;
+  var p=String(w.time).split(':'); if(p.length<2) return null;
+  var d=new Date(now());
+  d.setHours(parseInt(p[0],10)||0, parseInt(p[1],10)||0, 0, 0);
+  return d.getTime();
+}
+setInterval(function(){
+  if(!CFG || !CFG.autoStart) return;
+  var t=now();
+  Object.keys(WAVES||{}).forEach(function(k){
+    var w=WAVES[k]; if(!w || w.startAt) return;      // déjà lancée
+    if(_autoFired[k]) return;
+    var sched=_schedForWave(w); if(sched==null) return;
+    if(t >= sched && (t - sched) < 10*60000){
+      _autoFired[k]=true;
+      db.ref(R+'/waves/'+k+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+      try{ console.log('🚀 TK — départ AUTO vague '+w.num+' ('+w.catNom+') à '+w.time); }catch(e){}
+    }
+  });
+},1000);
+
 function setDay(d){ DAY=d;
   document.getElementById('d1').className='day-btn'+(d===1?' on':'');
   document.getElementById('d2').className='day-btn'+(d===2?' on':'');

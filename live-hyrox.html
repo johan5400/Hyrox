@@ -121,21 +121,6 @@ function courseState(id){
   return {segs:out, runActive:runActive, repNow:repNow, stationsTotal:stationsTotal};
 }
 function WAVEcat(id){ var w=Object.values(WAVES).find(function(w){return (w.athletes||[]).some(function(a){return a.id===id;});}); return w?w.catId:null; }
-
-// ── DÉPART AUTOMATIQUE : le live surveille l'heure et lance les vagues à schedAt ──
-var _autoFired={};
-setInterval(function(){
-  if(!CFG || !CFG.autoStart) return;
-  var t=now();
-  Object.keys(WAVES||{}).forEach(function(k){
-    var w=WAVES[k]; if(!w||w.startAt||!w.schedAt) return;      // déjà partie ou pas d'heure planifiée
-    if(_autoFired[k]) return;                                   // déjà déclenchée localement
-    if(t >= w.schedAt && t - w.schedAt < 5*60000){              // heure atteinte (fenêtre 5 min anti-rattrapage massif)
-      _autoFired[k]=true;
-      db.ref(R+'/waves/'+k+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
-    }
-  });
-},1000);
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
 function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
@@ -250,16 +235,8 @@ setInterval(function(){
   });
 },500);
 
-/* Départs automatiques (si activés côté admin) — valeur déterministe = schedAt */
-setInterval(function(){
-  if(!CFG||!CFG.autoStart) return;
-  if(!((TK[1]&&TK[1].startAt)||(TK[2]&&TK[2].startAt))) return;
-  Object.values(WAVES||{}).forEach(function(w){
-    if(!w.startAt && w.schedAt && now()>=w.schedAt){
-      db.ref(R+'/waves/'+w.key+'/startAt').set(w.schedAt);
-    }
-  });
-},3000);
+/* Le départ automatique des vagues est piloté par le TK (appareil maître).
+   Le live ne fait qu'AFFICHER l'état de la course en temps réel. */
 </script>
 <script>
 /* ★ offline : cache des apps via service worker (sw.js) */

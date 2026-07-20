@@ -112,11 +112,17 @@ setInterval(function(){
     var sched=_schedForWave(w); if(sched==null) return;
     if(t >= sched && (t - sched) < 10*60000){
       _autoFired[k]=true;
+      // ★ La 1ère vague qui part lance aussi le CHRONO GÉNÉRAL du jour (s'il ne tourne pas déjà)
+      var wDay=w.jour||1;
+      if(!(TK[wDay]&&TK[wDay].startAt)){
+        db.ref(R+'/tk/'+wDay+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+        try{ console.log('⏱ TK — chrono général J'+wDay+' lancé (1ère vague auto)'); }catch(e){}
+      }
       db.ref(R+'/waves/'+k+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
       try{ console.log('🚀 TK — départ AUTO vague '+w.num+' ('+w.catNom+') à '+w.time); }catch(e){}
     }
   });
-},1000);
+},200);
 
 function setDay(d){ DAY=d;
   document.getElementById('d1').className='day-btn'+(d===1?' on':'');
@@ -131,8 +137,12 @@ function fmt(ms){
 
 function launch(key){
   var w=WAVES[key]; if(!w) return;
-  if(!tkStart()){ alert('⏸ Lance d\'abord le CHRONO GÉNÉRAL du jour.'); return; }
   if(!confirm('🚀 Lancer la vague '+w.num+' — '+w.catNom+' ('+w.time+') ?')) return;
+  // ★ Lance le chrono général du jour s'il ne tourne pas encore
+  var wDay=w.jour||DAY;
+  if(!(TK[wDay]&&TK[wDay].startAt)){
+    db.ref(R+'/tk/'+wDay+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+  }
   db.ref(R+'/waves/'+key+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
 }
 function cancelLaunch(key){

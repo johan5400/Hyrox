@@ -203,8 +203,30 @@ function save(done){
   });
   db.ref(R+'/progress/'+CUR.teamId+'/waveKey').set(CUR.waveKey);
 }
+// ── Ordre imposé : la station précédente doit être validée pour cette équipe ──
+function prevStationIdx(stationIdx){
+  // stations Hyrox (pas les runs) qui précèdent, la plus proche
+  var sts=((CFG&&CFG.stations)||[]).filter(function(s){return s.seg==='station'&&s.idx<stationIdx;});
+  if(!sts.length) return null;
+  sts.sort(function(a,b){return a.idx-b.idx;});
+  return sts[sts.length-1].idx;
+}
+function prevStationOk(teamId, stationIdx){
+  var pIdx=prevStationIdx(stationIdx);
+  if(pIdx==null) return true;                 // 1ère station : rien avant
+  var p=teamProg(teamId);
+  return !!(p.stations && p.stations[pIdx] && p.stations[pIdx].done);
+}
+
 function validate(){
   var st=stationByIdx(MY_STATION);
+  // ★ Blocage ordre : la station précédente doit être validée pour cette équipe
+  if(!prevStationOk(CUR.teamId, MY_STATION)){
+    var pIdx=prevStationIdx(MY_STATION);
+    var pSt=stationByIdx(pIdx)||{};
+    alert('⛔ Station précédente non validée\n\n'+CUR.nom+' n\'a pas encore validé « '+(pSt.nom||'station précédente')+' ».\n\nCette équipe ne peut pas valider cette station tant que la précédente n\'est pas faite. Vérifie qu\'elle est bien passée dans l\'ordre.');
+    return;
+  }
   COUNT=stTarget(st,catIdOf(CUR.waveKey));
   save(true);
   if(navigator.vibrate) navigator.vibrate([40,60,40]);

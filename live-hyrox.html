@@ -55,9 +55,9 @@ var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, pa
 db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
 var PEN={};
 db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; render(); });
-function penMs(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return (parseInt(e.sec,10)||0)*1000;
-  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=(parseInt(v.sec,10)||0)*1000; }); return t; }
-function offMs(id,p){ return (p&&p.officialMs!=null)?p.officialMs+penMs(id):null; }
+function penMs(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return Math.max(0,parseInt(e.sec,10)||0)*1000;
+  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=Math.max(0,parseInt(v.sec,10)||0)*1000; }); return t; }
+function offMs(id,p){ if(!p||p.officialMs==null) return null; var o=parseInt(p.officialMs,10); return isNaN(o)?null:Math.max(0,o)+penMs(id); }
 function now(){ return Date.now()+OFFSET+ADJ; }
 var TK={};
 db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; });
@@ -73,7 +73,7 @@ function fmt(ms){
 function nSegments(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';}).length; }
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
-function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done&&!x.auto;}).length:0; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
 
 var EXPANDED={};
 function toggleSplits(id){ EXPANDED[id]=!EXPANDED[id]; render(); }

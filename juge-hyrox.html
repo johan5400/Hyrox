@@ -96,8 +96,8 @@ var PEN={},WARN={};
 db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; if(SCREEN==='counter') render(); });
 db.ref(R+'/warnings').on('value',function(s){ WARN=s.val()||{}; if(SCREEN==='counter') render(); });
 function warnCount(id){ var w=WARN[id]; return w?Object.keys(w).length:0; }
-function penTotal(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return parseInt(e.sec,10)||0;
-  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=parseInt(v.sec,10)||0; }); return t; }
+function penTotal(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return Math.max(0,parseInt(e.sec,10)||0);
+  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=Math.max(0,parseInt(v.sec,10)||0); }); return t; }
 db.ref(R+'/judgeByBen').on('value',function(s){ JBYBEN=s.val()||{}; applyAssignment(); });
 
 // Verrouille le juge identifié (?ben=) sur sa station affectée DU JOUR — comme Delta
@@ -254,7 +254,7 @@ function render(){
     var teams=runningTeams().filter(function(t){ return !stDone(t.teamId,MY_STATION); })
       .sort(function(a,b){ return a.waveNum-b.waveNum || a.nom.localeCompare(b.nom); });
     el.innerHTML = teams.length ? teams.map(function(t){
-      var p=teamProg(t.teamId); var nDone=p.stations?Object.values(p.stations).filter(function(x){return x.done&&!x.auto;}).length:0;
+      var p=teamProg(t.teamId); var nDone=p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0;
       return '<div class="tile team" style="border-left-color:'+t.couleur+'" onclick="pickTeam(\''+t.waveKey+'\',\''+t.teamId+'\')">'
         +'<div class="n">'+t.nom+'<div class="s">Vague '+t.waveNum+' · '+nDone+'/'+stations().length+' stations · ⏱ '+fmt(now()-t.startAt)+'</div></div>'
         +'<span class="badge" style="color:'+t.couleur+';border-color:'+t.couleur+'55;background:'+t.couleur+'22">'+t.catNom+'</span>'
@@ -329,6 +329,7 @@ function giveCustomPenalty(){
 }
 function givePenalty(sec,motif){
   if(!CUR) return;
+  sec=Math.max(0,parseInt(sec,10)||0); if(!sec) return;
   if(!confirm('⏱ Pénalité +'+sec+'s pour '+CUR.nom+' ?\n'+motif)) return;
   db.ref(R+'/penalties/'+CUR.teamId).push({sec:sec,motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:BEN||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
   SCREEN='counter'; render();

@@ -62,7 +62,7 @@ db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); })
 
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
-function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done&&!x.auto;}).length:0; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
 
 function fmt(ms){
   if(ms==null||ms<0) return '—';

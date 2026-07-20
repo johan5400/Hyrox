@@ -17683,8 +17683,9 @@ function _hxTot(ms){
 }
 
 function _hxClaStatus(t){
+  if(!t) return {txt:'—', col:'#94A3B8', bg:'#F1F5F9'};
   if(t.dnf) return {txt:'DNF', col:'#DC2626', bg:'#FEE2E2'};
-  if(t.finished && t.officialMs) return null;
+  if(t.finished && typeof t.officialMs==='number' && !isNaN(t.officialMs) && t.officialMs>0) return null;
   return {txt:'en course', col:'#B45309', bg:'#FEF3C7'};
 }
 
@@ -17704,11 +17705,11 @@ async function renderHyroxClassement(){
   var html='';
   keys.forEach(function(k){
     var c=D.cats[k]; var col=(typeof c.couleur==='string'&&/^#|^rgb/i.test(c.couleur))?c.couleur:'#E85D04';
-    var rk=c.ranked||[];
+    var rk=Array.isArray(c.ranked)?c.ranked:[];
     html+='<div style="background:#fff;border:1px solid var(--brd2);border-radius:12px;overflow:hidden;margin-bottom:14px">'
       +'<div style="background:'+col+'14;border-bottom:2px solid '+col+';padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
         +'<span style="width:11px;height:11px;border-radius:3px;background:'+col+'"></span>'
-        +'<span style="font-size:14px;font-weight:900;color:var(--ink)">'+_anEsc(c.nom)+'</span>'
+        +'<span style="font-size:14px;font-weight:900;color:var(--ink)">'+_anEsc(typeof c.nom==='string'?c.nom:'')+'</span>'
         +'<span style="font-size:11px;color:var(--ink3);font-weight:700;margin-left:auto">'+(c.nFinished||0)+'/'+(c.nTeams||0)+' arrivé'+((c.nFinished||0)>1?'s':'')+'</span>'
       +'</div>';
     if(!rk.length){ html+='<div style="padding:14px;color:var(--ink3);font-size:12px">Aucun athlète.</div></div>'; return; }
@@ -17721,11 +17722,19 @@ async function renderHyroxClassement(){
       +'<th style="background:#0F172A;color:#fff;padding:6px 8px;text-align:right;width:80px">Écart</th>'
       +'<th style="background:#0F172A;color:#fff;padding:6px 8px;text-align:center;width:56px">Pén.</th>'
       +'</tr></thead><tbody>';
-    var best=rk.find(function(t){return t.finished&&!t.dnf&&t.officialMs;});
+    var best=rk.find(function(t){return t&&t.finished&&!t.dnf&&typeof t.officialMs==='number'&&t.officialMs>0;});
     var bestMs=best?best.officialMs:null;
     rk.forEach(function(t,i){
+      if(!t||typeof t!=='object') return;
+      if(typeof t.nom!=='string'){ t.nom=(t.nom==null||typeof t.nom==='object'||(typeof t.nom==='number'&&isNaN(t.nom)))?'':String(t.nom); }
+      if(typeof t.penMotif!=='string') t.penMotif='';
+      if(typeof t.rank!=='number'||isNaN(t.rank)) t.rank=null;
+      if(typeof t.waveNum!=='number'||isNaN(t.waveNum)) t.waveNum=null;
+      if(typeof t.penSec!=='number'||isNaN(t.penSec)||t.penSec<0) t.penSec=0;
+      if(typeof t.warnCount!=='number'||isNaN(t.warnCount)||t.warnCount<0) t.warnCount=0;
+      if(typeof t.officialMs!=='number'||isNaN(t.officialMs)) t.officialMs=null;
       var st=_hxClaStatus(t);
-      var medal=(!st&&t.rank<=3)?['🥇','🥈','🥉'][t.rank-1]:'';
+      var medal=(!st&&t.rank&&t.rank<=3)?['🥇','🥈','🥉'][t.rank-1]:'';
       var gap=(!st&&bestMs&&t.officialMs>bestMs)?('+'+_hxTot(t.officialMs-bestMs)):(!st&&t.rank===1?'—':'');
       html+='<tr style="background:'+(i%2?'#F8FAFC':'#fff')+';border-bottom:1px solid #F1F5F9">'
         +'<td style="padding:6px 8px;text-align:center;font-weight:900;color:'+(st?'#94A3B8':col)+'">'+(st?'—':(medal||t.rank))+'</td>'
@@ -17735,7 +17744,7 @@ async function renderHyroxClassement(){
           +(st?'<span style="font-size:10px;font-weight:800;color:'+st.col+';background:'+st.bg+';border-radius:5px;padding:2px 7px">'+st.txt+'</span>':_hxTot(t.officialMs)+(t.penSec?'<div style="font-size:9px;font-weight:800;color:#DC2626">+'+_hxTot(t.penSec*1000)+' pén.</div>':''))+'</td>'
         +'<td style="padding:6px 8px;text-align:right;color:var(--ink3);font-weight:700;font-variant-numeric:tabular-nums">'+gap+'</td>'
         +'<td style="padding:6px 8px;text-align:center">'
-          +'<button onclick="openHyroxPenalty('+JSON.stringify(String(t.id))+','+JSON.stringify(String(t.nom||''))+','+(t.penSec||0)+','+JSON.stringify(String(t.penMotif||''))+')" title="Ajouter / modifier une pénalité" style="background:'+(t.penSec?'#FEE2E2':'#F1F5F9')+';border:1px solid '+(t.penSec?'#FCA5A5':'#E2E8F0')+';color:'+(t.penSec?'#DC2626':'#64748B')+';border-radius:6px;padding:3px 8px;font-size:10px;font-weight:800;cursor:pointer;font-family:inherit">'+(t.penSec?'+'+t.penSec+'s':'+')+'</button>'
+          +((t.id==null)?'<span style="color:#CBD5E1">—</span>':'<button onclick="openHyroxPenalty('+JSON.stringify(String(t.id))+','+JSON.stringify(String(t.nom||''))+','+(t.penSec||0)+','+JSON.stringify(String(t.penMotif||''))+')" title="Ajouter / modifier une pénalité" style="background:'+(t.penSec?'#FEE2E2':'#F1F5F9')+';border:1px solid '+(t.penSec?'#FCA5A5':'#E2E8F0')+';color:'+(t.penSec?'#DC2626':'#64748B')+';border-radius:6px;padding:3px 8px;font-size:10px;font-weight:800;cursor:pointer;font-family:inherit">'+(t.penSec?'+'+t.penSec+'s':'+')+'</button>')
         +'</td>'
         +'</tr>';
     });
@@ -17799,6 +17808,7 @@ function _penClear(){
 }
 
 function saveHyroxPenalty(athId, sec, motif){
+  sec=Math.max(0,parseInt(sec,10)||0);
   var _db=window.db||null;
   if(!_db){ toast('Firebase indisponible','#D32F2F'); return; }
   var ref=_db.ref('race/penalties/'+athId);
@@ -17855,22 +17865,23 @@ async function buildHyroxDebrief(){
   var warnings=(await _db.ref('race/warnings').once('value')).val()||{};
   function _penInfo(id){
     var e=penalties[id]; if(!e) return {sec:0,motifs:''};
-    if(e.sec!=null) return {sec:parseInt(e.sec,10)||0, motifs:e.motif||''};
+    if(e.sec!=null) return {sec:Math.max(0,parseInt(e.sec,10)||0), motifs:(typeof e.motif==='string'?e.motif:'')};
     var t=0,ms=[];
-    Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null){ t+=parseInt(v.sec,10)||0; if(v.motif) ms.push(v.motif); } });
+    Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null){ t+=Math.max(0,parseInt(v.sec,10)||0); if(typeof v.motif==='string'&&v.motif) ms.push(v.motif); } });
     return {sec:t, motifs:ms.join(' + ')};
   }
   var def=(((typeof hyroxWod==='function'&&hyroxWod())||{}).mouvements)||[];
-  var segIdx=[]; def.forEach(function(s,i){ if(s.hyroxSeg==='run'||s.hyroxSeg==='station') segIdx.push({i:i,seg:s.hyroxSeg,nom:s.nom||(s.hyroxSeg==='run'?'Run':'Station')}); });
+  var segIdx=[]; def.forEach(function(s,i){ if(s&&(s.hyroxSeg==='run'||s.hyroxSeg==='station')) segIdx.push({i:i,seg:s.hyroxSeg,nom:s.nom||(s.hyroxSeg==='run'?'Run':'Station')}); });
   var cats={};
   Object.keys(waves).forEach(function(wk){
     var w=waves[wk]; if(!w||!w.catId) return; var key=String(w.catId);
     if(!cats[key]) cats[key]={id:w.catId,nom:w.catNom||('Cat '+w.catId),couleur:w.couleur||'#E85D04',teams:[]};
-    (w.athletes||[]).forEach(function(a){
+    (Array.isArray(w.athletes)?w.athletes:[]).forEach(function(a){
+      if(!a||a.id==null) return;
       var p=progress[a.id]||{}; var splits=[],prev=0;
       segIdx.forEach(function(sd){ var st=p.stations&&p.stations[sd.i]; var ms=(st&&st.elapsedMs!=null)?Math.max(0,st.elapsedMs-prev):null; if(st&&st.elapsedMs!=null) prev=st.elapsedMs; splits.push({seg:sd.seg,nom:sd.nom,ms:ms}); });
       var _pi=_penInfo(a.id);
-      var _raw=(p.officialMs||null);
+      var _raw=(p&&p.officialMs!=null)?parseInt(p.officialMs,10):null; if(isNaN(_raw)) _raw=null; if(_raw!=null&&_raw<0) _raw=0;
       var _wc=warnings[a.id]?Object.keys(warnings[a.id]).length:0;
       cats[key].teams.push({id:a.id,nom:a.nom,waveNum:w.num,
         rawMs:_raw, penSec:_pi.sec, penMotif:_pi.motifs, warnCount:_wc,

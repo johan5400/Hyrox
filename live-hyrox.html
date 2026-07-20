@@ -51,7 +51,14 @@ var R='hyrox/race';
 
 var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0, FILTER='all';
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-function now(){ return Date.now()+OFFSET; }
+var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
+var PEN={};
+db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; render(); });
+function penMs(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return (parseInt(e.sec,10)||0)*1000;
+  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=(parseInt(v.sec,10)||0)*1000; }); return t; }
+function offMs(id,p){ return (p&&p.officialMs!=null)?p.officialMs+penMs(id):null; }
+function now(){ return Date.now()+OFFSET+ADJ; }
 var TK={};
 db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; });
 db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
@@ -66,7 +73,7 @@ function fmt(ms){
 function nSegments(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';}).length; }
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
-function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done&&!x.auto;}).length:0; }
 
 var EXPANDED={};
 function toggleSplits(id){ EXPANDED[id]=!EXPANDED[id]; render(); }
@@ -128,7 +135,7 @@ function render(){
 
   grid.innerHTML=keys.map(function(k){
     var d=byDiv[k];
-    d.finished.sort(function(a,b){ return (a.p.dnf?9e13:(a.p.officialMs||9e12))-(b.p.dnf?9e13:(b.p.officialMs||9e12)); });
+    d.finished.sort(function(a,b){ return (a.p.dnf?9e13:(offMs(a.id,a.p)||9e12))-(b.p.dnf?9e13:(offMs(b.id,b.p)||9e12)); });
     d.running.sort(function(a,b){ return b.done-a.done || a.waveNum-b.waveNum; });
     var rows='';
     d.finished.forEach(function(t,i){
@@ -136,7 +143,7 @@ function render(){
       var open=!t.p.dnf && EXPANDED[t.id];
       rows+='<div class="row"'+(t.p.dnf?'':' style="cursor:pointer" onclick="toggleSplits(\''+t.id+'\')"')+'><div class="rank'+(r<=3&&!t.p.dnf?' r'+r:'')+'">'+(t.p.dnf?'—':r)+'</div>'
         +'<div class="nom">'+t.nom+'<div class="sub">vague '+t.waveNum+(t.p.dnf?'':' · touche pour le détail')+'</div></div>'
-        +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(t.p.officialMs)+' <span style="opacity:.45;font-size:10px">'+(open?'▲':'▼')+'</span></span>')
+        +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(offMs(t.id,t.p))+(penMs(t.id)?'<span style="font-size:9px;color:#F87171;font-weight:900"> +pén.</span>':'')+' <span style="opacity:.45;font-size:10px">'+(open?'▲':'▼')+'</span></span>')
         +'</div>';
       if(open) rows+=splitsHTML(t.p);
     });
@@ -173,6 +180,10 @@ setInterval(function(){
     }
   });
 },3000);
+</script>
+<script>
+/* ★ offline : cache des apps via service worker (sw.js) */
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 </script>
 </body>
 </html>

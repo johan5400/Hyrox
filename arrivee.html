@@ -51,7 +51,9 @@ var R='hyrox/race';
 
 var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-function now(){ return Date.now()+OFFSET; }
+var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
+function now(){ return Date.now()+OFFSET+ADJ; }
 var TK={};
 db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; });
 db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
@@ -60,7 +62,7 @@ db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); })
 
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
-function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x.done&&!x.auto;}).length:0; }
 
 function fmt(ms){
   if(ms==null||ms<0) return '—';
@@ -72,7 +74,12 @@ function fmt(ms){
 function finishTeam(waveKey, teamId, nom){
   var w=WAVES[waveKey]; if(!w||!w.startAt){ alert('Vague non lancée ?'); return; }
   var elapsed=now()-w.startAt;
-  if(!confirm('🏁 '+nom+' — arrêter le chrono à '+fmt(elapsed)+' ?')) return;
+  var d=doneCount(teamId), tot=nStations();
+  if(tot>0 && d<tot){
+    if(!confirm('⚠️ ATTENTION — '+nom+' n\'a que '+d+'/'+tot+' stations validées.\n\nSoit des stations manquent réellement (→ vérifier avec les juges avant de valider), soit un juge a oublié de valider.\n\nArrêter quand même le chrono à '+fmt(elapsed)+' ?')) return;
+  } else {
+    if(!confirm('🏁 '+nom+' — arrêter le chrono à '+fmt(elapsed)+' ?')) return;
+  }
   db.ref(R+'/progress/'+teamId).update({
     waveKey:waveKey,
     finishedAt:firebase.database.ServerValue.TIMESTAMP,
@@ -170,6 +177,10 @@ setInterval(function(){
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
   wake();
 })();
+</script>
+<script>
+/* ★ offline : cache des apps via service worker (sw.js) */
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 </script>
 </body>
 </html>

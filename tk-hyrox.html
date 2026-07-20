@@ -36,7 +36,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 <body>
 <div class="hdr">
   <h1>⏱ TK · Chrono général</h1>
-  <div id="tkclock" title="Heure réelle (synchronisée serveur)" style="margin-left:auto;font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;color:var(--green,#16A34A);background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:4px 12px;line-height:1">🕐 --:--:--</div>
+  <div id="tkclock" onclick="calibrateClock()" title="Heure officielle — clique pour caler sur le chrono pro" style="cursor:pointer;margin-left:auto;font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;color:var(--green,#16A34A);background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:4px 12px;line-height:1">🕐 --:--:--</div>
   <button class="day-btn on" id="d1" onclick="setDay(1)">J1</button>
   <button class="day-btn" id="d2" onclick="setDay(2)">J2</button>
 </div>
@@ -52,7 +52,26 @@ var R='hyrox/race';
 
 var DAY=1, WAVES={}, CFG={}, OFFSET=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-function now(){ return Date.now()+OFFSET; }
+var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
+function now(){ return Date.now()+OFFSET+ADJ; }
+// ★ Calage sur le chrono officiel (chrono pro) — partagé avec départ/arrivée/juge/live
+function calibrateClock(){
+  var cur=new Date(now());
+  var curTxt=('0'+cur.getHours()).slice(-2)+':'+('0'+cur.getMinutes()).slice(-2)+':'+('0'+cur.getSeconds()).slice(-2);
+  var v=prompt('🕐 CALAGE SUR LE CHRONO OFFICIEL\n\nRegarde le chrono pro, entre l\'heure qu\'il va afficher (HH:MM:SS) et valide PILE au moment où il passe à cette seconde.\n\nActuellement affiché ici : '+curTxt+(ADJ?('  (calage actuel : '+(ADJ>0?'+':'')+Math.round(ADJ/1000)+'s)'):'')+'\n\nTape 0 pour revenir à l\'heure serveur.', curTxt);
+  if(v===null) return;
+  v=String(v).trim();
+  if(v==='0'){ db.ref(R+'/clockAdj').set(0); alert('✅ Calage retiré — retour à l\'heure serveur.'); return; }
+  var m=v.match(/^(\d{1,2})[:hH](\d{2})(?:[:mM](\d{2}))?$/);
+  if(!m){ alert('Format invalide. Exemple : 09:30:00'); return; }
+  var base=new Date(Date.now()+OFFSET);
+  var target=new Date(base.getFullYear(),base.getMonth(),base.getDate(),parseInt(m[1],10),parseInt(m[2],10),parseInt(m[3]||'0',10),0).getTime();
+  var newAdj=target-(Date.now()+OFFSET);
+  if(Math.abs(newAdj)>6*3600*1000){ alert('Écart supérieur à 6h — vérifie l\'heure saisie.'); return; }
+  db.ref(R+'/clockAdj').set(newAdj);
+  alert('✅ Horloge calée sur le chrono officiel ('+(newAdj>0?'+':'')+Math.round(newAdj/1000)+'s).\nToutes les apps (départ, arrivée, juges, live) utilisent maintenant cette heure.');
+}
 
 var TK={};
 db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; render(); });
@@ -139,7 +158,11 @@ function render(){
 
 setInterval(function(){
   var _ck=document.getElementById('tkclock');
-  if(_ck){ var d=new Date(now()); _ck.textContent='🕐 '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2); }
+  if(_ck){ var d=new Date(now()); _ck.textContent='🕐 '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2)+(ADJ?' ✱':'');
+    _ck.style.color=ADJ?'#D97706':'var(--green,#16A34A)';
+    _ck.style.background=ADJ?'rgba(217,119,6,.08)':'rgba(22,163,74,.08)';
+    _ck.style.borderColor=ADJ?'rgba(217,119,6,.3)':'rgba(22,163,74,.25)';
+    _ck.title=ADJ?('Calé sur le chrono officiel ('+(ADJ>0?'+':'')+Math.round(ADJ/1000)+'s vs serveur) — clique pour recaler'):'Heure officielle — clique pour caler sur le chrono pro'; }
   document.querySelectorAll('.chrono').forEach(function(n){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
@@ -173,6 +196,10 @@ setInterval(function(){
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
   wake();
 })();
+</script>
+<script>
+/* ★ offline : cache des apps via service worker (sw.js) */
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 </script>
 </body>
 </html>

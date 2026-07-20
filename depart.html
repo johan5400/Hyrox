@@ -58,7 +58,9 @@ var R='hyrox/race';
 
 var DAY=1, WAVES={}, CFG={}, OFFSET=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-function now(){ return Date.now()+OFFSET; }
+var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
+function now(){ return Date.now()+OFFSET+ADJ; }
 var TK={};
 db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; render(); });
 function tkStart(){ return (TK[DAY]&&TK[DAY].startAt)||null; }
@@ -183,6 +185,10 @@ setInterval(function(){
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
   wake();
 })();
+</script>
+<script>
+/* ★ offline : cache des apps via service worker (sw.js) */
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 </script>
 </body>
 </html>

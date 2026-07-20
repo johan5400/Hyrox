@@ -63,7 +63,9 @@ var BEN=(function(){ try{ var u=new URLSearchParams(location.search); return u.g
 var MANUAL=false; // le juge a changé de station manuellement (repli secours)
 
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-function now(){ return Date.now()+OFFSET; }
+var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
+function now(){ return Date.now()+OFFSET+ADJ; }
 
 // Jour courant déduit des vagues : vague live, sinon prochaine vague, sinon J1
 function curDay(){
@@ -90,6 +92,12 @@ db.ref(R+'/config').on('value',function(s){ CFG=s.val(); refreshDayJudges(); ren
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; refreshDayJudges(); applyAssignment(); render(); });
 db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; if(SCREEN==='teams') render(); });
 db.ref(R+'/judges').on('value',function(s){ JUDGES_ALL=s.val()||{}; refreshDayJudges(); render(); });
+var PEN={},WARN={};
+db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; if(SCREEN==='counter') render(); });
+db.ref(R+'/warnings').on('value',function(s){ WARN=s.val()||{}; if(SCREEN==='counter') render(); });
+function warnCount(id){ var w=WARN[id]; return w?Object.keys(w).length:0; }
+function penTotal(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return parseInt(e.sec,10)||0;
+  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=parseInt(v.sec,10)||0; }); return t; }
 db.ref(R+'/judgeByBen').on('value',function(s){ JBYBEN=s.val()||{}; applyAssignment(); });
 
 // Verrouille le juge identifié (?ben=) sur sa station affectée DU JOUR — comme Delta
@@ -246,7 +254,7 @@ function render(){
     var teams=runningTeams().filter(function(t){ return !stDone(t.teamId,MY_STATION); })
       .sort(function(a,b){ return a.waveNum-b.waveNum || a.nom.localeCompare(b.nom); });
     el.innerHTML = teams.length ? teams.map(function(t){
-      var p=teamProg(t.teamId); var nDone=p.stations?Object.values(p.stations).filter(function(x){return x.done;}).length:0;
+      var p=teamProg(t.teamId); var nDone=p.stations?Object.values(p.stations).filter(function(x){return x.done&&!x.auto;}).length:0;
       return '<div class="tile team" style="border-left-color:'+t.couleur+'" onclick="pickTeam(\''+t.waveKey+'\',\''+t.teamId+'\')">'
         +'<div class="n">'+t.nom+'<div class="s">Vague '+t.waveNum+' · '+nDone+'/'+stations().length+' stations · ⏱ '+fmt(now()-t.startAt)+'</div></div>'
         +'<span class="badge" style="color:'+t.couleur+';border-color:'+t.couleur+'55;background:'+t.couleur+'22">'+t.catNom+'</span>'
@@ -270,6 +278,32 @@ function render(){
       +'<button class="tap" onclick="tap()">+'+st.step+'</button>'
       +'<div class="row2"><button class="minus" onclick="minus()">−'+st.step+'</button>'
       +'<button class="validbtn" onclick="validate()">✅ VALIDER STATION</button></div>'
+      +'<button onclick="SCREEN=\'sanction\';render()" style="width:100%;margin-top:10px;padding:12px;border:1.5px solid #DC262655;border-radius:12px;background:#DC262611;color:#F87171;font-size:13px;font-weight:900;font-family:inherit">🚩 SANCTION'
+        +((penTotal(CUR.teamId)||warnCount(CUR.teamId))?('  ·  '+(warnCount(CUR.teamId)?'⚠×'+warnCount(CUR.teamId):'')+(penTotal(CUR.teamId)?' +'+penTotal(CUR.teamId)+'s':'')):'')
+      +'</button>'
+      +'</div>';
+    return;
+  }
+
+  if(SCREEN==='sanction' && CUR){
+    ttl.textContent='🚩 Sanction';
+    var W=[['Obstruction / blocage du couloir'],['Aide au rythme (pacing) interdite'],['Équipement / tenue non conforme'],['Comportement antisportif']];
+    var P=[[60,'No-rep non corrigé'],[60,'Roxzone — marche/trajet interdit'],[60,'Distance ou répétitions incomplètes'],[60,'Faux départ / relais irrégulier'],[180,'Tour de run manquant']];
+    el.innerHTML='<div style="padding:4px 2px">'
+      +'<div style="font-size:15px;font-weight:900;margin-bottom:2px">'+CUR.nom+'</div>'
+      +'<div style="font-size:11px;color:var(--ink2);margin-bottom:12px">'+CUR.catNom+' · vague '+CUR.waveNum
+        +' · actuel : ⚠×'+warnCount(CUR.teamId)+' · pénalités +'+penTotal(CUR.teamId)+'s</div>'
+      +'<div style="font-size:10px;font-weight:900;color:#FBBF24;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">⚠️ Avertissement (sans temps)</div>'
+      +W.map(function(w){ return '<button onclick="giveWarning(\''+w[0].replace(/'/g,"\\'")+'\')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #FBBF2455;border-radius:11px;background:#FBBF2411;color:#FCD34D;font-size:12px;font-weight:800;text-align:left;font-family:inherit">⚠️ '+w[0]+'</button>'; }).join('')
+      +'<div style="font-size:10px;font-weight:900;color:#F87171;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">⏱ Pénalité de temps</div>'
+      +P.map(function(x){ return '<button onclick="givePenalty('+x[0]+',\''+x[1].replace(/'/g,"\\'")+'\')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262611;color:#F87171;font-size:12px;font-weight:800;text-align:left;font-family:inherit"><b>+'+(x[0]>=60?Math.floor(x[0]/60)+':'+('0'+x[0]%60).slice(-2):x[0]+'s')+'</b> — '+x[1]+'</button>'; }).join('')
+      +'<div style="font-size:10px;font-weight:900;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">✏️ Pénalité personnalisée</div>'
+      +'<div style="display:flex;gap:6px;margin-bottom:6px">'
+        +'<input id="cust-sec" type="number" min="5" step="5" placeholder="sec" style="width:80px;padding:11px 10px;border:1.5px solid var(--brd,#2A3B55);border-radius:11px;background:transparent;color:var(--ink,#E2E8F0);font-size:14px;font-weight:900;text-align:center;outline:none;font-family:inherit">'
+        +'<input id="cust-motif" type="text" placeholder="Motif (obligatoire)" style="flex:1;padding:11px 12px;border:1.5px solid var(--brd,#2A3B55);border-radius:11px;background:transparent;color:var(--ink,#E2E8F0);font-size:13px;font-weight:700;outline:none;font-family:inherit">'
+      +'</div>'
+      +'<button onclick="giveCustomPenalty()" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262622;color:#F87171;font-size:12px;font-weight:900;font-family:inherit">⏱ Appliquer la pénalité personnalisée</button>'
+      +'<button onclick="SCREEN=\'counter\';render()" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--brd,#2A3B55);border-radius:11px;background:transparent;color:var(--ink2);font-size:12px;font-weight:800;font-family:inherit">← Retour au comptage</button>'
       +'</div>';
     return;
   }
@@ -278,6 +312,26 @@ function render(){
     ttl.textContent='🏋️ '+((st&&st.nom)||'');
     el.innerHTML='<div class="okscreen"><div class="big">✅</div><div style="font-size:18px;font-weight:900;margin-top:8px">Station validée</div><div style="font-size:12px;color:var(--ink2);margin-top:4px">Équipe suivante…</div></div>';
   }
+}
+
+function giveWarning(motif){
+  if(!CUR) return;
+  if(!confirm('⚠️ Avertissement pour '+CUR.nom+' ?\n'+motif)) return;
+  db.ref(R+'/warnings/'+CUR.teamId).push({motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:BEN||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
+  SCREEN='counter'; render();
+}
+function giveCustomPenalty(){
+  var sec=parseInt((document.getElementById('cust-sec')||{}).value,10)||0;
+  var motif=String((document.getElementById('cust-motif')||{}).value||'').trim();
+  if(sec<=0){ alert('Indique un temps en secondes (ex : 45).'); return; }
+  if(!motif){ alert('Le motif est obligatoire pour une pénalité personnalisée (traçabilité réclamations).'); return; }
+  givePenalty(sec, motif);
+}
+function givePenalty(sec,motif){
+  if(!CUR) return;
+  if(!confirm('⏱ Pénalité +'+sec+'s pour '+CUR.nom+' ?\n'+motif)) return;
+  db.ref(R+'/penalties/'+CUR.teamId).push({sec:sec,motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:BEN||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
+  SCREEN='counter'; render();
 }
 
 /* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
@@ -296,6 +350,10 @@ function render(){
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
   wake();
 })();
+</script>
+<script>
+/* ★ offline : cache des apps via service worker (sw.js) */
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 </script>
 </body>
 </html>

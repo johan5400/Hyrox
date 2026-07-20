@@ -1163,7 +1163,7 @@ function checkPassword(){
         <span style="font-size:18px">🌅</span>
         <div style="flex:1">
           <div style="font-size:10px;font-weight:800;color:var(--blue);text-transform:uppercase">1ère vague · Jour 1</div>
-          <input id="hx-start-j1" type="time" value="09:00" oninput="saveHyroxCfg();renderHyroxWaves()"
+          <input id="hx-start-j1" type="text" inputmode="numeric" maxlength="5" value="09:00" placeholder="HH:MM" onchange="hxHeureInput(this,function(){saveHyroxCfg();renderHyroxWaves();},'09:00')"
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
@@ -1171,7 +1171,7 @@ function checkPassword(){
         <span style="font-size:18px">☀️</span>
         <div style="flex:1">
           <div style="font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase">1ère vague · Jour 2</div>
-          <input id="hx-start-j2" type="time" value="09:00" oninput="saveHyroxCfg();renderHyroxWaves()"
+          <input id="hx-start-j2" type="text" inputmode="numeric" maxlength="5" value="09:00" placeholder="HH:MM" onchange="hxHeureInput(this,function(){saveHyroxCfg();renderHyroxWaves();},'09:00')"
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--amber);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
@@ -7382,7 +7382,7 @@ function renderCatGrid(){
               +'<option value="1"'+((cat.jour||1)==1?' selected':'')+'>Jour 1</option>'
               +'<option value="2"'+((cat.jour||1)==2?' selected':'')+'>Jour 2</option></select>'
             +'<span style="font-size:10px;color:#3A5270;font-weight:800">🌊 départ</span>'
-            +'<input type="time" value="'+(cat.hxStart||'08:00')+'" onchange="hxSetDiv('+cat.id+',\'hxStart\',this.value);renderCategories()" title="Heure de départ de la 1ère vague" style="background:#EBF0FA;border:1px solid var(--brd,#DDE5F5);border-radius:6px;padding:2px 6px;font-size:11px;font-weight:900;font-family:inherit;outline:none;cursor:pointer">'
+            +'<input type="text" inputmode="numeric" maxlength="5" value="'+(cat.hxStart||'08:00')+'" onchange="hxHeureInput(this,function(v){hxSetDiv('+cat.id+',\'hxStart\',v);renderCategories();},\''+(cat.hxStart||'08:00')+'\')" title="Heure de départ — tape 2330 ou 23:30" placeholder="HH:MM" style="width:52px;text-align:center;background:#EBF0FA;border:1px solid var(--brd,#DDE5F5);border-radius:6px;padding:2px 6px;font-size:11px;font-weight:900;font-family:inherit;outline:none;cursor:text">'
             +'<span style="font-size:10px;color:#3A5270;">→ '+nbW+' vague'+(nbW>1?'s':'')+'</span>'
             +'<span style="font-size:10px;color:#3A5270;">'+total+' inscrit'+(total>1?'s':'')+'</span>'
           +'</div>'
@@ -8222,7 +8222,7 @@ function renderCatDetail(){
     +'<input type="color" value="'+cat.couleur+'" onchange="setCatCouleur('+cat.id+',this.value)" style="width:28px;height:28px;border:none;border-radius:5px;cursor:pointer;padding:0;background:none;" title="Couleur">'
     +'<div style="display:flex;align-items:center;gap:5px;border:1px solid rgba(0,0,0,.08);border-radius:7px;padding:3px 8px;" title="Heure de départ de la 1ère vague">'
       +'<span style="font-size:10px;font-weight:900;color:#3A5270">🌊</span>'
-      +'<input type="time" value="'+(cat.hxStart||'08:00')+'" onchange="hxSetDiv('+cat.id+',\'hxStart\',this.value);renderCategories()" style="background:none;border:none;outline:none;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">'
+      +'<input type="text" inputmode="numeric" maxlength="5" value="'+(cat.hxStart||'08:00')+'" onchange="hxHeureInput(this,function(v){hxSetDiv('+cat.id+',\'hxStart\',v);renderCategories();},\''+(cat.hxStart||'08:00')+'\')" placeholder="HH:MM" style="width:52px;text-align:center;background:none;border:none;outline:none;font-size:12px;font-weight:900;font-family:inherit;cursor:text">'
     +'</div>'
     +'<div style="display:flex;border:1px solid rgba(0,0,0,.08);border-radius:7px;overflow:hidden;">'
       +'<button onclick="setCatJour('+cat.id+',1)" style="padding:4px 12px;border:none;cursor:pointer;font-size:10px;font-weight:800;'+((cat.jour||1)===1?'background:#7C3AED;color:#fff':'background:transparent;color:#3A5270')+'">Jour 1</button>'
@@ -23311,11 +23311,33 @@ function renderHyroxDivisions(){
       + '<div style="font-size:9px;color:var(--ink3);font-weight:700">'+nAth+' inscrit(s) → '+nW+' vague(s)</div></div>'
       + '<select onchange="hxSetDiv('+c.id+',\'jour\',this.value)" title="Jour" style="background:#EBF0FA;border:1px solid var(--brd2);border-radius:7px;padding:4px 6px;font-size:11px;font-weight:800;font-family:inherit;outline:none">'
       + '<option value="1"'+((c.jour||1)==1?' selected':'')+'>J1</option><option value="2"'+((c.jour||1)==2?' selected':'')+'>J2</option></select>'
-      + '<input type="time" value="'+(c.hxStart||'08:00')+'" onchange="hxSetDiv('+c.id+',\'hxStart\',this.value)" title="Heure 1ère vague" style="background:#EBF0FA;border:1px solid var(--brd2);border-radius:7px;padding:4px 6px;font-size:13px;font-weight:900;font-family:inherit;outline:none">'
+      + '<input type="text" inputmode="numeric" maxlength="5" value="'+(c.hxStart||'08:00')+'" onchange="hxHeureInput(this,function(v){hxSetDiv('+c.id+',\'hxStart\',v);},\''+(c.hxStart||'08:00')+'\')" title="Heure 1ère vague — tape 2330 ou 23:30" placeholder="HH:MM" style="width:62px;text-align:center;background:#EBF0FA;border:1px solid var(--brd2);border-radius:7px;padding:4px 6px;font-size:13px;font-weight:900;font-family:inherit;outline:none">'
       + '</div>';
   });
   h += '</div>';
   el.innerHTML = h;
+}
+
+// ── Saisie d'heure LIBRE : accepte 2330, 23:30, 23h30, 9h5, 900… → "HH:MM" ──
+function hxParseHeure(v){
+  v=String(v==null?'':v).trim().toLowerCase().replace(/\s/g,'');
+  if(!v) return null;
+  var h, m;
+  var sep=v.match(/^(\d{1,2})[:hH.](\d{1,2})$/);      // 23:30 / 23h30 / 9.5
+  if(sep){ h=parseInt(sep[1],10); m=parseInt(sep[2],10); }
+  else if(/^\d{3,4}$/.test(v)){                         // 2330 / 930
+    var p=v.padStart(4,'0'); h=parseInt(p.slice(0,2),10); m=parseInt(p.slice(2),10);
+  }
+  else if(/^\d{1,2}[hH]?$/.test(v)){ h=parseInt(v,10); m=0; }  // 23 / 9h
+  else return null;
+  if(isNaN(h)||isNaN(m)||h>23||m>59) return null;
+  return ('0'+h).slice(-2)+':'+('0'+m).slice(-2);
+}
+// Applique la normalisation à un champ + callback ; remet l'ancienne valeur si invalide
+function hxHeureInput(el, apply, fallback){
+  var norm=hxParseHeure(el.value);
+  if(norm){ el.value=norm; if(typeof apply==='function') apply(norm); }
+  else { el.value=fallback||''; }
 }
 
 function hxSetDiv(catId, key, val){

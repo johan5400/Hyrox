@@ -23923,8 +23923,8 @@ function buildHyroxDivisions(){
   // donc +40 min entre catégories → flux continu à 20 min dès 09:00.
   var defs=[
     [1001,'Open Hommes',   '#E8421A',1,1,'23:30','OH'],
-    [1002,'Open Femmes',   '#C62828',2,1,'09:40','OF'],
-    [1005,'Doubles Hommes','#1D6DB5',3,1,'10:20','DH'],
+    [1002,'Open Femmes',   '#C62828',2,1,'23:45','OF'],
+    [1005,'Doubles Hommes','#1D6DB5',3,1,'23:54','DH'],
     [1006,'Doubles Femmes','#0891B2',4,1,'11:00','DF'],
     [1003,'Pro Hommes',    '#7C3AED',5,2,'09:00','PH'],
     [1004,'Pro Femmes',    '#9333EA',6,2,'09:40','PF'],
@@ -23963,7 +23963,9 @@ function ensureHyroxState(){
     CATEGORIES = buildHyroxDivisions();
     changed=true;
   } else {
-    (CATEGORIES||[]).forEach(function(c){ c.zone='1'; if(!c.hxStart) c.hxStart='08:00'; });
+    // Ne PAS écraser les heures définies : on complète seulement la zone.
+    // (les divisions HYROX ont déjà leur hxStart ; forcer 08:00 ici cassait les départs)
+    (CATEGORIES||[]).forEach(function(c){ if(!c.zone) c.zone='1'; });
   }
   if(typeof syncHyroxEngineCats==='function') syncHyroxEngineCats();
   if(changed){

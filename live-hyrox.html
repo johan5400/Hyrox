@@ -33,24 +33,39 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .empty{text-align:center;color:var(--ink2);padding:24px;font-size:12px}
 .badge{font-size:9px;font-weight:900;border-radius:5px;padding:1px 6px;border:1px solid}
 .foot{text-align:center;font-size:10px;color:var(--ink2);font-weight:700;margin-top:18px}
-/* ── Visuels course (pastilles stations, run, damier) ── */
-.segs{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
-.seg-dot{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:6px;font-size:9px;font-weight:900;padding:0 4px;border:1.5px solid #334155;color:#64748B;background:#0b1220}
-.seg-dot.done{background:#10B981;border-color:#10B981;color:#03170e}
-.seg-dot.cur{background:#F59E0B;border-color:#FCD34D;color:#1a1205;box-shadow:0 0 0 2px #F59E0B55}
-.seg-run{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:900;color:#93C5FD;background:#1e3a8a44;border:1.5px solid #3B82F6;border-radius:6px;padding:0 6px;height:20px}
-.seg-run.active{animation:runblink .8s ease-in-out infinite}
-@keyframes runblink{0%,100%{background:#1e3a8a44;color:#93C5FD}50%{background:#3B82F6;color:#fff;box-shadow:0 0 8px #3B82F6}}
-.repnow{font-size:10px;font-weight:900;color:#FCD34D;margin-left:2px}
+/* ── Visuels course : nom de station + avancement en clair ── */
+.etat{font-size:15px;font-weight:900;margin-top:3px;letter-spacing:.3px}
+.etat b{font-size:17px}
+.run-blink{animation:runrow 1s ease-in-out infinite}
+@keyframes runrow{0%,100%{background:transparent}50%{background:#1e3a8a33}}
 .flag{display:inline-block;width:15px;height:15px;vertical-align:middle;margin-right:4px;
   background-image:linear-gradient(45deg,#111 25%,transparent 25%),linear-gradient(-45deg,#111 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#111 75%),linear-gradient(-45deg,transparent 75%,#111 75%);
   background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0px;background-color:#fff;border-radius:2px;border:1px solid #999}
 .fin-score{font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px}
+
+/* ── MODE RÉTROPROJECTEUR / ÉCRAN GÉANT (activé par le bouton 📽️) ── */
+body.geant .hdr h1{font-size:clamp(26px,4vw,44px)}
+body.geant .card h2{font-size:24px}
+body.geant .divbtn{font-size:17px;padding:10px 20px}
+body.geant .row{gap:16px;padding:16px 18px}
+body.geant .rank{min-width:48px;font-size:30px}
+body.geant .nom{font-size:clamp(22px,2.6vw,30px)}
+body.geant .etat{font-size:24px;margin-top:5px}
+body.geant .etat b{font-size:30px}
+body.geant .sub{font-size:15px}
+body.geant .toff{font-size:clamp(24px,2.8vw,34px)}
+body.geant .chrono{font-size:28px;min-width:110px}
+body.geant .dnf{font-size:22px}
+body.geant .fin-score{font-size:14px}
+body.geant .flag{width:22px;height:22px}
+.geantbtn{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer}
+body.geant .geantbtn{background:#F59E0B;color:#1a1205;border-color:#F59E0B}
 </style>
 </head>
 <body>
 <div class="hdr">
   <h1><span class="live-dot"></span><span id="evnom">HYROX</span> · Live</h1>
+  <button class="geantbtn" onclick="toggleGeant()" title="Basculer en mode écran géant / rétroprojecteur"><span id="geant-lbl">📽️ Mode écran géant</span></button>
   <div id="divbtns"></div>
 </div>
 <div class="grid" id="grid"><div class="empty">Connexion…</div></div>
@@ -121,6 +136,22 @@ function courseState(id){
   return {segs:out, runActive:runActive, repNow:repNow, stationsTotal:stationsTotal};
 }
 function WAVEcat(id){ var w=Object.values(WAVES).find(function(w){return (w.athletes||[]).some(function(a){return a.id===id;});}); return w?w.catId:null; }
+
+function toggleGeant(){
+  var on=document.body.classList.toggle('geant');
+  var lbl=document.getElementById('geant-lbl');
+  if(lbl) lbl.textContent = on ? '💻 Mode PC' : '📽️ Mode écran géant';
+  try{ localStorage.setItem('hyrox-live-geant', on?'1':'0'); }catch(e){}
+}
+// restaurer le choix au chargement
+(function(){
+  try{
+    if(localStorage.getItem('hyrox-live-geant')==='1'){
+      document.body.classList.add('geant');
+      var lbl=document.getElementById('geant-lbl'); if(lbl) lbl.textContent='💻 Mode PC';
+    }
+  }catch(e){}
+})();
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
 function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
@@ -201,24 +232,27 @@ function render(){
       if(open) rows+=splitsHTML(t.p);
     });
     d.running.forEach(function(t){
-      var pct=total?Math.round(t.done/total*100):0;
       var cs=courseState(t.id);
-      var dots=cs.segs.map(function(sg){
-        if(sg.type==='run'){
-          var act=cs.runActive && !sg.done && cs.segs.filter(function(x){return x.type==='run'&&!x.done;})[0]===sg;
-          return '<span class="seg-run'+(act?' active':'')+'">🏃'+(act?' RUN':'')+'</span>';
-        }
-        return '<span class="seg-dot'+(sg.done?' done':(sg.current?' cur':''))+'">'+sg.num+'</span>';
-      }).join('');
-      var repTxt='';
-      if(cs.repNow){ repTxt='<span class="repnow">'+cs.repNow.val+(cs.repNow.target?('/'+cs.repNow.target):'')+' '+(cs.repNow.nom||'')+'</span>'; }
-      rows+='<div class="row" style="border-left:3px solid '+d.couleur+';flex-wrap:wrap">'
+      // Où en est l'équipe, en clair
+      var etat, etatCol;
+      if(cs.runActive){
+        etat='🏃 RUN'; etatCol='#3B82F6';
+      } else if(cs.repNow){
+        etat=cs.repNow.nom + ' — <b>' + cs.repNow.val + (cs.repNow.target?(' / '+cs.repNow.target):'') + '</b>';
+        etatCol='#F59E0B';
+      } else {
+        // trouver la station en cours (premier segment station non fini)
+        var curSta=cs.segs.filter(function(s){return s.type==='station'&&s.current;})[0];
+        etat = curSta ? curSta.nom : 'En course';
+        etatCol='#F59E0B';
+      }
+      rows+='<div class="row'+(cs.runActive?' run-blink':'')+'" style="border-left:4px solid '+d.couleur+'">'
         +'<div class="rank">'+(cs.runActive?'🏃':'🏋️')+'</div>'
         +'<div class="nom" style="flex:1">'+t.nom
-          +'<div class="sub">vague '+t.waveNum+' · '+t.done+'/'+cs.stationsTotal+' stations'+repTxt+'</div>'
-          +'<div class="segs">'+dots+'</div>'
+          +'<div class="etat" style="color:'+etatCol+'">'+etat+'</div>'
+          +'<div class="sub">vague '+t.waveNum+' · '+t.done+'/'+cs.stationsTotal+' stations</div>'
         +'</div>'
-        +'<span class="chrono" data-start="'+t.startAt+'" style="align-self:flex-start">'+fmt(now()-t.startAt)+'</span>'
+        +'<span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span>'
         +'</div>';
     });
     return '<div class="card"><h2><span class="badge" style="color:'+d.couleur+';border-color:'+d.couleur+'55;background:'+d.couleur+'22">'+d.nom+'</span>'

@@ -7686,6 +7686,7 @@ function renderCatDetailInline(container){
   if(!cat||!container)return;
   var nbH=cat.nbHeats||1;
   var nbL=cat.nbLignes||6;
+  var _nbW=(typeof hyroxWaveCount==='function')?hyroxWaveCount(cat):1;
   var html='<div style="padding:14px 16px;">';
 
   // ── Bloc VAGUES (construit dans une variable, affiché APRÈS les équipes) ──

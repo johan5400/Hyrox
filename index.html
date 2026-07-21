@@ -1800,8 +1800,9 @@ function checkPassword(){
 
   <!-- TOOLBAR CRÉATION -->
   <div style="background:#FFFFFF;border:1px solid var(--brd);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-    <div style="font-size:11px;color:var(--ink3);font-weight:600">Définis le <b>Jour</b> (J1/J2) et l'<b>heure de départ</b> 🌊 de chaque catégorie. <b>⧉</b> = dupliquer sur l'autre jour.</div>
-    <div id="heats-summary" style="margin-left:auto;font-size:11px;color:var(--mid);font-weight:600"></div>
+    <button onclick="openAddCat()" style="padding:9px 16px;border:none;border-radius:9px;background:linear-gradient(135deg,#1565C0,#1E88E5);color:#fff;font-family:inherit;font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(30,136,229,.3)">➕ Nouvelle catégorie</button>
+    <div style="font-size:11px;color:var(--ink3);font-weight:600;flex:1;min-width:180px">Définis le <b>Jour</b> (J1/J2) et l'<b>heure de départ</b> 🌊 de chaque catégorie. <b>⧉</b> = dupliquer sur l'autre jour.</div>
+    <div id="heats-summary" style="font-size:11px;color:var(--mid);font-weight:600"></div>
   </div>
 
   <!-- PLANNING PAR WOD -->
@@ -7745,28 +7746,7 @@ function renderCatDetailInline(container){
     +'<button onclick="deleteCat('+cat.id+')" style="padding:8px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);color:#EF4444;border-radius:7px;font-size:11px;font-weight:800;cursor:pointer;">🗑 Supprimer</button>'
   +'</div>';
 
-  // ── ROW 4 : Vagues HYROX (départ auto par vague, pas de lane) ──
-  if(cat.teams.length){
-    var _st=(typeof parseTime==='function')?parseTime(cat.hxStart||'08:00'):0;
-    var _per=Math.ceil(cat.teams.length/Math.max(1,_nbW));
-    for(var wi=0; wi<_nbW; wi++){
-      var _wt=cat.teams.slice(wi*_per,(wi+1)*_per);
-      if(!_wt.length) continue;
-      var _hh=Math.floor((_st+wi*_itv)/60), _mm=(_st+wi*_itv)%60;
-      var _lbl=('0'+_hh).slice(-2)+':'+('0'+_mm).slice(-2);
-      html+='<div style="background:#e4eaf7;border:1px solid rgba(0,0,0,.08);border-radius:9px;margin-bottom:8px;overflow:hidden;">';
-      html+='<div style="background:#e1e8f6;padding:7px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #EBF0FA;">'
-        +'<span style="font-size:12px;font-weight:900;color:#60A5FA;font-family:monospace;">🌊 VAGUE '+(wi+1)+'/'+_nbW+'</span>'
-        +'<span style="font-size:11px;font-weight:900;color:#0F1C2E;font-family:monospace;">'+_lbl+'</span>'
-        +'<span style="font-size:9px;color:#3A5270;margin-left:auto;">'+_wt.length+' athlète'+(_wt.length>1?'s':'')+'</span>'
-      +'</div>';
-      html+='<div style="display:flex;flex-wrap:wrap;gap:5px;padding:8px;">';
-      _wt.forEach(function(t){
-        html+='<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;background:'+cat.couleur+'18;border:1px solid '+cat.couleur+'44;font-size:11px;font-weight:700;color:#0F1C2E;">'+escHtml(t.nom)+'</span>';
-      });
-      html+='</div></div>';
-    }
-  }
+  // (Ancien bloc "ROW 4 : Vagues HYROX" supprimé — remplacé par la section 🌊 Vagues & horaires plus haut)
 
   html+='</div>';
   container.innerHTML=html;

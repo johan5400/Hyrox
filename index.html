@@ -23370,7 +23370,11 @@ function publishHyroxRace(){
   var byBen={}; // { benId: {1:seg, 2:seg} }
   Object.keys(JUD1.byBen).forEach(function(k){ (byBen[k]=byBen[k]||{})['1']=JUD1.byBen[k]; });
   Object.keys(JUD2.byBen).forEach(function(k){ (byBen[k]=byBen[k]||{})['2']=JUD2.byBen[k]; });
-  Promise.all([
+  // ★ ÉCRASEMENT TOTAL : on efface tout hyrox/race AVANT de réécrire.
+  //   → plus aucune donnée de test fantôme ne subsiste. La dernière publication a le dernier mot.
+  //   (À n'utiliser que hors compét — ici confirmé : rien ne tourne pendant l'événement.)
+  db.ref('race').remove().then(function(){
+  return Promise.all([
     db.ref('race/config').set({
       nom:(document.getElementById('ev-nom')||{}).value||'HYROX',
       capMinutes:HYROX_CFG.cap||100, interval:HYROX_CFG.interval||10,
@@ -23389,6 +23393,9 @@ function publishHyroxRace(){
     if(noDate) setTimeout(function(){ toast('⚠️ Départs auto : renseigne les dates J1/J2 dans ⚙️ Config puis republie','#D97706'); },1600);
   }).catch(function(e){
     toast('❌ Publication Firebase échouée : '+(e&&e.message||e),'#DC2626');
+  });
+  }).catch(function(e){
+    toast('❌ Effacement Firebase échoué : '+(e&&e.message||e),'#DC2626');
   });
 }
 

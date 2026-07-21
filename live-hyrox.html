@@ -129,7 +129,7 @@ function courseState(id){
         var target=null;
         var sdef=segs.find(function(x){return x.idx===seg.idx;});
         if(sdef){ var q=(sdef.qtyParCat&&WAVEcat(id)!=null&&sdef.qtyParCat[String(WAVEcat(id))]!=null)?sdef.qtyParCat[String(WAVEcat(id))]:sdef.qty; target=parseFloat(q)||null; }
-        repNow={val:rec2.val, target:target, nom:seg.nom};
+        repNow={val:rec2.val, target:target, nom:seg.nom, num:seg.num};
       }
     }
   }
@@ -155,6 +155,20 @@ function toggleGeant(){
 function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
 function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
+
+// ── Score d'avancement pour le tri live (même départ → le plus avancé devant) ──
+// stations validées ×1e9  +  reps en cours sur la station actuelle (départage à station égale)
+function advScore(id){
+  var stations=doneCount(id)*1e9;
+  var cs=courseState(id);
+  var reps=0;
+  if(cs && cs.repNow && typeof cs.repNow.val!=='undefined'){
+    reps=parseFloat(cs.repNow.val)||0;
+  }
+  // bonus léger si l'équipe est sur un run (elle a quitté la station précédente = un peu plus avancée)
+  var runBonus=(cs && cs.runActive)?5e8:0;
+  return stations + runBonus + reps;
+}
 
 var EXPANDED={};
 function toggleSplits(id){ EXPANDED[id]=!EXPANDED[id]; render(); }
@@ -217,7 +231,10 @@ function render(){
   grid.innerHTML=keys.map(function(k){
     var d=byDiv[k];
     d.finished.sort(function(a,b){ return (a.p.dnf?9e13:(offMs(a.id,a.p)||9e12))-(b.p.dnf?9e13:(offMs(b.id,b.p)||9e12)); });
-    d.running.sort(function(a,b){ return b.done-a.done || a.waveNum-b.waveNum; });
+    // ── En course : tri par AVANCEMENT (même départ = même temps, le plus avancé devant) ──
+    // score = stations validées ×1e9 + reps de la station en cours (départage à station égale)
+    d.running.forEach(function(t){ t._adv=advScore(t.id); });
+    d.running.sort(function(a,b){ return b._adv-a._adv || a.waveNum-b.waveNum; });
     var rows='';
     d.finished.forEach(function(t,i){
       var r=i+1;
@@ -231,26 +248,27 @@ function render(){
         +'</div>';
       if(open) rows+=splitsHTML(t.p);
     });
-    d.running.forEach(function(t){
+    d.running.forEach(function(t,ri){
       var cs=courseState(t.id);
+      var rang=ri+1;
       // Où en est l'équipe, en clair
       var etat, etatCol;
       if(cs.runActive){
         etat='🏃 RUN'; etatCol='#3B82F6';
       } else if(cs.repNow){
-        etat=cs.repNow.nom + ' — <b>' + cs.repNow.val + (cs.repNow.target?(' / '+cs.repNow.target):'') + '</b>';
+        etat=cs.repNow.nom + (cs.repNow.num?' · Station '+cs.repNow.num:'') + ' — <b>' + cs.repNow.val + (cs.repNow.target?(' / '+cs.repNow.target):'') + '</b>';
         etatCol='#F59E0B';
       } else {
         // trouver la station en cours (premier segment station non fini)
         var curSta=cs.segs.filter(function(s){return s.type==='station'&&s.current;})[0];
-        etat = curSta ? curSta.nom : 'En course';
+        etat = curSta ? (curSta.nom+' · Station '+curSta.num) : 'En course';
         etatCol='#F59E0B';
       }
       rows+='<div class="row'+(cs.runActive?' run-blink':'')+'" style="border-left:4px solid '+d.couleur+'">'
-        +'<div class="rank">'+(cs.runActive?'🏃':'🏋️')+'</div>'
+        +'<div class="rank'+(rang<=3?' r'+rang:'')+'">'+rang+'</div>'
         +'<div class="nom" style="flex:1">'+t.nom
-          +'<div class="etat" style="color:'+etatCol+'">'+etat+'</div>'
-          +'<div class="sub">vague '+t.waveNum+' · '+t.done+'/'+cs.stationsTotal+' stations</div>'
+          +'<div class="etat" style="color:'+etatCol+'">'+(cs.runActive?'🏃 ':'')+etat+'</div>'
+          +'<div class="sub">vague '+t.waveNum+'</div>'
         +'</div>'
         +'<span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span>'
         +'</div>';

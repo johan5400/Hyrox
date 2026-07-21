@@ -879,19 +879,21 @@ function checkPassword(){
   <div class="tabs">
     <button class="tab active" onclick="show('accueil',this)">🏠 Accueil</button>
     <button class="tab" onclick="show('config',this)">⚙️ Config</button>
-    <button class="tab" onclick="show('hyrox',this);setTimeout(function(){if(typeof renderHyrox==='function')renderHyrox();},40)">🏃 HYROX</button>
     <button class="tab" onclick="show('categories',this)">🏆 Catégories</button>
+    <button class="tab" onclick="show('hyrox',this);setTimeout(function(){if(typeof renderHyrox==='function')renderHyrox();},40)">🌊 Vagues & départs</button>
     <button class="tab" onclick="show('benevoles',this)">👥 Bénévoles</button>
     <button class="tab" onclick="show('planning-juge',this)">📋 Planning</button>
+    <button class="tab" onclick="showQRCodes(this)">📱 QR Codes</button>
+    <button class="tab" onclick="show('jourj',this)">🎯 Jour J</button>
+    <button class="tab" onclick="show('classement-hyrox',this);setTimeout(function(){if(typeof renderHyroxClassement==='function')renderHyroxClassement();},40)">🏆 Classement</button>
+    <button class="tab" onclick="show('guide',this)">❓ Guide</button>
+    <!-- Onglets hérités CrossFit masqués (accessibles via code si besoin) :
     <button class="tab" onclick="show('printcenter',this);setTimeout(function(){if(typeof renderPrintCenter==='function')renderPrintCenter();},40)">🖨️ Impression</button>
     <button class="tab" onclick="show('mailcenter',this);setTimeout(function(){if(typeof renderMailCenter==='function')renderMailCenter();},40)">📧 Mails</button>
     <button class="tab" onclick="show('synoptique',this);setTimeout(function(){if(typeof renderSynoptique==='function')renderSynoptique();},40)">🗓 Synoptique</button>
-    <button class="tab" onclick="show('jourj',this)">🎯 Jour J</button>
-    <button class="tab" onclick="showQRCodes(this)">📱 QR Codes</button>
-    <button class="tab" onclick="show('classement-hyrox',this);setTimeout(function(){if(typeof renderHyroxClassement==='function')renderHyroxClassement();},40)">🏆 Classement</button>
     <button class="tab" onclick="show('sponsors',this)">🤝 Sponsors</button>
     <button class="tab" onclick="show('analyse',this)">📊 Débrief équipe</button>
-    <button class="tab" onclick="show('guide',this)">❓ Guide</button>
+    -->
   </div>
 </div>
 
@@ -1105,7 +1107,7 @@ function checkPassword(){
       <div style="font-size:20px;font-weight:900;color:var(--ink);letter-spacing:.3px">🏃 Parcours HYROX</div>
       <div style="font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600">8× (Run 1000m + Station) · For Time · départs par vagues</div>
     </div>
-    <button class="btn btn-blue" onclick="applyHyroxToEngine()" style="font-size:12px;font-weight:800">💾 Appliquer &amp; générer les vagues</button>
+    <div style="font-size:10px;color:var(--ink3);font-weight:700;text-align:right;max-width:180px;line-height:1.4">Les vagues se publient via <span style="color:#16a34a;font-weight:900">🚀 Générer &amp; Publier</span> (en haut)</div>
   </div>
 
   <!-- ── SÉLECTEUR ADULTES / KIDS ── -->
@@ -1476,20 +1478,10 @@ function checkPassword(){
 
     <!-- Étape 2 -->
     <div style="background:#fff;border:1px solid var(--brd2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.05)">
-      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:13px;color:var(--ink)">Créer les WODs</div>
-        <div style="font-size:11px;color:var(--ink3);margin-top:2px">Format, durée, mouvements, zone, jour</div>
-      </div>
-      <button onclick="show('programme',document.querySelector('[onclick*=programme]'))" style="padding:7px 14px;border:none;border-radius:8px;background:#F3E8FF;color:#7C3AED;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap">⏱ WODs →</button>
-    </div>
-
-    <!-- Étape 3 -->
-    <div style="background:#fff;border:1px solid var(--brd2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.05)">
-      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#B45309,#F59E0B);color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#B45309,#F59E0B);color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:13px;color:var(--ink)">Créer les catégories &amp; équipes</div>
-        <div style="font-size:11px;color:var(--ink3);margin-top:2px">Catégories, équipes, nombre de heats et lanes</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:2px">Catégories, équipes, vagues et horaires</div>
       </div>
       <button onclick="show('categories',document.querySelector('[onclick*=categories]'))" style="padding:7px 14px;border:none;border-radius:8px;background:#FEF3C7;color:#B45309;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap">🏆 Catégories →</button>
     </div>
@@ -7274,8 +7266,8 @@ function resetWodZoneOverrides(wodId){
 function renderZonesSynoptic(){
   var el = document.getElementById('zones-synoptic');
   if(!el) return;
-  if(!WODS||!WODS.length){el.style.display='none';return;}
-  el.style.display='grid';
+  el.style.display='none'; // ★ Hyrox : salle entière, pas de zones — bloc masqué
+  return;
 
   el.innerHTML = ZONES.map(function(zone){
     var zNum = zone.id;
@@ -7696,27 +7688,52 @@ function renderCatDetailInline(container){
   var nbL=cat.nbLignes||6;
   var html='<div style="padding:14px 16px;">';
 
-  // ── ROW 1 : Info vagues (HYROX — pas de heat/lane) ──
-  var _nbW=(typeof hyroxWaveCount==='function')?hyroxWaveCount(cat):1;
-  var _itv=(typeof HYROX_CFG!=='undefined'&&HYROX_CFG.interval)?HYROX_CFG.interval:10;
-  html+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">';
-  html+='<div style="background:var(--s2,#e1e8f6);border:1px solid var(--brd2,#EBF0FA);border-radius:9px;padding:10px 14px;text-align:center;flex:1;min-width:100px;">'
-    +'<div style="font-size:8px;font-weight:800;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Vagues</div>'
-    +'<div style="font-size:20px;font-weight:900;color:#60A5FA;font-family:monospace;">'+_nbW+'</div>'
-    +'<div style="font-size:8px;color:var(--ink3);margin-top:2px">calculé auto</div>'
+  // ── Bloc VAGUES (construit dans une variable, affiché APRÈS les équipes) ──
+  var safeIdV = String(cat.id).replace('.','_');
+  var vagues = Array.isArray(cat.vagues) ? cat.vagues : [];
+  var manuel = vagues.length>0;
+  var placement = !!cat.placementManuel;
+  var catItv = cat.interval || (HYROX_CFG.interval||10);
+  var htmlVagues='<div style="background:var(--s2,#e1e8f6);border:1.5px solid var(--brd2,#EBF0FA);border-radius:10px;padding:12px 14px;margin-bottom:14px;">';
+  htmlVagues+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">'
+    +'<div style="font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:1px;">🌊 Vagues &amp; horaires</div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--ink2)">Intervalle <input type="text" inputmode="numeric" value="'+catItv+'" onchange="hxSetCatInterval('+cat.id+',this.value)" style="width:38px;text-align:center;border:1px solid var(--brd2);border-radius:6px;padding:3px 4px;font-size:12px;font-weight:900;font-family:inherit"> min</div>'
   +'</div>';
-  html+='<div style="background:var(--s2,#e1e8f6);border:1px solid var(--brd2,#EBF0FA);border-radius:9px;padding:10px 14px;text-align:center;flex:1;min-width:100px;">'
-    +'<div style="font-size:8px;font-weight:800;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Départ</div>'
-    +'<div style="font-size:20px;font-weight:900;color:#A78BFA;font-family:monospace;">'+(cat.hxStart||'08:00')+'</div>'
-    +'<div style="font-size:8px;color:var(--ink3);margin-top:2px">+'+_itv+' min / vague</div>'
+  htmlVagues+='<div style="display:flex;gap:6px;margin-bottom:10px">'
+    +'<button onclick="hxSetPlacement('+cat.id+',false)" style="flex:1;border:1.5px solid '+(placement?'var(--brd2)':'#0F1C2E')+';background:'+(placement?'#fff':'#0F1C2E')+';color:'+(placement?'var(--ink2)':'#fff')+';border-radius:8px;padding:7px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">Répartition AUTO</button>'
+    +'<button onclick="hxSetPlacement('+cat.id+',true)" style="flex:1;border:1.5px solid '+(placement?'#0F1C2E':'var(--brd2)')+';background:'+(placement?'#0F1C2E':'#fff')+';color:'+(placement?'#fff':'var(--ink2)')+';border-radius:8px;padding:7px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">Je place les équipes</button>'
   +'</div>';
+  var vgList = (typeof hyroxCatVagues==='function') ? hyroxCatVagues(cat) : [];
+  htmlVagues+='<div id="hxvg-'+safeIdV+'">';
+  if(!manuel){
+    htmlVagues+='<div style="font-size:10px;color:var(--ink3);margin-bottom:8px;font-style:italic">Mode auto : '+vgList.length+' vague(s) calculée(s) depuis '+(cat.hxStart||'08:00')+' (+'+catItv+' min). Ajoute des heures manuelles pour piloter chaque vague.</div>';
+  }
+  vgList.forEach(function(w,i){
+    var heure = manuel ? (vagues[i]&&vagues[i].heure ? vagues[i].heure : w.time) : w.time;
+    var noms = (w.athletes||[]).map(function(a){return a.nom;}).slice(0,3).join(' · ');
+    var extra = (w.athletes||[]).length>3 ? ' +'+((w.athletes||[]).length-3) : '';
+    htmlVagues+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#F8FAFC;border:1px solid var(--brd2);border-radius:9px;margin-bottom:6px">'
+      +'<div style="min-width:26px;height:26px;border-radius:7px;background:#0F1C2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+(i+1)+'</div>'
+      +'<input type="text" inputmode="numeric" maxlength="5" value="'+heure+'" onchange="hxSetVagueHeure('+cat.id+','+i+',this.value)" placeholder="HH:MM" style="width:60px;text-align:center;border:1.5px solid var(--brd2);border-radius:7px;padding:5px;font-size:14px;font-weight:900;font-family:inherit;outline:none">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--ink)">'+(w.athletes||[]).length+' équipe'+((w.athletes||[]).length>1?'s':'')+' <span style="font-size:9px;font-weight:900;color:var(--ok);background:#ECFDF5;border:1px solid #A7F3D0;border-radius:5px;padding:1px 5px">🤖 TK auto</span></div>'
+        +'<div style="font-size:10px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(noms||'—')+extra+'</div></div>'
+      + (manuel?'<button onclick="hxDelVague('+cat.id+','+i+')" title="Supprimer cette vague" style="background:#FEE2E2;border:1px solid #FCA5A5;color:#DC2626;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:900;cursor:pointer">✕</button>':'')
+    +'</div>';
+  });
+  htmlVagues+='</div>';
+  htmlVagues+='<button onclick="hxAddVague('+cat.id+')" style="background:linear-gradient(135deg,var(--ok,#059669),#10B981);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;margin-top:4px">+ Ajouter une vague (heure manuelle)</button>';
+  htmlVagues+='</div>';
 
-  html+='</div>'; // close ROW 1
+
 
   // ── ROW 2 : Saisie équipes ──
   var existingTeams = cat.teams.map(function(t){return t.nom;}).join('\n');
   var safeId = String(cat.id).replace('.','_');
   html+='<div style="background:var(--s2,#e1e8f6);border:1.5px solid var(--brd2,#EBF0FA);border-radius:10px;padding:12px 14px;margin-bottom:14px;">'    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'      +'<div style="font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:1px;">'        +'📋 Équipes · <span style="color:'+(cat.teams.length?'var(--ok)':'var(--mid)')+';">'+cat.teams.length+' saisies</span>'        +' → <span style="color:var(--blue);">'+_nbW+' vague'+(_nbW>1?'s':'')+'</span>'      +'</div>'    +'</div>'    +'<div style="display:flex;gap:6px;margin-bottom:10px;">'      +'<input id="quick-add-'+safeId+'" type="text" placeholder="Nom de l équipe..."'        +' onkeydown="if(event.key===\'Enter\'){event.preventDefault();quickAddTeam('+cat.id+');}"'        +' style="flex:1;background:#EBF0FA;border:1px solid var(--brd2);border-radius:8px;padding:10px 12px;font-size:13px;font-weight:700;color:var(--ink);outline:none;font-family:inherit;">'      +'<button onclick="quickAddTeam('+cat.id+')" style="padding:10px 18px;background:linear-gradient(135deg,var(--ok),#00B87A);border:none;border-radius:8px;color:#000;font-size:16px;font-weight:900;cursor:pointer;">+</button>'    +'</div>'    +'<div id="teams-chips-'+safeId+'" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">'    +cat.teams.map(function(t){ return '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;background:#EBF0FA;border:1px solid var(--brd2);border-radius:20px;font-size:11px;font-weight:700;color:var(--ink);">'+escHtml(t.nom)+'<button onclick="removeTeamById('+cat.id+','+JSON.stringify(t.id)+')" style="background:none;border:none;color:var(--mid);cursor:pointer;font-size:14px;line-height:1;padding:0;">×</button></span>'; }).join('')    +'</div>'    +'<details>'      +'<summary style="font-size:9px;font-weight:700;color:var(--mid);cursor:pointer;padding:3px 0;letter-spacing:.5px;">📋 COLLER UNE LISTE COMPLÈTE</summary>'      +'<div style="margin-top:8px;">'        +'<textarea id="teams-input-'+safeId+'" data-catid="'+cat.id+'" placeholder="Une équipe par ligne&#10;Alpha Team&#10;Beta Squad&#10;..." rows="4" oninput="scheduleCategoryTextareaApply('+cat.id+')"'          +' style="width:100%;background:#EBF0FA;border:1px solid var(--brd2);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--ink);outline:none;font-family:inherit;resize:vertical;box-sizing:border-box;">'+escHtml(existingTeams)+'</textarea>'        +'<div id="team-preview-'+safeId+'" style="font-size:10px;color:var(--ink2);margin:4px 0;"></div>'        +'<div style="display:flex;gap:6px;margin-top:6px;">'          +'<button onclick="saveTeamsFromTextarea('+cat.id+')" style="flex:1;padding:8px;background:var(--blue);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;">💾 Remplacer la liste</button>'          +'<button onclick="addTeamsFromInput('+cat.id+')" style="padding:8px 12px;background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.25);border-radius:7px;color:var(--ok);font-size:11px;font-weight:800;cursor:pointer;">+ Ajouter à la liste</button>'        +'</div>'      +'</div>'    +'</details>'  +'</div>';
+
+  // ── Le bloc VAGUES vient APRÈS les équipes (ordre logique : on saisit les équipes puis on organise les vagues) ──
+  html+=htmlVagues;
+
 
     // ── ROW 3 : Actions placement ──
   html+='<div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">'
@@ -8420,9 +8437,14 @@ function addTeamsFromInput(catId){
   if(!cat) return;
   var names = ta.value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
   var added = 0;
-  names.forEach(function(nom){
+  names.forEach(function(line){
+    // Format accepté : "Nom équipe | Club"  OU  "Nom équipe"  (le club est optionnel)
+    var parts=line.split('|');
+    var nom=parts[0].trim();
+    var club=(parts[1]||'').trim();
+    if(!nom) return;
     if(!cat.teams.find(function(t){return t.nom===nom;})){
-      cat.teams.push({id:Date.now()+Math.random(), nom:nom, ligne:null, heatNum:null, forcedLine:null});
+      cat.teams.push({id:Date.now()+Math.random(), nom:nom, club:club, ligne:null, heatNum:null, forcedLine:null});
       added++;
     }
   });
@@ -16986,11 +17008,14 @@ async function generateAndPublishAll(){
     toast('⚠️ Timeout — réessaie ou vérifie Firebase','#E65100');
   }, 30000);
 
-  // ★ HYROX — publier les vagues EN PRIORITÉ, indépendamment du flux heats Delta
-  //   (sinon un événement Hyrox sans heat Delta ne publierait jamais ses vagues)
+  // ★ HYROX — appliquer la config + publier les vagues EN PRIORITÉ, indépendamment du flux heats Delta
+  //   (applyHyroxToEngine fait la config du parcours ET publie les vagues → un seul bouton fait tout)
   try{
     var _isHyroxEvt = ((typeof WODS!=='undefined'&&WODS)||[]).some(function(w){return w&&w.isHyrox;});
-    if(_isHyroxEvt && typeof publishHyroxRace==='function') publishHyroxRace();
+    if(_isHyroxEvt){
+      if(typeof applyHyroxToEngine==='function') applyHyroxToEngine();
+      else if(typeof publishHyroxRace==='function') publishHyroxRace();
+    }
   }catch(e){ console.error('hyrox waves publish:', e); }
 
   // 1 — Planning bénévoles
@@ -22861,9 +22886,61 @@ function loadHyroxCfg(){
 
 /* ── Divisions (config vagues par division) ── */
 function hyroxWaveCount(c){
+  // si vagues manuelles définies, leur nombre prime
+  if(c && Array.isArray(c.vagues) && c.vagues.length) return c.vagues.length;
   var slots = HYROX_CFG.slots||10;
-  var n = (c.teams||[]).length;
+  var n = (c && c.teams ? c.teams.length : 0);
   return Math.max(1, Math.ceil(n/slots));
+}
+
+// Génère la liste des vagues d'une catégorie (heures + équipes réparties)
+function hyroxCatVagues(c){
+  var slots = HYROX_CFG.slots||10;
+  var teams = (c.teams||[]);
+  var out=[];
+  if(Array.isArray(c.vagues) && c.vagues.length){
+    // ── Mode MANUEL : heures définies par l'utilisateur ──
+    c.vagues.forEach(function(vg,i){
+      var t=String(vg.heure||c.hxStart||'08:00').split(':');
+      var mins=(parseInt(t[0],10)||8)*60+(parseInt(t[1],10)||0);
+      var ath;
+      if(c.placementManuel && Array.isArray(vg.teamIds)){
+        // placement manuel : équipes explicitement assignées à cette vague
+        ath=teams.filter(function(tm){ return vg.teamIds.indexOf(tm.id)>=0; });
+      } else {
+        // répartition auto : X équipes par vague dans l'ordre
+        ath=teams.slice(i*slots, (i+1)*slots);
+      }
+      out.push({min:mins, cat:c, wave:i+1, athletes:ath, slots:slots, heureManuelle:true});
+    });
+  } else {
+    // ── Mode AUTO (historique) : intervalle global, découpage par slots ──
+    var t=(c.hxStart||'08:00').split(':');
+    var mins=(parseInt(t[0],10)||8)*60+(parseInt(t[1],10)||0);
+    var iv = (c.interval||HYROX_CFG.interval||10);
+    var nW = Math.max(1, Math.ceil(teams.length/slots));
+    for(var v=0; v<nW; v++){
+      out.push({min:mins, cat:c, wave:v+1, athletes:teams.slice(v*slots,(v+1)*slots), slots:slots});
+      mins += iv;
+    }
+  }
+  out.forEach(function(w){ w.nWaves=out.length; });
+  return out;
+}
+
+function hyroxWavesForDay(day){
+  saveHyroxCfg();
+  var waves=[];
+  (CATEGORIES||[]).filter(function(c){ return (c.jour||1)===day; }).forEach(function(c){
+    hyroxCatVagues(c).forEach(function(w){ waves.push(w); });
+  });
+  waves.sort(function(a,b){ return a.min-b.min || (a.cat.ordre||99)-(b.cat.ordre||99); });
+  waves.forEach(function(w,i){
+    w.num=i+1;
+    w.time=('0'+Math.floor(w.min/60)).slice(-2)+':'+('0'+(w.min%60)).slice(-2);
+    w.conflict = waves.some(function(o){ return o!==w && o.min===w.min; });
+  });
+  return waves;
 }
 
 function renderHyroxDivisions(){
@@ -22904,6 +22981,67 @@ function hxHeureInput(el, apply, fallback){
   var norm=hxParseHeure(el.value);
   if(norm){ el.value=norm; if(typeof apply==='function') apply(norm); }
   else { el.value=fallback||''; }
+}
+
+// ── Gestion des vagues manuelles par catégorie ──
+function _hxCat(catId){ return (CATEGORIES||[]).find(function(x){return String(x.id)===String(catId);}); }
+
+function hxAddVague(catId){
+  var c=_hxCat(catId); if(!c) return;
+  if(!Array.isArray(c.vagues)) c.vagues=[];
+  // heure par défaut = dernière vague + intervalle, ou hxStart
+  var iv=c.interval||(HYROX_CFG.interval||10);
+  var base;
+  if(c.vagues.length){
+    var last=c.vagues[c.vagues.length-1].heure||c.hxStart||'08:00';
+    var p=String(last).split(':'); base=(parseInt(p[0],10)||8)*60+(parseInt(p[1],10)||0)+iv;
+  } else {
+    var p2=String(c.hxStart||'08:00').split(':'); base=(parseInt(p2[0],10)||8)*60+(parseInt(p2[1],10)||0);
+  }
+  base=((base%1440)+1440)%1440;
+  var hh=('0'+Math.floor(base/60)).slice(-2)+':'+('0'+(base%60)).slice(-2);
+  c.vagues.push({heure:hh, teamIds:[]});
+  if(typeof autoSave==='function') autoSave();
+  renderCategories();
+}
+function hxDelVague(catId, idx){
+  var c=_hxCat(catId); if(!c||!Array.isArray(c.vagues)) return;
+  c.vagues.splice(idx,1);
+  if(!c.vagues.length) delete c.vagues; // plus de vagues manuelles → retour auto
+  if(typeof autoSave==='function') autoSave();
+  renderCategories();
+}
+function hxSetVagueHeure(catId, idx, val){
+  var c=_hxCat(catId); if(!c) return;
+  var norm=(typeof hxParseHeure==='function')?hxParseHeure(val):val;
+  if(!norm){ renderCategories(); return; }
+  // si on édite une heure alors qu'on est en mode auto → bascule en manuel en matérialisant les vagues
+  if(!Array.isArray(c.vagues) || !c.vagues.length){
+    var vg=(typeof hyroxCatVagues==='function')?hyroxCatVagues(c):[];
+    c.vagues=vg.map(function(w){ return {heure:w.time, teamIds:(w.athletes||[]).map(function(a){return a.id;})}; });
+  }
+  if(c.vagues[idx]) c.vagues[idx].heure=norm;
+  if(typeof autoSave==='function') autoSave();
+  renderCategories();
+}
+function hxSetCatInterval(catId, val){
+  var c=_hxCat(catId); if(!c) return;
+  var n=parseInt(val,10); if(isNaN(n)||n<1) n=HYROX_CFG.interval||10;
+  c.interval=n;
+  // recalcule les heures des vagues manuelles en chaîne depuis la 1ère
+  if(Array.isArray(c.vagues)&&c.vagues.length){
+    var p=String(c.vagues[0].heure||c.hxStart||'08:00').split(':');
+    var m=(parseInt(p[0],10)||8)*60+(parseInt(p[1],10)||0);
+    c.vagues.forEach(function(vg){ vg.heure=('0'+Math.floor(m/60)).slice(-2)+':'+('0'+(m%60)).slice(-2); m+=n; });
+  }
+  if(typeof autoSave==='function') autoSave();
+  renderCategories();
+}
+function hxSetPlacement(catId, on){
+  var c=_hxCat(catId); if(!c) return;
+  c.placementManuel=!!on;
+  if(typeof autoSave==='function') autoSave();
+  renderCategories();
 }
 
 function hxSetDiv(catId, key, val){
@@ -23240,7 +23378,7 @@ function publishHyroxRace(){
       waves[key]={key:key, num:wv.num, jour:day, time:wv.time, schedAt:schedAt,
         catId:wv.cat.id, catNom:wv.cat.nom, couleur:wv.cat.couleur||'#1D6DB5',
         wave:wv.wave, nWaves:wv.nWaves,
-        athletes:(wv.athletes||[]).map(function(a){return {id:hxFbKey(a.id), nom:a.nom||'—'};})};
+        athletes:(wv.athletes||[]).map(function(a){return {id:hxFbKey(a.id), nom:a.nom||'—', club:a.club||''};})};
     });
   });
   if(!Object.keys(waves).length){ toast('⚠️ Aucune vague générée — vérifie catégories, équipes et créneaux','#DC2626'); }
@@ -23310,31 +23448,6 @@ function setHyroxPlanDay(d){
     b2.style.background = d===2?'linear-gradient(135deg,#F59E0B,#F97316)':'#EBF0FA'; b2.style.color=d===2?'#fff':'var(--ink2)';
   }
   renderHyroxPlanning();
-}
-
-function hyroxWavesForDay(day){
-  saveHyroxCfg();
-  var iv = HYROX_CFG.interval||10;
-  var slots = HYROX_CFG.slots||10;
-  var waves=[];
-  (CATEGORIES||[]).filter(function(c){ return (c.jour||1)===day; }).forEach(function(c){
-    var teams=(c.teams||[]);
-    var t=(c.hxStart||'08:00').split(':');
-    var mins=(parseInt(t[0],10)||8)*60+(parseInt(t[1],10)||0);
-    var nW = hyroxWaveCount(c);
-    for(var v=1; v<=nW; v++){
-      waves.push({min:mins, cat:c, wave:v, nWaves:nW,
-        athletes:teams.slice((v-1)*slots, v*slots), slots:slots});
-      mins += iv;
-    }
-  });
-  waves.sort(function(a,b){ return a.min-b.min || (a.cat.ordre||99)-(b.cat.ordre||99); });
-  waves.forEach(function(w,i){
-    w.num=i+1;
-    w.time=('0'+Math.floor(w.min/60)).slice(-2)+':'+('0'+(w.min%60)).slice(-2);
-    w.conflict = waves.some(function(o){ return o!==w && o.min===w.min; });
-  });
-  return waves;
 }
 
 function renderHyroxPlanning(){

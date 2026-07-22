@@ -41,7 +41,9 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
   <button class="day-btn" id="d2" onclick="setDay(2)">J2</button>
 </div>
 <div id="master" style="background:var(--card);border:2px solid var(--brd);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px"></div>
+<div id="dashboard-kpis"></div>
 <div id="list"><div class="empty">Connexion…</div></div>
+<div id="dashboard"></div>
 <div class="foot" id="foot">—</div>
 
 <script>
@@ -87,8 +89,15 @@ function resetTK(){
   db.ref(R+'/tk/'+DAY+'/startAt').remove();
 }
 db.ref(R+'/config').on('value',function(s){ CFG=s.val()||{}; render();
-  document.getElementById('foot').textContent=(CFG.nom||'HYROX')+' · intervalle '+(CFG.interval||10)+' min · cap '+(CFG.capMinutes||100)+' min'; });
+  document.getElementById('foot').textContent=(CFG.nom||'HYROX')+' · intervalle '+(CFG.interval||10)+' min'; });
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
+// ── Données pour le tableau de bord (œil de Moscou) ──
+var PROGRESS={}, STATIONS=[], BENS={}, PENALTIES={};
+db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); });
+db.ref(R+'/config/stations').on('value',function(s){ STATIONS=s.val()||[]; render(); });
+db.ref('hyrox/benevoles').on('value',function(s){ BENS=s.val()||{}; render(); });
+db.ref(R+'/penalties').on('value',function(s){ PENALTIES=s.val()||{}; render(); });
+db.ref(R+'/judges').on('value',function(s){ window.JUDGES=s.val()||{}; render(); });
 
 /* ── DÉPART AUTOMATIQUE — le TK est le MAÎTRE ──
    Surveille l'heure serveur (now, calé) et lance chaque vague à son heure planifiée,
@@ -164,8 +173,161 @@ function renderMaster(){
       +'<div style="font-size:10px;color:var(--ink2);font-weight:700;margin-top:6px">Aucun départ de vague possible avant.</div>';
 }
 
+// ── ŒIL DE MOSCOU : calcul des stats ──
+function nStationsTot(){ return (STATIONS||[]).filter(function(s){return s.seg==='station';}).length; }
+function teamState(id){
+  var p=PROGRESS[id]; if(!p) return {done:0, finished:false, curSta:null};
+  var sts=p.stations||{};
+  var done=Object.keys(sts).filter(function(k){return sts[k]&&sts[k].done&&!sts[k].auto;}).length;
+  return {done:done, finished:!!p.finishedAt, finishedAt:p.finishedAt, startedAt:p.startedAt, curSta:p.curSta};
+}
+function dayWaves(){ return Object.values(WAVES).filter(function(w){return (w.jour||1)===DAY;}); }
+function allTeams(){
+  var out=[];
+  dayWaves().forEach(function(w){ (w.athletes||[]).forEach(function(a){ out.push({id:a.id,nom:a.nom,wave:w}); }); });
+  return out;
+}
+function fmtCountdown(ms){
+  if(ms<0) ms=0; var s=Math.floor(ms/1000); var m=Math.floor(s/60); s=s%60;
+  return m+':'+('0'+s).slice(-2);
+}
+function renderDashboard(){
+  var el=document.getElementById('dashboard'); if(!el) return;
+  var elKpi=document.getElementById('dashboard-kpis');
+  var teams=allTeams();
+  var running=0, finished=0, finTimes=[];
+  teams.forEach(function(t){
+    var ts=teamState(t.id);
+    if(ts.finished){ finished++; if(ts.finishedAt&&ts.startedAt) finTimes.push(ts.finishedAt-ts.startedAt); }
+    else if(t.wave.startAt){ running++; }
+  });
+  var toStart=teams.length-running-finished;
+  var nPen=Object.keys(PENALTIES||{}).length;
+  // temps moyen + meilleur
+  var avg=finTimes.length?finTimes.reduce(function(a,b){return a+b;},0)/finTimes.length:0;
+  var best=finTimes.length?Math.min.apply(null,finTimes):0;
+  // équipes par station en ce moment
+  var perSta={};
+  teams.forEach(function(t){ var ts=teamState(t.id); if(!ts.finished && t.wave.startAt && ts.curSta!=null){ perSta[ts.curSta]=(perSta[ts.curSta]||0)+1; } });
+
+  // ── Les COMPTEURS vont AU-DESSUS des vagues (dans dashboard-kpis) ──
+  var kpi='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">';
+  kpi+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#10B981;font-variant-numeric:tabular-nums">'+running+'</div><div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase">en course</div></div>';
+  kpi+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#F59E0B;font-variant-numeric:tabular-nums">'+toStart+'</div><div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase">à venir</div></div>';
+  kpi+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#3B82F6;font-variant-numeric:tabular-nums">'+finished+'</div><div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase">arrivés</div></div>';
+  kpi+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:'+(nPen?'#EF4444':'var(--ink3)')+';font-variant-numeric:tabular-nums">'+nPen+'</div><div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase">pénalités</div></div>';
+  kpi+='</div>';
+  if(elKpi) elKpi.innerHTML=kpi;
+
+  // ── Le reste (stats détaillées) va EN DESSOUS des vagues ──
+  var html='';
+
+  // temps moyen / meilleur
+  if(finTimes.length){
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">';
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;text-align:center"><div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase">⏱ temps moyen</div><div style="font-size:18px;font-weight:900;color:var(--ink);font-variant-numeric:tabular-nums">'+fmt(avg)+'</div></div>';
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;text-align:center"><div style="font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase">🏆 meilleur temps</div><div style="font-size:18px;font-weight:900;color:#F59E0B;font-variant-numeric:tabular-nums">'+fmt(best)+'</div></div>';
+    html+='</div>';
+  }
+
+  // équipes par station + ALERTE JUGE (station sans juge = rouge)
+  var stas=(STATIONS||[]).filter(function(s){return s.seg==='station';});
+  var jSeg=(window.JUDGES&&(DAY===1?window.JUDGES.j1:window.JUDGES.j2))||{};
+  if(stas.length){
+    html+='<div style="font-size:11px;font-weight:900;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin:4px 0 8px">🎯 Stations · équipes &amp; juges</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:14px">';
+    stas.forEach(function(s,i){
+      var n=perSta[s.idx]||0;
+      var jugesSta=jSeg[s.idx]||jSeg[String(s.idx)]||[];
+      var nJuges=Array.isArray(jugesSta)?jugesSta.length:(jugesSta?1:0);
+      var noJuge=nJuges===0;
+      html+='<div style="background:'+(noJuge?'#7f1d1d33':'var(--card)')+';border:1px solid '+(noJuge?'#b91c1c':'var(--brd)')+';border-radius:8px;padding:7px 10px;display:flex;align-items:center;gap:8px">'
+        +'<span style="width:8px;height:8px;border-radius:50%;background:'+(n>0?'#10B981':'#475569')+'"></span>'
+        +'<span style="font-size:11px;font-weight:700;flex:1;color:var(--ink)">'+(s.nom||('Station '+(i+1)))
+          +(noJuge?'<span style="color:#F87171;font-size:9px;font-weight:900"> ⚠ SANS JUGE</span>':'<span style="color:var(--ink3);font-size:9px"> · '+nJuges+' juge'+(nJuges>1?'s':'')+'</span>')
+        +'</span>'
+        +'<span style="font-size:12px;font-weight:900;color:'+(n>0?'#10B981':'var(--ink3)')+'">'+n+'</span>'
+      +'</div>';
+    });
+    html+='</div>';
+  }
+
+  // ── RETARD SUR LE PLANNING (vague en cours vs heure prévue) ──
+  var retard=null;
+  dayWaves().forEach(function(w){
+    if(w.startAt && w.schedAt){
+      var r=w.startAt-w.schedAt;
+      if(retard===null || Math.abs(r)>Math.abs(retard)) retard=r;
+    }
+  });
+  if(retard!==null && Math.abs(retard)>30000){
+    var enRetard=retard>0;
+    html+='<div style="background:'+(enRetard?'#78350f33':'#14532d33')+';border:1px solid '+(enRetard?'#F59E0B':'#10B981')+';border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;font-weight:800;color:'+(enRetard?'#FCD34D':'#6EE7B7')+'">'
+      +(enRetard?'⏰ Planning en RETARD de '+fmtCountdown(Math.abs(retard)):'✅ Planning en avance de '+fmtCountdown(Math.abs(retard)))
+    +'</div>';
+  }
+
+  // ── TOTAL REPS SAISI EN DIRECT ──
+  var totalReps=0;
+  Object.keys(PROGRESS).forEach(function(id){
+    var p=PROGRESS[id]; if(!p||!p.stations) return;
+    Object.keys(p.stations).forEach(function(k){
+      var st=p.stations[k]; if(st && st.val) totalReps+=parseFloat(st.val)||0;
+    });
+  });
+  if(totalReps>0){
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;text-align:center;margin-bottom:12px"><span style="font-size:10px;color:var(--ink3);font-weight:700;text-transform:uppercase">💪 Total reps saisi</span> <span style="font-size:16px;font-weight:900;color:var(--ink);margin-left:6px">'+Math.round(totalReps).toLocaleString('fr-FR')+'</span></div>';
+  }
+
+  // ── PÉNALITÉS EN DIRECT ──
+  var penList=[];
+  Object.keys(PENALTIES||{}).forEach(function(athId){
+    var pens=PENALTIES[athId]; if(!pens) return;
+    var team=teams.find(function(t){return String(t.id)===String(athId);});
+    var nom=team?team.nom:athId;
+    Object.keys(pens).forEach(function(pk){
+      var p=pens[pk]; if(!p) return;
+      penList.push({nom:nom, motif:p.motif||p.reason||'Pénalité', sec:p.seconds||p.sec||0});
+    });
+  });
+  if(penList.length){
+    html+='<div style="font-size:11px;font-weight:900;color:#F87171;text-transform:uppercase;letter-spacing:1px;margin:4px 0 8px">⚠️ Pénalités ('+penList.length+')</div>';
+    html+='<div style="margin-bottom:14px">';
+    penList.slice(0,8).forEach(function(p){
+      html+='<div style="background:#7f1d1d22;border:1px solid #b91c1c55;border-radius:7px;padding:6px 10px;margin-bottom:4px;display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:11px;font-weight:800;color:var(--ink);flex:1">'+p.nom+'</span>'
+        +'<span style="font-size:10px;color:#FCA5A5">'+p.motif+'</span>'
+        +(p.sec?'<span style="font-size:11px;font-weight:900;color:#F87171">+'+p.sec+'s</span>':'')
+      +'</div>';
+    });
+    html+='</div>';
+  }
+
+  // ── CHAQUE ÉQUIPE EN DIRECT (en course) ──
+  var runningTeams=teams.filter(function(t){ var ts=teamState(t.id); return !ts.finished && t.wave.startAt; });
+  if(runningTeams.length){
+    html+='<div style="font-size:11px;font-weight:900;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin:4px 0 8px">🏃 Équipes en course ('+runningTeams.length+')</div>';
+    html+='<div style="margin-bottom:14px">';
+    runningTeams.forEach(function(t){
+      var ts=teamState(t.id);
+      var curNom='—';
+      if(ts.curSta!=null){ var cs=stas.filter(function(s){return s.idx===ts.curSta;})[0]; if(cs) curNom=cs.nom; }
+      var tot=nStationsTot()||8;
+      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:8px 10px;margin-bottom:5px;display:flex;align-items:center;gap:8px">'
+        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:800;color:var(--ink)">'+t.nom+'</div>'
+          +'<div style="font-size:10px;color:#F59E0B;font-weight:700">'+curNom+' · '+ts.done+'/'+tot+' stations</div></div>'
+        +'<span class="chrono" data-start="'+t.wave.startAt+'" style="font-size:14px;font-weight:900;color:#10B981;font-variant-numeric:tabular-nums">'+fmt(now()-t.wave.startAt)+'</span>'
+      +'</div>';
+    });
+    html+='</div>';
+  }
+
+  el.innerHTML=html;
+}
+
 function render(){
   renderMaster();
+  renderDashboard();
   var el=document.getElementById('list');
   var arr=Object.values(WAVES).filter(function(w){return (w.jour||1)===DAY;})
     .sort(function(a,b){return (a.num||0)-(b.num||0);});
@@ -175,14 +337,25 @@ function render(){
     var state;
     if(w.startAt){
       var elapsed=now()-w.startAt;
-      var capMs=(CFG.capMinutes||100)*60000;
+      var capMs=(CFG.capMinutes>0?CFG.capMinutes:0)*60000; // 0 = pas de cap
       var tkRef=tkStart()? ' <span style="font-size:10px;color:var(--ink2);font-weight:800">TK +'+fmt(w.startAt-tkStart())+'</span>':'';
-      state = elapsed<capMs
+      state = (capMs===0 || elapsed<capMs)
         ? '<span class="chrono" data-start="'+w.startAt+'">'+fmt(elapsed)+'</span>'+tkRef+' <button class="cancel" onclick="cancelLaunch(\''+w.key+'\')">annuler</button>'
         : '<span class="done">🏁 terminée (cap)</span>'+tkRef;
     } else {
-      var hint=(CFG.autoStart&&w.schedAt)?'<div style="font-size:9px;color:var(--green);font-weight:800;margin-top:3px">🤖 auto à '+w.time+'</div>':'';
-      state='<div style="text-align:center"><button class="go" onclick="launch(\''+w.key+'\')">🚀 GO</button>'+hint+'</div>';
+      // ── Compte à rebours avant départ ──
+      var sched=_schedForWave(w);
+      var cdText='';
+      if(sched!=null){
+        var remain=sched-now();
+        if(remain>0){
+          cdText='<div class="tk-countdown" data-sched="'+sched+'" style="font-size:15px;font-weight:900;color:#F59E0B;font-variant-numeric:tabular-nums;margin-top:3px">⏳ départ dans '+fmtCountdown(remain)+'</div>';
+        } else {
+          cdText='<div style="font-size:11px;font-weight:900;color:#10B981;margin-top:3px">⏳ imminent…</div>';
+        }
+      }
+      var hint=(CFG.autoStart&&w.schedAt)?'<div style="font-size:9px;color:var(--green);font-weight:800;margin-top:2px">🤖 auto à '+w.time+'</div>':'';
+      state='<div style="text-align:center"><button class="go" onclick="launch(\''+w.key+'\')">🚀 GO</button>'+cdText+hint+'</div>';
     }
     return '<div class="wave" style="border-left-color:'+c+'">'
       +'<div class="top"><div class="time">'+w.time+'</div>'
@@ -203,6 +376,12 @@ setInterval(function(){
     _ck.title=ADJ?('Calé sur le chrono officiel ('+(ADJ>0?'+':'')+Math.round(ADJ/1000)+'s vs serveur) — clique pour recaler'):'Heure officielle — clique pour caler sur le chrono pro'; }
   document.querySelectorAll('.chrono').forEach(function(n){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
+  });
+  // compte à rebours avant départ des vagues
+  document.querySelectorAll('.tk-countdown').forEach(function(n){
+    var remain=parseInt(n.dataset.sched,10)-now();
+    if(remain>0){ n.textContent='⏳ départ dans '+fmtCountdown(remain); }
+    else { n.textContent='⏳ imminent…'; n.style.color='#10B981'; }
   });
 },250);
 

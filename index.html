@@ -1193,14 +1193,8 @@ function checkPassword(){
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--brd2);border-radius:10px;padding:8px 14px;flex:1;min-width:160px">
-        <span style="font-size:18px">🏁</span>
-        <div style="flex:1">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase">Time cap course (min)</div>
-          <input id="hx-cap" type="number" min="30" max="180" value="100" oninput="saveHyroxCfg()"
-            style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
-        </div>
-      </div>
+      <!-- Time cap retiré de l'affichage (pas de cap sur cet événement Hyrox). Input caché conservé pour compat interne. -->
+      <input id="hx-cap" type="hidden" value="0">
     </div>
     <label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--brd2);border-radius:10px;padding:10px 14px;margin-bottom:10px;cursor:pointer">
       <input id="hx-auto" type="checkbox" onchange="saveHyroxCfg()" style="width:18px;height:18px;accent-color:#059669;cursor:pointer">
@@ -2555,7 +2549,7 @@ function checkPassword(){
 <div class="gsec" id="g2">
   <div class="gsec-hdr"><div class="gnum orange">2</div><div><div class="gsec-title">L'ordre exact à suivre</div><div class="gsec-sub">Tu peux suivre ça les yeux fermés</div></div></div>
   <div class="gsteps">
-    <div class="gstep ok"><div class="gsn ok">1</div><div><div class="gst">Config</div><div class="gsd">Renseigne les dates J1 et J2, l'heure de la 1ère vague, l'intervalle entre vagues, les slots par vague et le time cap.</div></div></div>
+    <div class="gstep ok"><div class="gsn ok">1</div><div><div class="gst">Config</div><div class="gsd">Renseigne les dates J1 et J2, l'heure de la 1ère vague, l'intervalle entre vagues et les slots par vague.</div></div></div>
     <div class="gstep ok"><div class="gsn ok">2</div><div><div class="gst">Catégories</div><div class="gsd">Chaque division a déjà son heure de départ et ses équipes. Ajuste l'heure de départ (tape directement 2330 ou 23:30) et ajoute/importe tes équipes.</div></div></div>
     <div class="gstep ok"><div class="gsn ok">3</div><div><div class="gst">Caler les départs</div><div class="gsd">Clique sur <code>⏱ Caler les départs</code> pour étaler toutes les vagues bout à bout, sans jamais deux vagues à la même heure (une seule zone de départ).</div></div></div>
     <div class="gstep ok"><div class="gsn ok">4</div><div><div class="gst">Bénévoles</div><div class="gsd">Ajoute tes juges avec leur disponibilité (Matin, Après-Midi, Journée) et leurs jours.</div></div></div>
@@ -2583,7 +2577,6 @@ function checkPassword(){
       <strong>🌅 1ère vague J1 / J2</strong> : l'heure de la première vague de chaque jour. Tape directement <code>2330</code> ou <code>23:30</code>.<br>
       <strong>⏱ Intervalle vagues</strong> : le nombre de minutes entre deux départs.<br>
       <strong>👥 Slots par vague</strong> : combien d'équipes partent ensemble sur une vague.<br>
-      <strong>🏁 Time cap</strong> : la durée maximale d'une course.
     </div>
   </div>
   <div class="gc warn">

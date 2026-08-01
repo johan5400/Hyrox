@@ -60,6 +60,55 @@ body.geant .fin-score{font-size:14px}
 body.geant .flag{width:22px;height:22px}
 .geantbtn{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer}
 body.geant .geantbtn{background:#F59E0B;color:#1a1205;border-color:#F59E0B}
+/* ═══ BOARD PREMIUM (style broadcast) ═══ */
+body{background:#060912}
+.bcard{background:radial-gradient(ellipse at top,#0f1e3d 0%,#060912 70%);border-radius:16px;padding:18px 16px;margin-bottom:14px;border:1px solid rgba(59,130,246,.15)}
+.bhdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.bbar{width:5px;height:34px;background:linear-gradient(#22d3ee,#3b82f6);border-radius:3px;box-shadow:0 0 12px #22d3ee}
+.bti{font-size:24px;font-weight:900;font-style:italic;letter-spacing:1px;text-transform:uppercase;color:#fff}
+.bsub{margin-left:auto;font-size:11px;font-weight:800;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);padding:5px 12px;border-radius:20px;color:#67e8f9}
+.bseclbl{font-size:12px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;color:#7dd3fc;display:flex;align-items:center;gap:8px}
+.bseclbl::before{content:'';width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 10px #22d3ee;animation:bblink 1.5s infinite}
+@keyframes bblink{50%{opacity:.3}}
+.brow{display:flex;align-items:center;background:linear-gradient(90deg,rgba(30,58,138,.35),rgba(15,30,61,.15));border-radius:14px;margin-bottom:8px;padding:13px 12px;border:1px solid rgba(59,130,246,.2);transition:all .6s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden}
+.brow.lead{background:linear-gradient(90deg,rgba(34,211,238,.28),rgba(15,30,61,.1));border-color:rgba(34,211,238,.5);box-shadow:0 0 22px rgba(34,211,238,.18)}
+.brow.lead::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#22d3ee;box-shadow:0 0 14px #22d3ee}
+.brk{width:54px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bpill{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;font-style:italic;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.bpill.p1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3a2410}
+.bpill.p2{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#1e293b}
+.bpill.p3{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff}
+.bpill.px{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff}
+.bteam{flex:1;min-width:0;padding:0 12px}
+.bnm{font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.bclub{font-size:10px;color:#64a0d8;font-weight:700;letter-spacing:.5px}
+.bst{width:54px;text-align:center;font-size:20px;font-weight:900;flex-shrink:0;color:#93c5fd}
+.bmid{width:110px;text-align:center;flex-shrink:0}
+.bmlbl{font-size:10px;color:#7dd3fc;text-transform:uppercase;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bmv{font-size:16px;font-weight:900;color:#fcd34d}
+.btot{width:92px;text-align:right;font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;flex-shrink:0;color:#22d3ee}
+.btot .chrono{color:#22d3ee}
+/* TICKER */
+.ticker{position:fixed;bottom:0;left:0;right:0;height:60px;background:linear-gradient(90deg,#0a1428,#0f1e3d);border-top:2px solid #22d3ee;display:flex;align-items:center;overflow:hidden;box-shadow:0 -4px 20px rgba(0,0,0,.5);z-index:50}
+.ticker .tag{position:relative;z-index:3;flex-shrink:0;background:#22d3ee;color:#06121f;font-weight:900;font-style:italic;font-size:13px;padding:0 16px;height:100%;display:flex;align-items:center;text-transform:uppercase;letter-spacing:1px;box-shadow:8px 0 16px rgba(10,20,40,.9)}
+.tickwin{flex:1;overflow:hidden;position:relative}
+.ticker .scroll{display:flex;gap:44px;white-space:nowrap;animation:tickslide 16s linear infinite;padding-left:30px}
+@keyframes tickslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker .fin{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800}
+.ticker .fr{font-weight:900;font-style:italic;color:#fbbf24;font-size:14px}
+.ticker .fn{font-style:italic;text-transform:uppercase;color:#fff}
+.ticker .ft{color:#4ade80;font-weight:900;font-variant-numeric:tabular-nums}
+.ticker .fc{color:#64a0d8;font-size:10px}
+.grid{padding-bottom:76px}
+/* Mode géant : agrandir le board */
+body.geant .bnm{font-size:28px}
+body.geant .bti{font-size:32px}
+body.geant .btot{font-size:32px;width:120px}
+body.geant .bst{font-size:28px}
+body.geant .bpill{width:58px;height:58px;font-size:26px}
+body.geant .bmv{font-size:20px}
+body.geant .ticker{height:74px}
+body.geant .ticker .fin{font-size:20px}
 </style>
 </head>
 <body>
@@ -202,14 +251,8 @@ function render(){
   if(!CFG){ grid.innerHTML='<div class="empty">En attente de la publication de la course…</div>'; return; }
   document.getElementById('evnom').textContent=CFG.nom||'HYROX';
 
-  // boutons divisions
-  var divs=Object.values(CFG.divisions||{}).sort(function(a,b){return (a.id||0)-(b.id||0);});
-  document.getElementById('divbtns').innerHTML =
-    '<button class="divbtn'+(FILTER==='all'?' on':'')+'" style="'+(FILTER==='all'?'background:#3B82F6;border-color:#3B82F6':'')+'" onclick="setFilter(\'all\')">Toutes</button> '
-    + divs.map(function(d){
-      var on=FILTER===String(d.id);
-      return '<button class="divbtn'+(on?' on':'')+'" style="'+(on?'background:'+d.couleur+';border-color:'+d.couleur:'color:'+d.couleur)+'" onclick="setFilter(\''+d.id+'\')">'+d.nom+'</button>';
-    }).join(' ');
+  // boutons divisions retirés du live public (le board affiche tout, pas de filtre à cliquer)
+  var _db=document.getElementById('divbtns'); if(_db) _db.innerHTML='';
 
   var total=nSegments();
   var byDiv={};
@@ -219,7 +262,7 @@ function render(){
     if(!byDiv[w.catId]) byDiv[w.catId]={nom:w.catNom,couleur:w.couleur,finished:[],running:[]};
     (w.athletes||[]).forEach(function(a){
       var p=prog(a.id);
-      var item={id:a.id,nom:a.nom,waveNum:w.num,startAt:w.startAt,p:p,done:doneCount(a.id)};
+      var item={id:a.id,nom:a.nom,club:a.club||'',waveNum:w.num,startAt:w.startAt,p:p,done:doneCount(a.id)};
       if(p.finishedAt) byDiv[w.catId].finished.push(item);
       else byDiv[w.catId].running.push(item);
     });
@@ -231,54 +274,86 @@ function render(){
   grid.innerHTML=keys.map(function(k){
     var d=byDiv[k];
     d.finished.sort(function(a,b){ return (a.p.dnf?9e13:(offMs(a.id,a.p)||9e12))-(b.p.dnf?9e13:(offMs(b.id,b.p)||9e12)); });
-    // ── En course : tri par AVANCEMENT (même départ = même temps, le plus avancé devant) ──
-    // score = stations validées ×1e9 + reps de la station en cours (départage à station égale)
+    // En course : tri par avancement (même départ = même temps, le plus avancé devant)
     d.running.forEach(function(t){ t._adv=advScore(t.id); });
     d.running.sort(function(a,b){ return b._adv-a._adv || a.waveNum-b.waveNum; });
+
+    // ── EN COURSE : lignes plein écran, board premium ──
     var rows='';
-    d.finished.forEach(function(t,i){
-      var r=i+1;
-      var open=!t.p.dnf && EXPANDED[t.id];
-      var flag=t.p.dnf?'':'<span class="flag" title="Arrivée"></span>';
-      rows+='<div class="row"'+(t.p.dnf?'':' style="cursor:pointer" onclick="toggleSplits(\''+t.id+'\')"')+'><div class="rank'+(r<=3&&!t.p.dnf?' r'+r:'')+'">'+(t.p.dnf?'—':r)+'</div>'
-        +'<div class="nom">'+flag+t.nom+'<div class="sub">vague '+t.waveNum+(t.p.dnf?'':' · terminé · touche pour le détail')+'</div>'
-        +(t.p.dnf?'':'<div class="fin-score">'+doneCount(t.id)+'/'+nStations()+' stations validées'+(penMs(t.id)?' · pénalité +'+Math.round(penMs(t.id)/1000)+'s':'')+'</div>')
-        +'</div>'
-        +(t.p.dnf?'<span class="dnf">DNF</span>':'<span class="toff">'+fmt(offMs(t.id,t.p))+(penMs(t.id)?'<span style="font-size:9px;color:#F87171;font-weight:900"> +pén.</span>':'')+' <span style="opacity:.45;font-size:10px">'+(open?'▲':'▼')+'</span></span>')
-        +'</div>';
-      if(open) rows+=splitsHTML(t.p);
-    });
     d.running.forEach(function(t,ri){
       var cs=courseState(t.id);
       var rang=ri+1;
-      // Où en est l'équipe, en clair
-      var etat, etatCol;
-      if(cs.runActive){
-        etat='🏃 RUN'; etatCol='#3B82F6';
-      } else if(cs.repNow){
-        etat=cs.repNow.nom + (cs.repNow.num?' · Station '+cs.repNow.num:'') + ' — <b>' + cs.repNow.val + (cs.repNow.target?(' / '+cs.repNow.target):'') + '</b>';
-        etatCol='#F59E0B';
+      var pillCls = rang===1?'p1':rang===2?'p2':rang===3?'p3':'px';
+      var lead = rang===1?' lead':'';
+      // état : station en cours + avancement
+      var lbl, val;
+      if(cs.runActive){ lbl='🏃 Run'; val=''; }
+      else if(cs.repNow){
+        lbl=cs.repNow.nom+(cs.repNow.num?' · St'+cs.repNow.num:'');
+        val=cs.repNow.val+(cs.repNow.target?(' / '+cs.repNow.target):'');
       } else {
-        // trouver la station en cours (premier segment station non fini)
         var curSta=cs.segs.filter(function(s){return s.type==='station'&&s.current;})[0];
-        etat = curSta ? (curSta.nom+' · Station '+curSta.num) : 'En course';
-        etatCol='#F59E0B';
+        lbl=curSta?curSta.nom:'En course'; val='';
       }
-      rows+='<div class="row'+(cs.runActive?' run-blink':'')+'" style="border-left:4px solid '+d.couleur+'">'
-        +'<div class="rank'+(rang<=3?' r'+rang:'')+'">'+rang+'</div>'
-        +'<div class="nom" style="flex:1">'+t.nom
-          +'<div class="etat" style="color:'+etatCol+'">'+(cs.runActive?'🏃 ':'')+etat+'</div>'
-          +'<div class="sub">vague '+t.waveNum+'</div>'
-        +'</div>'
-        +'<span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span>'
+      var nbSt=doneCount(t.id), totSt=nStations();
+      rows+='<div class="brow'+lead+'" data-id="'+t.id+'">'
+        +'<div class="brk"><div class="bpill '+pillCls+'">'+rang+'</div></div>'
+        +'<div class="bteam"><div class="bnm">'+t.nom+'</div>'+(t.club?'<div class="bclub">'+t.club+'</div>':'<div class="bclub">&nbsp;</div>')+'</div>'
+        +'<div class="bst">'+nbSt+'/'+totSt+'</div>'
+        +'<div class="bmid"><div class="bmlbl">'+lbl+'</div>'+(val?'<div class="bmv">'+val+'</div>':'<div class="bmv">&nbsp;</div>')+'</div>'
+        +'<div class="btot"><span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span></div>'
         +'</div>';
     });
-    return '<div class="card"><h2><span class="badge" style="color:'+d.couleur+';border-color:'+d.couleur+'55;background:'+d.couleur+'22">'+d.nom+'</span>'
-      +'<span class="sub">'+d.finished.filter(function(t){return !t.p.dnf;}).length+' arrivés · '+d.running.length+' en course</span></h2>'
-      +(rows||'<div class="empty">—</div>')+'</div>';
+
+    return '<div class="bcard">'
+      +'<div class="bhdr"><div class="bbar"></div><div class="bti">'+d.nom+'</div>'
+        +'<div class="bsub">● LIVE · '+d.running.length+' en course</div></div>'
+      +'<div class="bseclbl">En course</div>'
+      +(rows||'<div class="empty">En attente de départ…</div>')
+      +'</div>';
   }).join('');
 
-  document.getElementById('foot').textContent='Cap '+(CFG.capMinutes||100)+' min · mise à jour temps réel';
+  // ── TICKER ARRIVÉS (bandeau défilant en bas, 5 derniers arrivés toutes catégories) ──
+  renderTicker(byDiv);
+
+  document.getElementById('foot').textContent='Mise à jour temps réel';
+}
+
+// Construit/actualise le ticker des arrivés en bas de l'écran
+function renderTicker(byDiv){
+  var tick=document.getElementById('ticker');
+  if(!tick){
+    tick=document.createElement('div');
+    tick.id='ticker'; tick.className='ticker';
+    document.body.appendChild(tick);
+  }
+  // rassembler tous les arrivés, trier par heure d'arrivée décroissante (les + récents d'abord)
+  var arrivals=[];
+  Object.keys(byDiv).forEach(function(k){
+    var d=byDiv[k];
+    d.finished.forEach(function(t){
+      if(t.p.dnf) return;
+      arrivals.push({nom:t.nom, club:t.club||'', off:offMs(t.id,t.p), at:(t.p.finishedAt||0), catNom:d.nom});
+    });
+  });
+  if(!arrivals.length){ tick.style.display='none'; return; }
+  tick.style.display='flex';
+  // rang par catégorie (classement au temps final)
+  var byCat={};
+  arrivals.forEach(function(a){ (byCat[a.catNom]=byCat[a.catNom]||[]).push(a); });
+  Object.keys(byCat).forEach(function(c){ byCat[c].sort(function(x,y){return x.off-y.off;}); byCat[c].forEach(function(a,i){a.rank=i+1;}); });
+  // les 5 plus récents (par heure d'arrivée)
+  var recent=arrivals.slice().sort(function(x,y){return y.at-x.at;}).slice(0,5);
+  // ordre d'affichage = par temps (plus rapide d'abord) pour la lisibilité
+  recent.sort(function(x,y){return x.off-y.off;});
+  function chip(a){
+    return '<div class="fin"><span class="fr">#'+a.rank+'</span><span class="fn">'+a.nom+'</span>'
+      +(a.club?'<span class="fc">'+a.club+'</span>':'')
+      +'<span class="ft">'+fmt(a.off)+'</span></div>';
+  }
+  // doublé pour boucle fluide
+  var inner=recent.map(chip).join('')+recent.map(chip).join('');
+  tick.innerHTML='<div class="tag">🏁 Arrivés</div><div class="tickwin"><div class="scroll">'+inner+'</div></div>';
 }
 
 setInterval(function(){

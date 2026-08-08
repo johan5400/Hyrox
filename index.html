@@ -2226,38 +2226,10 @@ function checkPassword(){
     </div>
   </div>
 
-  <!-- ── SECTION 3 : QR PLANNING JUGES ── -->
-  <div style="background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--brd);border-radius:14px;padding:18px;margin-bottom:16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;background:rgba(78,159,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📱</div>
-        <div>
-          <div style="font-size:15px;font-weight:900;color:var(--ink)">QR Juges Individuels</div>
-          <div style="font-size:11px;color:var(--mid)">Chaque juge scanne son QR personnel pour ouvrir son accès juge</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button onclick="syncJudgeAssignmentsNow()" style="padding:7px 14px;background:var(--ok-bg);border:1px solid var(--ok-brd);border-radius:8px;color:var(--ok);font-size:11px;font-weight:700;cursor:pointer">📱 Sync QR Juges</button>
-        <button onclick="setTimeout(renderQRSheet,50);toast('🔄 Actualisation...')" style="padding:7px 14px;background:#EBF0FA;border:1px solid var(--brd2);border-radius:8px;color:var(--ink2);font-size:11px;font-weight:700;cursor:pointer">🔄 Actualiser</button>
-        <button onclick="printQRSheet()" style="padding:7px 14px;background:#EBF0FA;border:1px solid var(--brd2);border-radius:8px;color:var(--ink2);font-size:11px;font-weight:700;cursor:pointer">🖨️ Imprimer</button>
-      </div>
-    </div>
-
-    <!-- Avertissement mode statique -->
-    <div id="qr-warn-static" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--warn)">
-      ⚠️ <b>Mode statique</b> — QR denses. Configurez JSONBin dans ⚙️ Config pour des QR courts et dynamiques.
-    </div>
-
-    <!-- État planning non généré -->
-    <div id="qr-not-gen" style="display:none;text-align:center;padding:32px;border:1.5px dashed var(--brd);border-radius:10px">
-      <div style="font-size:22px;margin-bottom:6px">📋</div>
-      <div style="font-size:14px;font-weight:800;color:var(--ink2);margin-bottom:6px">Planning non généré</div>
-      <div style="font-size:11px;color:var(--mid)">Les vagues se génèrent automatiquement dès que vous saisissez des athlètes</div>
-    </div>
-
-    <!-- Grille QR -->
-    <div id="qr-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
-  </div>
+  <!-- Section QR juges individuels supprimée — les juges utilisent un QR unique par station -->
+  <div id="qr-grid" style="display:none"></div>
+  <div id="qr-not-gen" style="display:none"></div>
+  <div id="qr-warn-static" style="display:none"></div>
 
 </div>
 

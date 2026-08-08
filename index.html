@@ -740,7 +740,7 @@ function renderMobilePlanningCard(ben, data, wrap){
   var jours = ben.jours==='12'?'J1 + J2':ben.jours==='2'?'Jour 2':'Jour 1';
   var base=location.href.split('#')[0].split('?')[0];
   var baseDir=base.split('/').slice(0,-1).join('/')+'/'; 
-  var qrUrl = baseDir+'juge-hyrox.html?id='+encodeURIComponent(ben.id||'');
+  var qrUrl = baseDir+'juge-hyrox.html';
   var qrImg = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(qrUrl);
 
   var html = '<div style="background:#e4eaf7;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:16px;margin-bottom:14px;">'
@@ -778,7 +778,7 @@ function renderMobilePlanningCard(ben, data, wrap){
           +'<span style="color:#3A5270;">'+escHtml(a.wod)+'</span>'
         +'</div>'
         +'<div style="margin-top:8px;">'
-          +'<a href="juge-hyrox.html?ben='+ben.id+'" style="display:block;text-align:center;background:linear-gradient(135deg,#B71C1C,#FF5722);color:#fff;text-decoration:none;border-radius:8px;padding:10px;font-size:13px;font-weight:900;letter-spacing:2px;">⚡ ACCÉDER AU JUDGING</a>'
+          +'<a href="juge-hyrox.html" style="display:block;text-align:center;background:linear-gradient(135deg,#B71C1C,#FF5722);color:#fff;text-decoration:none;border-radius:8px;padding:10px;font-size:13px;font-weight:900;letter-spacing:2px;">⚡ ACCÉDER AU JUDGING</a>'
         +'</div>'
         +'</div>';
     });
@@ -5141,10 +5141,10 @@ function renderBenQRPane(){
   var actionHref='';
   var actionLabel='';
   if(judgeMode){
-    targetUrl=base+'juge-hyrox.html?id='+encodeURIComponent(ben.id||'');
+    targetUrl=base+'juge-hyrox.html';
     qrTitle='📱 QR INTERFACE JUGE';
     qrDesc='Ce QR donne accès direct à l’interface de scoring';
-    actionHref='juge-hyrox.html?ben='+ben.id;
+    actionHref='juge-hyrox.html';
     actionLabel='⚡ ACCEDER AU JUDGING';
   } else {
     targetUrl=base+'live-hyrox.html';
@@ -14142,7 +14142,7 @@ function buildMailBody(b){
   var resp   = (document.getElementById('ev-resp')||{}).value || '';
   var emailR = (document.getElementById('ev-email')||{}).value || '';
   var base   = location.href.split('/').slice(0,-1).join('/') + '/';
-  var judgeUrl = base + 'juge-hyrox.html?id=' + encodeURIComponent(b.id||'');
+  var judgeUrl = base + 'juge-hyrox.html';
   var entryUrl = base + 'juge-hyrox.html';
   var judgeQr = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(judgeUrl);
   var entryQr = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data=' + encodeURIComponent(entryUrl);
@@ -15287,7 +15287,7 @@ function startSwap(gn,l){
 // QR CODES + JSONBIN SYNC
 // ══════════════════════════════════════════════════════════════════
 
-function renderJugeQRGrid(){
+function renderJugeQRGrid(){ return; // QR nominatifs supprimés
   var grid=document.getElementById('qr-juges-grid');
   var notGen=document.getElementById('qr-juges-not-gen');
   if(!grid)return;
@@ -15320,7 +15320,7 @@ function renderJugeQRGrid(){
   html+='<div style="font-size:9px;font-weight:800;color:var(--ink2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">QR NOMINATIFS (optionnel · 1 par juge)</div>';
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">';
   juges.forEach(function(b){
-    var url=baseDir+'juge-hyrox.html?id='+encodeURIComponent(b.id||'');
+    var url=baseDir+'juge-hyrox.html';
     var qr='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(url);
     var jours=b.jours==='12'?'J1+J2':b.jours==='2'?'J2':'J1';
     html+='<div style="background:var(--s1,#FFFFFF);border:1px solid var(--brd,#EBF0FA);border-radius:10px;padding:12px;text-align:center;">'
@@ -15396,7 +15396,7 @@ function printGuide(){
   var baseUrl = window.location.href.split('/').slice(0,-1).join('/');
   html += '<div class="urls"><h2>🔗 URLs du système</h2>';
   html += '<div class="url-row"><span class="url-lbl">Admin</span><span class="url-val">'+baseUrl+'/index.html · mot de passe : Delta</span></div>';
-  html += '<div class="url-row"><span class="url-lbl">Juge</span><span class="url-val">'+baseUrl+'/juge-hyrox.html?ben=ID</span></div>';
+  html += '<div class="url-row"><span class="url-lbl">Juge</span><span class="url-val">'+baseUrl+'/juge-hyrox.html</span></div>';
   html += '<div class="url-row"><span class="url-lbl">Écran public</span><span class="url-val">'+baseUrl+'/live-hyrox.html</span></div>';
   html += '<div class="url-row"><span class="url-lbl">Time Keeper</span><span class="url-val">'+baseUrl+'/tk-hyrox.html</span></div>';
   html += '</div>';
@@ -15426,7 +15426,7 @@ function printGuide(){
   w.document.close();
 }
 
-function printJugeQRSheet(){
+function printJugeQRSheet(){ printHyroxJudges(); return;
   // ★ FIX : l'élément 'qr-juges-grid' n'existe plus dans l'onglet QR de cette
   //   version → la planche de QR juges est générée ICI, en autonome, depuis la
   //   liste des juges (règle "1 bénévole = 1 juge" incluse via le fallback).
@@ -15438,7 +15438,7 @@ function printJugeQRSheet(){
   var qrEntry='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(entryUrl);
   var cards='';
   juges.forEach(function(b){
-    var url=baseDir+'juge-hyrox.html?id='+encodeURIComponent(b.id||'');
+    var url=baseDir+'juge-hyrox.html';
     var qr='https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=0D1B2A&bgcolor=FFFFFF&margin=12&ecc=L&data='+encodeURIComponent(url);
     var jours=b.jours==='12'?'J1+J2':b.jours==='2'?'J2':'J1';
     cards+='<div class="card"><img src="'+qr+'"><div class="nm">'+escHtml(b.prenom||'')+' '+escHtml(b.nom||'')+'</div><div class="jr">'+jours+'</div></div>';
@@ -15467,10 +15467,9 @@ function printJugeQRSheet(){
 
 // ── QR BADGE — compteur live sur l&rsquo;onglet ──
 function updateQRBadge(){
-  var juges = getPlanningQrBenevoles();
   var tab = document.querySelector('.tab[onclick*="showQRCodes"]') || document.querySelector('.tab[onclick*="qrcodes"]');
   if(!tab) return;
-  var count = juges.length;
+  var count = 0; // QR nominatifs supprimés
   // Badge count sur le tab
   var badge = document.getElementById('qr-tab-badge');
   if(!badge){
@@ -15510,7 +15509,7 @@ function showQRCodes(btn){
   updateQRBadge();
 }
 
-function renderQRSheet(){ return; // QR nominatifs supprimés — un seul QR par station suffit
+function renderQRSheet(){ return;
   var grid=document.getElementById('qr-grid');
   var notGen=document.getElementById('qr-not-gen');
   var warnStatic=document.getElementById('qr-warn-static');

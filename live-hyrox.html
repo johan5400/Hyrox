@@ -170,15 +170,22 @@ function courseState(id){
   if(curPos>=0){
     var seg=out[curPos];
     if(seg.type==='run'){ runActive=true; }
-    else {
-      seg.current=true;
-      // reps en cours sur cette station (val écrit par le juge)
-      var rec2=pst[seg.idx];
-      if(rec2 && rec2.val!=null){
-        var target=null;
-        var sdef=segs.find(function(x){return x.idx===seg.idx;});
-        if(sdef){ var q=(sdef.qtyParCat&&WAVEcat(id)!=null&&sdef.qtyParCat[String(WAVEcat(id))]!=null)?sdef.qtyParCat[String(WAVEcat(id))]:sdef.qty; target=parseFloat(q)||null; }
-        repNow={val:rec2.val, target:target, nom:seg.nom, num:seg.num};
+    else { seg.current=true; }
+  }
+  // ★ FIX : cherche les reps sur TOUTES les stations non-validées (pas seulement curPos)
+  // Cas typique : la station précédente n'est pas encore done=true côté juge
+  // donc curPos pointe trop tôt, mais le juge tape déjà des reps sur la station suivante.
+  for(var j=0;j<out.length;j++){
+    if(out[j].type!=='station' || out[j].done) continue;
+    var rec2=pst[out[j].idx];
+    if(rec2 && rec2.val!=null && !rec2.done){
+      var sdef=segs.find(function(x){return x.idx===out[j].idx;});
+      var target=null;
+      if(sdef){ var q=(sdef.qtyParCat&&WAVEcat(id)!=null&&sdef.qtyParCat[String(WAVEcat(id))]!=null)?sdef.qtyParCat[String(WAVEcat(id))]:sdef.qty; target=parseFloat(q)||null; }
+      // On garde la première station avec des reps en cours (la plus avancée)
+      if(!repNow || (parseFloat(rec2.val)||0)>0){
+        repNow={val:rec2.val, target:target, nom:out[j].nom, num:out[j].num};
+        break; // première station active trouvée = la bonne
       }
     }
   }

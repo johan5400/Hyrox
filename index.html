@@ -15510,7 +15510,7 @@ function showQRCodes(btn){
   updateQRBadge();
 }
 
-function renderQRSheet(){
+function renderQRSheet(){ return; // QR nominatifs supprimés — un seul QR par station suffit
   var grid=document.getElementById('qr-grid');
   var notGen=document.getElementById('qr-not-gen');
   var warnStatic=document.getElementById('qr-warn-static');

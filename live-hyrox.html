@@ -100,6 +100,15 @@ body{background:#060912}
 .ticker .ft{color:#4ade80;font-weight:900;font-variant-numeric:tabular-nums}
 .ticker .fc{color:#64a0d8;font-size:10px}
 .grid{padding-bottom:76px}
+/* ── COUNTDOWN AVANT DÉPART ── */
+.cdblock{background:linear-gradient(135deg,#0f1e3d,#0a1428);border:1px solid rgba(245,158,11,.35);border-radius:14px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.cdblock .cdi{font-size:28px}
+.cdblock .cdinfo{flex:1}
+.cdblock .cdcat{font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;color:#fcd34d;letter-spacing:.5px}
+.cdblock .cdwave{font-size:11px;color:#7dd3fc;font-weight:700;margin-top:2px}
+.cdblock .cdtimer{font-size:32px;font-weight:900;font-variant-numeric:tabular-nums;color:#f59e0b;letter-spacing:1px;text-shadow:0 0 18px #f59e0b88;min-width:110px;text-align:right}
+body.geant .cdblock .cdtimer{font-size:48px}
+body.geant .cdblock .cdcat{font-size:20px}
 /* Mode géant : agrandir le board */
 body.geant .bnm{font-size:28px}
 body.geant .bti{font-size:32px}
@@ -117,6 +126,7 @@ body.geant .ticker .fin{font-size:20px}
   <button class="geantbtn" onclick="toggleGeant()" title="Basculer en mode écran géant / rétroprojecteur"><span id="geant-lbl">📽️ Mode écran géant</span></button>
   <div id="divbtns"></div>
 </div>
+<div id="countdowns"></div>
 <div class="grid" id="grid"><div class="empty">Connexion…</div></div>
 <div class="foot" id="foot">—</div>
 
@@ -251,6 +261,38 @@ function splitsHTML(p){
     +'<span style="flex:1">🏃 Runs '+fmt(runTot)+'</span><span>🏋️ Stations '+fmt(staTot)+'</span></div></div>';
 }
 
+// ── Countdown avant départ pour les vagues pas encore lancées ──
+function fmtCountdown(ms){
+  if(ms<=0) return '00:00';
+  var s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+  if(h>0) return h+'h'+('0'+m).slice(-2)+'m'+('0'+sec).slice(-2)+'s';
+  return ('0'+m).slice(-2)+':'+('0'+sec).slice(-2);
+}
+function renderCountdowns(){
+  var cd=document.getElementById('countdowns'); if(!cd) return;
+  // Récupérer toutes les vagues avec schedAt mais sans startAt (pas encore lancées)
+  var pending=[];
+  Object.values(WAVES).forEach(function(w){
+    if(w.startAt) return; // déjà lancée
+    var sched=w.schedAt;
+    if(!sched) return; // pas programmée
+    var remain=sched-now();
+    if(remain<0 || remain>12*3600000) return; // passée ou trop loin (>12h)
+    pending.push({catNom:w.catNom||'', couleur:w.couleur||'#3B82F6', waveNum:w.num||'', sched:sched, remain:remain});
+  });
+  pending.sort(function(a,b){ return a.sched-b.sched; });
+  if(!pending.length){ cd.innerHTML=''; return; }
+  cd.innerHTML=pending.map(function(p){
+    return '<div class="cdblock" data-sched="'+p.sched+'">'
+      +'<div class="cdi">⏳</div>'
+      +'<div class="cdinfo">'
+        +'<div class="cdcat" style="color:'+p.couleur+'">'+p.catNom+'</div>'
+        +'<div class="cdwave">Vague '+p.waveNum+' · Départ dans</div>'
+      +'</div>'
+      +'<div class="cdtimer" id="cdt-'+p.sched+'">'+fmtCountdown(p.remain)+'</div>'
+      +'</div>';
+  }).join('');
+}
 function setFilter(f){ FILTER=f; render(); }
 
 function render(){
@@ -320,6 +362,8 @@ function render(){
       +'</div>';
   }).join('');
 
+  // ── COUNTDOWN avant départ ──
+  renderCountdowns();
   // ── TICKER ARRIVÉS (bandeau défilant en bas, 5 derniers arrivés toutes catégories) ──
   renderTicker(byDiv);
 
@@ -364,9 +408,24 @@ function renderTicker(byDiv){
 }
 
 setInterval(function(){
+  // Chronos en cours
   document.querySelectorAll('.chrono[data-start]').forEach(function(n){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
+  // Countdowns avant départ
+  var needRerender=false;
+  document.querySelectorAll('.cdblock[data-sched]').forEach(function(block){
+    var sched=parseInt(block.dataset.sched,10);
+    var remain=sched-now();
+    var el=document.getElementById('cdt-'+sched);
+    if(remain<=0){
+      // La vague vient de démarrer → re-render complet pour la retirer
+      needRerender=true;
+    } else if(el){
+      el.textContent=fmtCountdown(remain);
+    }
+  });
+  if(needRerender){ renderCountdowns(); }
 },500);
 
 /* Le départ automatique des vagues est piloté par le TK (appareil maître).

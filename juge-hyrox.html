@@ -12,13 +12,25 @@
 body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:14px}
 .hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .hdr h1{font-size:16px;font-weight:900;flex:1}
-.back{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:900;font-family:inherit}
-.tile{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.tile .n{font-size:14px;font-weight:900;flex:1}
-.tile .s{font-size:10px;color:var(--ink2);font-weight:700}
+.back{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
+.tile{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.tile:active{opacity:.8}
+.tile .n{font-size:15px;font-weight:900;flex:1}
+.tile .s{font-size:10px;color:var(--ink2);font-weight:700;margin-top:3px}
 .team{border-left:5px solid var(--blue)}
 .badge{font-size:10px;font-weight:900;border-radius:6px;padding:2px 8px;border:1px solid}
 .empty{text-align:center;color:var(--ink2);padding:40px 10px;font-size:13px;line-height:1.6}
+/* identification */
+.id-wrap{max-width:420px;margin:40px auto 0;text-align:center}
+.id-wrap h2{font-size:18px;font-weight:900;margin-bottom:6px}
+.id-wrap p{font-size:12px;color:var(--ink2);margin-bottom:24px}
+.id-select{width:100%;padding:14px;border:1.5px solid var(--brd);border-radius:12px;background:var(--card);color:var(--ink);font-size:15px;font-weight:700;font-family:inherit;margin-bottom:12px;outline:none;appearance:none;-webkit-appearance:none}
+.id-sep{font-size:11px;color:var(--ink2);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:10px 0}
+.id-input{width:100%;padding:14px;border:1.5px solid var(--brd);border-radius:12px;background:var(--card);color:var(--ink);font-size:15px;font-family:inherit;outline:none;margin-bottom:16px}
+.id-input::placeholder{color:var(--ink2)}
+.id-btn{width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px #2563EB44}
+/* banner */
+.stbanner{background:linear-gradient(135deg,#1e3a8a,#312e81);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
 /* compteur */
 .counter{max-width:520px;margin:0 auto;text-align:center}
 .cnt-team{font-size:19px;font-weight:900;margin:6px 0 2px}
@@ -27,15 +39,14 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .cnt-target{font-size:14px;color:var(--ink2);font-weight:800;margin-bottom:8px}
 .bar{height:12px;background:#0B1626;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin:10px 0 18px}
 .bar>div{height:100%;background:linear-gradient(90deg,#2563EB,#10B981);width:0%;transition:width .15s}
-.tap{width:100%;padding:42px 10px;border:none;border-radius:20px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:26px;font-weight:900;font-family:inherit;box-shadow:0 6px 24px #2563EB55}
+.tap{width:100%;padding:42px 10px;border:none;border-radius:20px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:26px;font-weight:900;font-family:inherit;box-shadow:0 6px 24px #2563EB55;cursor:pointer}
 .tap:active{transform:scale(.98)}
 .row2{display:flex;gap:10px;margin-top:12px}
-.minus{flex:1;padding:14px;border:1px solid var(--red);background:none;color:var(--red);border-radius:12px;font-size:16px;font-weight:900;font-family:inherit}
-.validbtn{flex:2;padding:14px;border:none;background:var(--green);color:#03170e;border-radius:12px;font-size:15px;font-weight:900;font-family:inherit}
+.minus{flex:1;padding:14px;border:1px solid var(--red);background:none;color:var(--red);border-radius:12px;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer}
+.validbtn{flex:2;padding:14px;border:none;background:var(--green);color:#03170e;border-radius:12px;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer}
 .okscreen{text-align:center;padding:60px 10px}
 .okscreen .big{font-size:70px}
 .poids{font-size:12px;color:var(--violet);font-weight:900;margin-bottom:14px}
-
 .hx-net{position:fixed;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444AA;z-index:99;transition:all .3s}
 .hx-net.on{background:#10B981;box-shadow:0 0 8px #10B98188}
 </style>
@@ -43,9 +54,9 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 <body>
 <div class="hdr">
   <button class="back" id="backBtn" style="display:none" onclick="goBack()">← Retour</button>
-  <h1 id="title">👨‍⚖️ Juge · choisis ta station</h1>
+  <h1 id="title">👨‍⚖️ HYROX · Juge</h1>
 </div>
-<div id="jbanner" style="display:none"></div>
+<div id="stbanner" style="display:none"></div>
 <div id="view"><div class="empty">Connexion…</div></div>
 
 <script>
@@ -55,88 +66,112 @@ var db=firebase.database();
 var R='hyrox/race';
 
 var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0;
-var SCREEN='stations'; // stations | teams | counter | ok
-var MY_STATION=null, CUR=null; // CUR={waveKey,teamId,nom,cat...}
+// SCREEN : identify | stations | teams | counter | sanction | ok
+var SCREEN='identify';
+var MY_STATION=null, CUR=null;
 var COUNT=0;
-var JUDGES_ALL={}, JUDGES={}, JBYBEN={};
-var BEN=(function(){ try{ var u=new URLSearchParams(location.search); return u.get('ben')||u.get('id')||null; }catch(e){ return null; } })();
-var MANUAL=false; // le juge a changé de station manuellement (repli secours)
+var PEN={}, WARN={};
+var JUDGE_LIST=[]; // liste des juges officiels depuis Firebase
+var MY_NAME=null;  // prénom choisi ou saisi
+var MY_SECOURS=false; // true si saisie libre
 
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+var ADJ=0;
 db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
 function now(){ return Date.now()+OFFSET+ADJ; }
 
-// Jour courant déduit des vagues : vague live, sinon prochaine vague, sinon J1
-function curDay(){
-  var cap=(((CFG&&CFG.capMinutes)||100)*60000), t=now();
-  var liveDay=null, nextDay=null, nextAt=Infinity;
-  Object.keys(WAVES||{}).forEach(function(k){
-    var w=WAVES[k]; if(!w) return; var jr=parseInt(w.jour,10)||1;
-    if(w.startAt && t>=w.startAt && (t-w.startAt)<cap) liveDay=jr;
-    var at=w.schedAt||w.startAt;
-    if(at && at>t && at<nextAt){ nextAt=at; nextDay=jr; }
-  });
-  return liveDay || nextDay || 1;
-}
-function refreshDayJudges(){ JUDGES = (JUDGES_ALL && JUDGES_ALL['j'+curDay()]) || {}; }
-function mySeg(){
-  if(!BEN) return null;
-  var p=JBYBEN && JBYBEN[String(BEN)];
-  if(p==null) return null;
-  if(typeof p==='object'){ var v=p[String(curDay())]; return (v==null?null:v); }
-  return p; // rétro-compat ancien format (segment direct)
-}
-
-db.ref(R+'/config').on('value',function(s){ CFG=s.val(); refreshDayJudges(); render(); });
-db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; refreshDayJudges(); applyAssignment(); render(); });
+// Liste des juges officiels publiée depuis l'admin
+db.ref(R+'/judgeList').on('value',function(s){
+  JUDGE_LIST=s.val()||[];
+  if(SCREEN==='identify') render();
+});
+db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
+db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
 db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; if(SCREEN==='teams') render(); });
-db.ref(R+'/judges').on('value',function(s){ JUDGES_ALL=s.val()||{}; refreshDayJudges(); render(); });
-var PEN={},WARN={};
-db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; if(SCREEN==='counter') render(); });
-db.ref(R+'/warnings').on('value',function(s){ WARN=s.val()||{}; if(SCREEN==='counter') render(); });
+db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; if(SCREEN==='counter'||SCREEN==='sanction') render(); });
+db.ref(R+'/warnings').on('value',function(s){ WARN=s.val()||{}; if(SCREEN==='counter'||SCREEN==='sanction') render(); });
+
 function warnCount(id){ var w=WARN[id]; return w?Object.keys(w).length:0; }
-function penTotal(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return Math.max(0,parseInt(e.sec,10)||0);
-  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=Math.max(0,parseInt(v.sec,10)||0); }); return t; }
-db.ref(R+'/judgeByBen').on('value',function(s){ JBYBEN=s.val()||{}; applyAssignment(); });
-
-// Verrouille le juge identifié (?ben=) sur sa station affectée DU JOUR — comme Delta
-function applyAssignment(){
-  if(!BEN || MANUAL) return;
-  var seg = mySeg();
-  if(seg==null) return;
-  MY_STATION=seg;
-  if(SCREEN==='stations') SCREEN='teams';
-  render();
-}
-function stationJuges(idx){ return (JUDGES&&JUDGES[idx]&&JUDGES[idx].juges)||[]; }
-function myName(){
-  if(!BEN) return '';
-  var e=JUDGES&&JUDGES[MY_STATION];
-  if(e&&e.juges){ var f=e.juges.find(function(j){return String(j.id)===String(BEN);}); if(f) return ((f.prenom||'')+' '+(f.nom||'')).trim(); }
-  return 'Juge '+BEN;
+function penTotal(id){
+  var e=PEN[id]; if(!e) return 0;
+  if(e.sec!=null) return Math.max(0,parseInt(e.sec,10)||0);
+  var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=Math.max(0,parseInt(v.sec,10)||0); });
+  return t;
 }
 
-// Repli auto-sélection si aucune affectation (mode secours)
-try{ if(MY_STATION==null){ var _ls=JSON.parse(localStorage.getItem('hxj-station')||'null'); if(_ls!=null){ MY_STATION=_ls; SCREEN='teams'; } } }catch(e){}
+// Restaurer session depuis localStorage
+try{
+  var _sess=JSON.parse(localStorage.getItem('hxj-session')||'null');
+  if(_sess && _sess.name){
+    MY_NAME=_sess.name;
+    MY_SECOURS=!!_sess.secours;
+    if(_sess.station!=null){ MY_STATION=_sess.station; SCREEN='teams'; }
+    else { SCREEN='stations'; }
+  }
+}catch(e){}
+
+// ── Écriture de la présence juge dans Firebase ──
+function writeActiveJudge(){
+  if(!MY_NAME||MY_STATION==null) return;
+  var st=stationByIdx(MY_STATION)||{};
+  var key=MY_NAME.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+MY_STATION;
+  db.ref(R+'/activeJudges/'+key).set({
+    name:MY_NAME,
+    secours:MY_SECOURS,
+    stationIdx:MY_STATION,
+    stationNom:st.nom||'',
+    at:firebase.database.ServerValue.TIMESTAMP
+  });
+}
+function removeActiveJudge(){
+  if(!MY_NAME||MY_STATION==null) return;
+  var key=MY_NAME.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+MY_STATION;
+  db.ref(R+'/activeJudges/'+key).remove();
+}
+
+function saveSession(){
+  try{ localStorage.setItem('hxj-session', JSON.stringify({name:MY_NAME,secours:MY_SECOURS,station:MY_STATION})); }catch(e){}
+}
+
+// ── Navigation ──
+function confirmIdentity(){
+  var sel=document.getElementById('id-select');
+  var inp=document.getElementById('id-input');
+  var chosen=(sel&&sel.value&&sel.value!=='__other__')?sel.value:'';
+  var typed=(inp&&inp.value)?inp.value.trim():'';
+  if(chosen){ MY_NAME=chosen; MY_SECOURS=false; }
+  else if(typed){ MY_NAME=typed; MY_SECOURS=true; }
+  else{ alert('Choisis ton prénom ou tape ton nom.'); return; }
+  SCREEN='stations'; saveSession(); render();
+}
+
+function pickStation(idx){
+  MY_STATION=idx;
+  saveSession();
+  writeActiveJudge();
+  SCREEN='teams'; render();
+}
+
+function goBack(){
+  if(SCREEN==='sanction'){ SCREEN='counter'; render(); return; }
+  if(SCREEN==='counter'){ SCREEN='teams'; CUR=null; render(); return; }
+  if(SCREEN==='teams'){
+    removeActiveJudge();
+    MY_STATION=null; saveSession();
+    SCREEN='stations'; render(); return;
+  }
+  if(SCREEN==='stations'){
+    MY_NAME=null; MY_SECOURS=false; MY_STATION=null;
+    localStorage.removeItem('hxj-session');
+    SCREEN='identify'; render(); return;
+  }
+}
 
 function stations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){ return st.seg==='station'; }); }
 function stationByIdx(i){ return ((CFG&&CFG.stations)||[]).find(function(st){ return st.idx===i; }); }
 
-function goBack(){
-  if(SCREEN==='counter'){ SCREEN='teams'; CUR=null; }
-  else { SCREEN='stations'; MY_STATION=null; localStorage.removeItem('hxj-station'); if(BEN) MANUAL=true; }
-  render();
-}
-
-function pickStation(idx){
-  MY_STATION=idx; localStorage.setItem('hxj-station', JSON.stringify(idx));
-  if(BEN && JBYBEN[String(BEN)]!==idx) MANUAL=true; // choix différent de l'affectation
-  SCREEN='teams'; render();
-}
-
 function teamProg(teamId){ return (PROGRESS&&PROGRESS[teamId])||{}; }
-function stDone(teamId, idx){ var p=teamProg(teamId); return !!(p.stations&&p.stations[idx]&&p.stations[idx].done); }
+function stDone(teamId,idx){ var p=teamProg(teamId); return !!(p.stations&&p.stations[idx]&&p.stations[idx].done); }
 
 function runningTeams(){
   var out=[];
@@ -162,20 +197,19 @@ function pickTeam(waveKey,teamId){
   CUR=t;
   var p=teamProg(teamId);
   COUNT=(p.stations&&p.stations[MY_STATION]&&p.stations[MY_STATION].val)||0;
-  // ✅ Run précédent auto-validé : l'arrivée à la station prouve le run
   var rIdx=precedingRunIdx(MY_STATION);
   if(rIdx!=null && !(p.stations&&p.stations[rIdx]&&p.stations[rIdx].done)){
     var rSt=stationByIdx(rIdx)||{};
     db.ref(R+'/progress/'+teamId+'/stations/'+rIdx).set({
-      val:rSt.qty||1000, done:true, auto:true,
+      val:rSt.qty||1000,done:true,auto:true,
       at:firebase.database.ServerValue.TIMESTAMP,
-      elapsedMs: now()-(t.startAt||now())
+      elapsedMs:now()-(t.startAt||now())
     });
   }
   SCREEN='counter'; render();
 }
 
-function stTarget(st, catId){
+function stTarget(st,catId){
   var q=(st.qtyParCat&&st.qtyParCat[String(catId)]!=null)?st.qtyParCat[String(catId)]:st.qty;
   return parseFloat(q)||st.qty||0;
 }
@@ -184,7 +218,7 @@ function catIdOf(waveKey){ var w=WAVES[waveKey]; return w?w.catId:null; }
 function tap(){
   var st=stationByIdx(MY_STATION); if(!st||!CUR) return;
   var target=stTarget(st,catIdOf(CUR.waveKey));
-  COUNT=Math.min(target, +(COUNT+(st.step||1)).toFixed(2));
+  COUNT=Math.min(target,+(COUNT+(st.step||1)).toFixed(2));
   save(false);
   if(COUNT>=target){ validate(); return; }
   render();
@@ -192,39 +226,38 @@ function tap(){
 }
 function minus(){
   var st=stationByIdx(MY_STATION); if(!st) return;
-  COUNT=Math.max(0, +(COUNT-(st.step||1)).toFixed(2));
+  COUNT=Math.max(0,+(COUNT-(st.step||1)).toFixed(2));
   save(false); render();
 }
 function save(done){
   if(!CUR) return;
   db.ref(R+'/progress/'+CUR.teamId+'/stations/'+MY_STATION).set({
-    val:COUNT, done:!!done, at:firebase.database.ServerValue.TIMESTAMP,
-    elapsedMs: now()-(CUR.startAt||now())
+    val:COUNT,done:!!done,at:firebase.database.ServerValue.TIMESTAMP,
+    elapsedMs:now()-(CUR.startAt||now()),
+    judge:MY_NAME||'?'
   });
   db.ref(R+'/progress/'+CUR.teamId+'/waveKey').set(CUR.waveKey);
 }
-// ── Ordre imposé : la station précédente doit être validée pour cette équipe ──
+
 function prevStationIdx(stationIdx){
-  // stations Hyrox (pas les runs) qui précèdent, la plus proche
   var sts=((CFG&&CFG.stations)||[]).filter(function(s){return s.seg==='station'&&s.idx<stationIdx;});
   if(!sts.length) return null;
   sts.sort(function(a,b){return a.idx-b.idx;});
   return sts[sts.length-1].idx;
 }
-function prevStationOk(teamId, stationIdx){
+function prevStationOk(teamId,stationIdx){
   var pIdx=prevStationIdx(stationIdx);
-  if(pIdx==null) return true;                 // 1ère station : rien avant
+  if(pIdx==null) return true;
   var p=teamProg(teamId);
-  return !!(p.stations && p.stations[pIdx] && p.stations[pIdx].done);
+  return !!(p.stations&&p.stations[pIdx]&&p.stations[pIdx].done);
 }
 
 function validate(){
   var st=stationByIdx(MY_STATION);
-  // ★ Blocage ordre : la station précédente doit être validée pour cette équipe
-  if(!prevStationOk(CUR.teamId, MY_STATION)){
+  if(!prevStationOk(CUR.teamId,MY_STATION)){
     var pIdx=prevStationIdx(MY_STATION);
     var pSt=stationByIdx(pIdx)||{};
-    alert('⛔ Station précédente non validée\n\n'+CUR.nom+' n\'a pas encore validé « '+(pSt.nom||'station précédente')+' ».\n\nCette équipe ne peut pas valider cette station tant que la précédente n\'est pas faite. Vérifie qu\'elle est bien passée dans l\'ordre.');
+    alert('⛔ Station précédente non validée\n\n'+CUR.nom+' n\'a pas encore validé « '+(pSt.nom||'station précédente')+' ».');
     return;
   }
   COUNT=stTarget(st,catIdOf(CUR.waveKey));
@@ -237,55 +270,90 @@ function validate(){
 function fmt(ms){ var s=Math.floor(ms/1000); return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2); }
 
 function updateBanner(){
-  var b=document.getElementById('jbanner'); if(!b) return;
-  if(BEN && MY_STATION!=null){
+  var b=document.getElementById('stbanner'); if(!b) return;
+  if(MY_NAME && MY_STATION!=null && SCREEN!=='stations' && SCREEN!=='identify'){
     var st=stationByIdx(MY_STATION)||{};
     b.style.display='block';
-    b.innerHTML='<div style="background:linear-gradient(135deg,#2563EB,#4C1D95);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">'
-      +'<span style="font-size:20px">👤</span>'
-      +'<div style="flex:1"><div style="font-size:13px;font-weight:900">'+myName()+'</div>'
-      +'<div style="font-size:10px;color:#C7D2FE;font-weight:800">Station : '+(st.nom||'—')+(MANUAL?' · choix manuel':'')+'</div></div>'
-      +(MANUAL?'':'<span style="font-size:9px;background:#10B981;color:#03170e;font-weight:900;border-radius:6px;padding:3px 8px">AFFECTÉ</span>')
-      +'</div>';
+    b.innerHTML='<div class="stbanner">'
+      +'<span style="font-size:22px">🏋️</span>'
+      +'<div style="flex:1">'
+        +'<div style="font-size:13px;font-weight:900">'+(st.nom||'Station')+'</div>'
+        +'<div style="font-size:10px;color:#C7D2FE;font-weight:800;margin-top:2px">👤 '+MY_NAME+(MY_SECOURS?' · <span style="color:#FCD34D">🆘 Secours</span>':'')+'</div>'
+      +'</div></div>';
   } else { b.style.display='none'; b.innerHTML=''; }
 }
 
 function render(){
-  var el=document.getElementById('view'), ttl=document.getElementById('title'), bk=document.getElementById('backBtn');
-  if(!CFG){ el.innerHTML='<div class="empty">En attente de la config course…<br>Publie depuis l\'admin (🏃 HYROX → Appliquer).</div>'; return; }
-  bk.style.display = SCREEN==='stations' ? 'none':'inline-block';
+  var el=document.getElementById('view'),ttl=document.getElementById('title'),bk=document.getElementById('backBtn');
+  bk.style.display=(SCREEN==='identify')?'none':'inline-block';
   updateBanner();
 
-  if(SCREEN==='stations'){
-    ttl.textContent = BEN ? '👨‍⚖️ Choisis ta station (secours)' : '👨‍⚖️ Juge · choisis ta station';
-    el.innerHTML = stations().map(function(st){
-      var jg=stationJuges(st.idx);
-      var jgTxt = jg.length ? jg.map(function(j){return ((j.prenom||'')+' '+(j.nom||'')).trim();}).join(', ') : '—';
-      var mine = BEN && String(mySeg())===String(st.idx);
-      return '<div class="tile" style="'+(mine?'border-color:#10B981;border-left:5px solid #10B981':'')+'" onclick="pickStation('+st.idx+')">'
-        +'<div class="n" style="flex:1">'+st.nom
-        +'<div class="s">👨‍⚖️ '+jgTxt+(mine?' · <span style="color:#10B981;font-weight:900">TON POSTE</span>':'')+'</div></div>'
-        +'<div class="s">'+st.qty+' · '+st.step+'/clic</div></div>';
-    }).join('') || '<div class="empty">Aucune station publiée</div>';
+  // ── IDENTIFICATION ──
+  if(SCREEN==='identify'){
+    ttl.textContent='👨‍⚖️ HYROX · Juge';
+    var opts=Array.isArray(JUDGE_LIST)&&JUDGE_LIST.length
+      ? JUDGE_LIST.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('')
+      : '';
+    el.innerHTML='<div class="id-wrap">'
+      +'<div style="font-size:40px;margin-bottom:12px">👨‍⚖️</div>'
+      +'<h2>Qui es-tu ?</h2>'
+      +'<p>Sélectionne ton prénom dans la liste<br>ou saisis-le si tu es juge secours.</p>'
+      +(opts
+        ? '<select class="id-select" id="id-select" onchange="onSelectChange()">'
+            +'<option value="">— Choisis ton prénom —</option>'
+            +opts
+            +'<option value="__other__">✏️ Autre / Juge secours</option>'
+          +'</select>'
+        : '')
+      +'<div class="id-sep" id="id-sep-lbl" style="'+(opts?'display:none':'')+'">🆘 Juge secours — saisis ton prénom</div>'
+      +'<input class="id-input" id="id-input" type="text" placeholder="Ton prénom..." style="'+(opts?'display:none':'')+'"/>'
+      +'<button class="id-btn" onclick="confirmIdentity()">Continuer →</button>'
+      +'</div>';
     return;
   }
 
+  if(!CFG){ el.innerHTML='<div class="empty">En attente de la config course…</div>'; return; }
+
+  // ── LISTE DES STATIONS ──
+  if(SCREEN==='stations'){
+    ttl.textContent='👋 '+MY_NAME+' · Choisis ta station';
+    el.innerHTML=stations().map(function(st){
+      var enCours=runningTeams().filter(function(t){ return !stDone(t.teamId,st.idx); }).length;
+      return '<div class="tile" onclick="pickStation('+st.idx+')">'
+        +'<span style="font-size:28px">🏋️</span>'
+        +'<div class="n">'+st.nom
+          +'<div class="s">'+st.qty+' reps · '+st.step+'/clic'
+          +(enCours?' · <span style="color:#F59E0B">'+enCours+' équipe(s) en attente</span>':'')
+          +'</div></div>'
+        +'<span style="font-size:22px;color:var(--ink2)">›</span>'
+        +'</div>';
+    }).join('')||'<div class="empty">Aucune station publiée.</div>';
+    return;
+  }
+
+  // ── LISTE DES ÉQUIPES ──
   var st=stationByIdx(MY_STATION);
   if(SCREEN==='teams'){
     ttl.textContent='🏋️ '+((st&&st.nom)||'Station');
     var teams=runningTeams().filter(function(t){ return !stDone(t.teamId,MY_STATION); })
-      .sort(function(a,b){ return a.waveNum-b.waveNum || a.nom.localeCompare(b.nom); });
-    el.innerHTML = teams.length ? teams.map(function(t){
-      var p=teamProg(t.teamId); var nDone=p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0;
+      .sort(function(a,b){ return a.waveNum-b.waveNum||a.nom.localeCompare(b.nom); });
+    el.innerHTML=teams.length?teams.map(function(t){
+      var p=teamProg(t.teamId);
+      var nDone=p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0;
+      var repsEnCours=(p.stations&&p.stations[MY_STATION]&&p.stations[MY_STATION].val)||0;
       return '<div class="tile team" style="border-left-color:'+t.couleur+'" onclick="pickTeam(\''+t.waveKey+'\',\''+t.teamId+'\')">'
-        +'<div class="n">'+t.nom+'<div class="s">Vague '+t.waveNum+' · '+nDone+'/'+stations().length+' stations · ⏱ '+fmt(now()-t.startAt)+'</div></div>'
+        +'<div class="n">'+t.nom
+          +'<div class="s">Vague '+t.waveNum+' · '+nDone+'/'+stations().length+' stations · ⏱ '+fmt(now()-t.startAt)
+          +(repsEnCours?' · <span style="color:#F59E0B">'+repsEnCours+' reps en cours</span>':'')
+          +'</div></div>'
         +'<span class="badge" style="color:'+t.couleur+';border-color:'+t.couleur+'55;background:'+t.couleur+'22">'+t.catNom+'</span>'
         +'</div>';
-    }).join('') : '<div class="empty">Aucune équipe en course pour cette station.<br>Les équipes apparaissent dès que le TK lance leur vague.</div>';
+    }).join(''):'<div class="empty">Aucune équipe en attente pour cette station.</div>';
     return;
   }
 
-  if(SCREEN==='counter' && CUR && st){
+  // ── COMPTEUR ──
+  if(SCREEN==='counter'&&CUR&&st){
     ttl.textContent='🏋️ '+st.nom;
     var target=stTarget(st,catIdOf(CUR.waveKey));
     var poids=(st.poids&&st.poids[String(catIdOf(CUR.waveKey))])||'';
@@ -298,84 +366,95 @@ function render(){
       +'<div class="cnt-target">/ '+target+'</div>'
       +'<div class="bar"><div style="width:'+pct+'%"></div></div>'
       +'<button class="tap" onclick="tap()">+'+st.step+'</button>'
-      +'<div class="row2"><button class="minus" onclick="minus()">−'+st.step+'</button>'
-      +'<button class="validbtn" onclick="validate()">✅ VALIDER STATION</button></div>'
-      +'<button onclick="SCREEN=\'sanction\';render()" style="width:100%;margin-top:10px;padding:12px;border:1.5px solid #DC262655;border-radius:12px;background:#DC262611;color:#F87171;font-size:13px;font-weight:900;font-family:inherit">🚩 SANCTION'
-        +((penTotal(CUR.teamId)||warnCount(CUR.teamId))?('  ·  '+(warnCount(CUR.teamId)?'⚠×'+warnCount(CUR.teamId):'')+(penTotal(CUR.teamId)?' +'+penTotal(CUR.teamId)+'s':'')):'')
-      +'</button>'
-      +'</div>';
+      +'<div class="row2">'
+        +'<button class="minus" onclick="minus()">−'+st.step+'</button>'
+        +'<button class="validbtn" onclick="validate()">✅ VALIDER STATION</button>'
+      +'</div>'
+      +'<button onclick="SCREEN=\'sanction\';render()" style="width:100%;margin-top:10px;padding:12px;border:1.5px solid #DC262655;border-radius:12px;background:#DC262611;color:#F87171;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer">🚩 SANCTION'
+        +((penTotal(CUR.teamId)||warnCount(CUR.teamId))?('  ·  '+(warnCount(CUR.teamId)?'⚠×'+warnCount(CUR.teamId):'')+(penTotal(CUR.teamId)?' +'+penTotal(CUR.teamId)+'s':'')):(''))
+      +'</button></div>';
     return;
   }
 
-  if(SCREEN==='sanction' && CUR){
+  // ── SANCTIONS ──
+  if(SCREEN==='sanction'&&CUR){
     ttl.textContent='🚩 Sanction';
     var W=[['Obstruction / blocage du couloir'],['Aide au rythme (pacing) interdite'],['Équipement / tenue non conforme'],['Comportement antisportif']];
     var P=[[60,'No-rep non corrigé'],[60,'Roxzone — marche/trajet interdit'],[60,'Distance ou répétitions incomplètes'],[60,'Faux départ / relais irrégulier'],[180,'Tour de run manquant']];
     el.innerHTML='<div style="padding:4px 2px">'
       +'<div style="font-size:15px;font-weight:900;margin-bottom:2px">'+CUR.nom+'</div>'
-      +'<div style="font-size:11px;color:var(--ink2);margin-bottom:12px">'+CUR.catNom+' · vague '+CUR.waveNum
-        +' · actuel : ⚠×'+warnCount(CUR.teamId)+' · pénalités +'+penTotal(CUR.teamId)+'s</div>'
-      +'<div style="font-size:10px;font-weight:900;color:#FBBF24;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">⚠️ Avertissement (sans temps)</div>'
-      +W.map(function(w){ return '<button onclick="giveWarning(\''+w[0].replace(/'/g,"\\'")+'\')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #FBBF2455;border-radius:11px;background:#FBBF2411;color:#FCD34D;font-size:12px;font-weight:800;text-align:left;font-family:inherit">⚠️ '+w[0]+'</button>'; }).join('')
-      +'<div style="font-size:10px;font-weight:900;color:#F87171;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">⏱ Pénalité de temps</div>'
-      +P.map(function(x){ return '<button onclick="givePenalty('+x[0]+',\''+x[1].replace(/'/g,"\\'")+'\')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262611;color:#F87171;font-size:12px;font-weight:800;text-align:left;font-family:inherit"><b>+'+(x[0]>=60?Math.floor(x[0]/60)+':'+('0'+x[0]%60).slice(-2):x[0]+'s')+'</b> — '+x[1]+'</button>'; }).join('')
-      +'<div style="font-size:10px;font-weight:900;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">✏️ Pénalité personnalisée</div>'
+      +'<div style="font-size:11px;color:var(--ink2);margin-bottom:12px">'+CUR.catNom+' · vague '+CUR.waveNum+' · ⚠×'+warnCount(CUR.teamId)+' · +'+penTotal(CUR.teamId)+'s</div>'
+      +'<div style="font-size:10px;font-weight:900;color:#FBBF24;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">⚠️ Avertissement</div>'
+      +W.map(function(w){ return '<button onclick="giveWarning(\''+w[0].replace(/'/g,"\\'")+'\''+')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #FBBF2455;border-radius:11px;background:#FBBF2411;color:#FCD34D;font-size:12px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer">⚠️ '+w[0]+'</button>'; }).join('')
+      +'<div style="font-size:10px;font-weight:900;color:#F87171;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">⏱ Pénalité</div>'
+      +P.map(function(x){ return '<button onclick="givePenalty('+x[0]+',\''+x[1].replace(/'/g,"\\'")+'\''+')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262611;color:#F87171;font-size:12px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer"><b>+'+(x[0]>=60?Math.floor(x[0]/60)+':'+('0'+x[0]%60).slice(-2):x[0]+'s')+'</b> — '+x[1]+'</button>'; }).join('')
+      +'<div style="font-size:10px;font-weight:900;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">✏️ Personnalisée</div>'
       +'<div style="display:flex;gap:6px;margin-bottom:6px">'
-        +'<input id="cust-sec" type="number" min="5" step="5" placeholder="sec" style="width:80px;padding:11px 10px;border:1.5px solid var(--brd,#2A3B55);border-radius:11px;background:transparent;color:var(--ink,#E2E8F0);font-size:14px;font-weight:900;text-align:center;outline:none;font-family:inherit">'
-        +'<input id="cust-motif" type="text" placeholder="Motif (obligatoire)" style="flex:1;padding:11px 12px;border:1.5px solid var(--brd,#2A3B55);border-radius:11px;background:transparent;color:var(--ink,#E2E8F0);font-size:13px;font-weight:700;outline:none;font-family:inherit">'
+        +'<input id="cust-sec" type="number" min="5" step="5" placeholder="sec" style="width:80px;padding:11px 10px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink);font-size:14px;font-weight:900;text-align:center;outline:none;font-family:inherit">'
+        +'<input id="cust-motif" type="text" placeholder="Motif obligatoire" style="flex:1;padding:11px 12px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink);font-size:13px;font-weight:700;outline:none;font-family:inherit">'
       +'</div>'
-      +'<button onclick="giveCustomPenalty()" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262622;color:#F87171;font-size:12px;font-weight:900;font-family:inherit">⏱ Appliquer la pénalité personnalisée</button>'
-      +'<button onclick="SCREEN=\'counter\';render()" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--brd,#2A3B55);border-radius:11px;background:transparent;color:var(--ink2);font-size:12px;font-weight:800;font-family:inherit">← Retour au comptage</button>'
+      +'<button onclick="giveCustomPenalty()" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262622;color:#F87171;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">⏱ Appliquer</button>'
+      +'<button onclick="SCREEN=\'counter\';render()" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink2);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer">← Retour au comptage</button>'
       +'</div>';
     return;
   }
 
+  // ── OK ──
   if(SCREEN==='ok'){
     ttl.textContent='🏋️ '+((st&&st.nom)||'');
     el.innerHTML='<div class="okscreen"><div class="big">✅</div><div style="font-size:18px;font-weight:900;margin-top:8px">Station validée</div><div style="font-size:12px;color:var(--ink2);margin-top:4px">Équipe suivante…</div></div>';
   }
 }
 
+function onSelectChange(){
+  var sel=document.getElementById('id-select');
+  var inp=document.getElementById('id-input');
+  var lbl=document.getElementById('id-sep-lbl');
+  var other=(sel&&sel.value==='__other__');
+  if(inp){ inp.style.display=other?'block':'none'; if(other) inp.focus(); }
+  if(lbl){ lbl.style.display=other?'block':'none'; }
+}
+
 function giveWarning(motif){
   if(!CUR) return;
   if(!confirm('⚠️ Avertissement pour '+CUR.nom+' ?\n'+motif)) return;
-  db.ref(R+'/warnings/'+CUR.teamId).push({motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:BEN||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
+  db.ref(R+'/warnings/'+CUR.teamId).push({motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:MY_NAME||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
   SCREEN='counter'; render();
 }
 function giveCustomPenalty(){
   var sec=parseInt((document.getElementById('cust-sec')||{}).value,10)||0;
   var motif=String((document.getElementById('cust-motif')||{}).value||'').trim();
-  if(sec<=0){ alert('Indique un temps en secondes (ex : 45).'); return; }
-  if(!motif){ alert('Le motif est obligatoire pour une pénalité personnalisée (traçabilité réclamations).'); return; }
-  givePenalty(sec, motif);
+  if(sec<=0){ alert('Indique un temps en secondes.'); return; }
+  if(!motif){ alert('Le motif est obligatoire.'); return; }
+  givePenalty(sec,motif);
 }
 function givePenalty(sec,motif){
   if(!CUR) return;
   sec=Math.max(0,parseInt(sec,10)||0); if(!sec) return;
   if(!confirm('⏱ Pénalité +'+sec+'s pour '+CUR.nom+' ?\n'+motif)) return;
-  db.ref(R+'/penalties/'+CUR.teamId).push({sec:sec,motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:BEN||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
+  db.ref(R+'/penalties/'+CUR.teamId).push({sec:sec,motif:motif,ts:firebase.database.ServerValue.TIMESTAMP,by:MY_NAME||'juge',station:(stationByIdx(MY_STATION)||{}).nom||''});
   SCREEN='counter'; render();
 }
 
-/* ── Fiabilité terrain : indicateur réseau + anti-veille ── */
+// Nettoyage présence à la fermeture
+window.addEventListener('beforeunload',function(){ removeActiveJudge(); });
+window.addEventListener('pagehide',function(){ removeActiveJudge(); });
+
 (function(){
   var dot=document.createElement('div'); dot.className='hx-net'; dot.title='Connexion Firebase';
   document.body.appendChild(dot);
   db.ref('.info/connected').on('value',function(s){
     dot.className='hx-net'+(s.val()?' on':'');
-    dot.title=s.val()?'Connecté — synchro temps réel':'⚠️ Hors-ligne — les saisies partiront à la reconnexion';
   });
-  var lock=null;
   function wake(){
     if(!('wakeLock' in navigator)) return;
-    navigator.wakeLock.request('screen').then(function(l){ lock=l; }).catch(function(){});
+    navigator.wakeLock.request('screen').then(function(l){}).catch(function(){});
   }
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') wake(); });
   wake();
 })();
 </script>
 <script>
-/* ★ offline : cache des apps via service worker (sw.js) */
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 </script>
 </body>

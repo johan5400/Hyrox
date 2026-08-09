@@ -41,31 +41,40 @@ body{color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans
 .geantbtn:hover{background:rgba(34,211,238,.15)}
 body.geant .geantbtn{background:#F59E0B;color:#1a1205;border-color:#F59E0B}
 
-/* ── COUNTDOWNS ── */
-#countdowns{margin-bottom:16px}
-.cdblock{
-  background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.04));
-  border:1px solid rgba(245,158,11,.3);border-radius:16px;
-  padding:16px 20px;margin-bottom:10px;
-  display:flex;align-items:center;gap:16px;
-  animation:cdfadein .4s ease;
-  position:relative;overflow:hidden}
-.cdblock::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(245,158,11,.06) 0%,transparent 60%);pointer-events:none}
-@keyframes cdfadein{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-.cdblock .cdi{font-size:32px;animation:cdtick 1s infinite}
-@keyframes cdtick{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-.cdblock .cdinfo{flex:1}
-.cdblock .cdcat{font-size:15px;font-weight:900;font-style:italic;
-  text-transform:uppercase;letter-spacing:.5px}
-.cdblock .cdwave{font-size:11px;color:#fde68a;font-weight:700;margin-top:3px}
-.cdblock .cdtimer{font-size:36px;font-weight:900;font-variant-numeric:tabular-nums;
-  color:#f59e0b;letter-spacing:2px;
-  text-shadow:0 0 24px rgba(245,158,11,.6);min-width:120px;text-align:right}
-.cdblock.urgent .cdtimer{color:#ef4444;text-shadow:0 0 24px rgba(239,68,68,.7);animation:urgpulse .5s infinite}
-@keyframes urgpulse{50%{opacity:.6}}
-body.geant .cdblock .cdtimer{font-size:56px}
-body.geant .cdblock .cdcat{font-size:22px}
+/* ── CARTES COUNTDOWN (dans la grille) ── */
+.cdcard{
+  background:radial-gradient(ellipse at 20% 0%,rgba(120,80,0,.35) 0%,rgba(4,8,15,.95) 60%);
+  border-radius:20px;padding:18px 16px;
+  border:1px solid rgba(245,158,11,.25);
+  box-shadow:0 8px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
+  position:relative;overflow:hidden;
+  animation:cardin .35s ease;
+  display:flex;flex-direction:column;justify-content:space-between;min-height:160px}
+.cdcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#f59e0b,transparent);opacity:.7}
+.cdcard .cdbar{width:5px;border-radius:3px;align-self:stretch;
+  background:linear-gradient(#f59e0b,#fbbf24);box-shadow:0 0 14px rgba(245,158,11,.5)}
+.cdcard .cdhdr{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.cdcard .cdcat{font-size:22px;font-weight:900;font-style:italic;
+  letter-spacing:1px;text-transform:uppercase;color:#fff;flex:1}
+.cdcard .cdwave-badge{font-size:11px;font-weight:800;
+  background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);
+  padding:5px 12px;border-radius:20px;color:#fde68a;white-space:nowrap}
+.cdcard .cdbody{display:flex;align-items:center;justify-content:space-between}
+.cdcard .cdlbl{font-size:11px;color:#a08030;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.cdcard .cdtimer{font-size:52px;font-weight:900;font-variant-numeric:tabular-nums;
+  color:#f59e0b;letter-spacing:2px;text-shadow:0 0 28px rgba(245,158,11,.6);
+  animation:cdtick 1s infinite}
+@keyframes cdtick{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.cdcard.urgent{border-color:rgba(239,68,68,.4)}
+.cdcard.urgent::before{background:linear-gradient(90deg,transparent,#ef4444,transparent)}
+.cdcard.urgent .cdtimer{color:#ef4444;text-shadow:0 0 28px rgba(239,68,68,.7);animation:urgpulse .5s infinite}
+@keyframes urgpulse{50%{opacity:.5}}
+.cdcard.urgent .cdbar{background:linear-gradient(#ef4444,#dc2626);box-shadow:0 0 14px rgba(239,68,68,.5)}
+.cdcard .cdprog{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:14px;overflow:hidden}
+.cdcard .cdprog>div{height:100%;border-radius:2px;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width .5s}
+body.geant .cdcard .cdtimer{font-size:72px}
+body.geant .cdcard .cdcat{font-size:30px}
 
 /* ── GRID ── */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(500px,100%),1fr));gap:18px;padding-bottom:80px}
@@ -222,7 +231,6 @@ body.geant .bsub{font-size:13px}
   <button class="geantbtn" onclick="toggleGeant()"><span id="geant-lbl">📽️ Écran géant</span></button>
 </div>
 
-<div id="countdowns"></div>
 <div class="grid" id="grid"><div class="empty">⏳ Connexion en cours…</div></div>
 
 <script>
@@ -320,29 +328,34 @@ function fmtCountdown(ms){
 }
 
 function renderCountdowns(){
-  var cd=document.getElementById('countdowns'); if(!cd) return;
+  var grid=document.getElementById('grid'); if(!grid) return;
+  grid.querySelectorAll('.cdcard[data-sched]').forEach(function(el){ el.parentNode.removeChild(el); });
   var pending=[];
   Object.values(WAVES).forEach(function(w){
     if(w.startAt) return;
-    var sched=getSchedAt(w);
-    if(!sched) return;
+    var sched=getSchedAt(w); if(!sched) return;
     var remain=sched-now();
     if(remain<0||remain>14*3600000) return;
-    pending.push({catNom:w.catNom||'',couleur:w.couleur||'#3B82F6',waveNum:w.num||'',sched:sched,remain:remain});
+    pending.push({catNom:w.catNom||'',couleur:w.couleur||'#F59E0B',waveNum:w.num||'',sched:sched,remain:remain});
   });
   pending.sort(function(a,b){return a.sched-b.sched;});
-  if(!pending.length){ cd.innerHTML=''; return; }
-  cd.innerHTML=pending.map(function(p){
-    var urgent=p.remain<180000; // <3 min → rouge
-    return '<div class="cdblock'+(urgent?' urgent':'')+'" data-sched="'+p.sched+'">'
-      +'<div class="cdi">'+(urgent?'🚨':'⏳')+'</div>'
-      +'<div class="cdinfo">'
-        +'<div class="cdcat" style="color:'+p.couleur+'">'+p.catNom+'</div>'
-        +'<div class="cdwave">Vague '+p.waveNum+' · départ dans</div>'
+  pending.slice(0,3).forEach(function(p){
+    var urgent=p.remain<180000;
+    var pct=Math.max(0,Math.min(100,100-(p.remain/(10*60*1000)*100)));
+    var card=document.createElement('div');
+    card.className='cdcard'+(urgent?' urgent':'');
+    card.dataset.sched=String(p.sched);
+    card.innerHTML=
+      '<div class="cdhdr"><div class="cdbar"></div>'
+      +'<div class="cdcat">'+p.catNom+'</div>'
+      +'<div class="cdwave-badge">Vague '+p.waveNum+'</div></div>'
+      +'<div class="cdbody">'
+        +'<div class="cdlbl">'+(urgent?'🚨 Départ imminent':'⏳ Départ dans')+'</div>'
+        +'<div class="cdtimer" id="cdt-'+p.sched+'">'+fmtCountdown(p.remain)+'</div>'
       +'</div>'
-      +'<div class="cdtimer" id="cdt-'+p.sched+'">'+fmtCountdown(p.remain)+'</div>'
-      +'</div>';
-  }).join('');
+      +'<div class="cdprog"><div id="cdp-'+p.sched+'" style="width:'+pct+'%"></div></div>';
+    grid.appendChild(card);
+  });
 }
 
 function render(){
@@ -539,20 +552,19 @@ setInterval(function(){
   document.querySelectorAll('.chrono[data-start]').forEach(function(n){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
-  // Countdowns
+  // Countdowns dans la grille
   var needRerender=false;
-  document.querySelectorAll('.cdblock[data-sched]').forEach(function(block){
+  document.querySelectorAll('.cdcard[data-sched]').forEach(function(block){
     var sched=parseInt(block.dataset.sched,10);
     var remain=sched-now();
+    if(remain<=0){ needRerender=true; return; }
     var el=document.getElementById('cdt-'+sched);
-    if(remain<=0){ needRerender=true; }
-    else {
-      if(el) el.textContent=fmtCountdown(remain);
-      // Urgent si < 3 min
-      if(remain<180000&&!block.classList.contains('urgent')){
-        block.classList.add('urgent');
-        block.querySelector('.cdi').textContent='🚨';
-      }
+    if(el) el.textContent=fmtCountdown(remain);
+    var pr=document.getElementById('cdp-'+sched);
+    if(pr) pr.style.width=Math.max(0,Math.min(100,100-(remain/(10*60*1000)*100)))+'%';
+    if(remain<180000&&!block.classList.contains('urgent')){
+      block.classList.add('urgent');
+      var lbl=block.querySelector('.cdlbl'); if(lbl) lbl.textContent='🚨 Départ imminent';
     }
   });
   if(needRerender) renderCountdowns();

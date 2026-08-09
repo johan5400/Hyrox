@@ -7,128 +7,223 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root{--bg:#0B1220;--card:#111C30;--brd:#1E3050;--ink:#F1F5FB;--ink2:#9FB2CC;--green:#10B981;--red:#EF4444;--amber:#F59E0B;--blue:#3B82F6}
+:root{
+  --bg:#04080f;--card:#0a1020;--brd:#1a2a44;
+  --ink:#F1F5FB;--ink2:#7a99c0;
+  --green:#10B981;--red:#EF4444;--amber:#F59E0B;--blue:#3B82F6;
+  --cyan:#22d3ee;--gold:#fbbf24
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:18px}
-.hdr{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
-.hdr h1{font-size:clamp(18px,3vw,28px);font-weight:900;flex:1}
-.live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite;margin-right:8px;vertical-align:middle}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.divbtn{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
-.divbtn.on{color:#fff}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(480px,100%),1fr));gap:16px}
-.card{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:16px;overflow:hidden}
-.card h2{font-size:15px;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;margin-bottom:5px;background:#0B1626;border:1px solid var(--brd)}
-.rank{min-width:30px;font-size:16px;font-weight:900;text-align:center;color:var(--ink2)}
-.rank.r1{color:#FFD700}.rank.r2{color:#C0C0C0}.rank.r3{color:#CD7F32}
-.nom{flex:1;font-size:clamp(13px,1.6vw,16px);font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub{font-size:10px;color:var(--ink2);font-weight:700}
-.toff{font-size:clamp(14px,1.8vw,18px);font-weight:900;color:var(--green);font-variant-numeric:tabular-nums}
-.dnf{color:var(--red);font-weight:900;font-size:13px}
-.chrono{font-size:13px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
-.pbar{flex:1;max-width:38%;height:10px;background:#060D18;border:1px solid var(--brd);border-radius:6px;overflow:hidden}
-.pbar>div{height:100%;transition:width .4s}
-.pct{font-size:10px;font-weight:900;color:var(--ink2);min-width:44px;text-align:right}
-.empty{text-align:center;color:var(--ink2);padding:24px;font-size:12px}
-.badge{font-size:9px;font-weight:900;border-radius:5px;padding:1px 6px;border:1px solid}
-.foot{text-align:center;font-size:10px;color:var(--ink2);font-weight:700;margin-top:18px}
-/* ── Visuels course : nom de station + avancement en clair ── */
-.etat{font-size:15px;font-weight:900;margin-top:3px;letter-spacing:.3px}
-.etat b{font-size:17px}
-.run-blink{animation:runrow 1s ease-in-out infinite}
-@keyframes runrow{0%,100%{background:transparent}50%{background:#1e3a8a33}}
-.flag{display:inline-block;width:15px;height:15px;vertical-align:middle;margin-right:4px;
-  background-image:linear-gradient(45deg,#111 25%,transparent 25%),linear-gradient(-45deg,#111 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#111 75%),linear-gradient(-45deg,transparent 75%,#111 75%);
-  background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0px;background-color:#fff;border-radius:2px;border:1px solid #999}
-.fin-score{font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px}
+html,body{height:100%;background:var(--bg)}
+body{color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;min-height:100vh;padding:14px 16px 80px}
 
-/* ── MODE RÉTROPROJECTEUR / ÉCRAN GÉANT (activé par le bouton 📽️) ── */
-body.geant .hdr h1{font-size:clamp(26px,4vw,44px)}
-body.geant .card h2{font-size:24px}
-body.geant .divbtn{font-size:17px;padding:10px 20px}
-body.geant .row{gap:16px;padding:16px 18px}
-body.geant .rank{min-width:48px;font-size:30px}
-body.geant .nom{font-size:clamp(22px,2.6vw,30px)}
-body.geant .etat{font-size:24px;margin-top:5px}
-body.geant .etat b{font-size:30px}
-body.geant .sub{font-size:15px}
-body.geant .toff{font-size:clamp(24px,2.8vw,34px)}
-body.geant .chrono{font-size:28px;min-width:110px}
-body.geant .dnf{font-size:22px}
-body.geant .fin-score{font-size:14px}
-body.geant .flag{width:22px;height:22px}
-.geantbtn{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer}
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;
+  border-bottom:1px solid rgba(34,211,238,.12);padding-bottom:14px}
+.hdr-left{display:flex;align-items:center;gap:12px;flex:1}
+.logo{width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,#1d4ed8,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:900;color:#fff;
+  box-shadow:0 0 20px rgba(34,211,238,.3);flex-shrink:0}
+.hdr h1{font-size:clamp(18px,2.5vw,26px);font-weight:900;font-style:italic;
+  letter-spacing:1px;text-transform:uppercase;
+  background:linear-gradient(90deg,#fff,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;
+  background:#ef4444;animation:pulse 1.2s infinite;margin-right:2px;
+  box-shadow:0 0 8px #ef4444;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+.hdr-clock{font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;
+  color:var(--cyan);letter-spacing:1px;flex-shrink:0}
+.geantbtn{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);
+  color:var(--cyan);border-radius:10px;padding:8px 14px;font-size:12px;
+  font-weight:900;font-family:inherit;cursor:pointer;transition:all .2s}
+.geantbtn:hover{background:rgba(34,211,238,.15)}
 body.geant .geantbtn{background:#F59E0B;color:#1a1205;border-color:#F59E0B}
-/* ═══ BOARD PREMIUM (style broadcast) ═══ */
-body{background:#060912}
-.bcard{background:radial-gradient(ellipse at top,#0f1e3d 0%,#060912 70%);border-radius:16px;padding:18px 16px;margin-bottom:14px;border:1px solid rgba(59,130,246,.15)}
+
+/* ── COUNTDOWNS ── */
+#countdowns{margin-bottom:16px}
+.cdblock{
+  background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.04));
+  border:1px solid rgba(245,158,11,.3);border-radius:16px;
+  padding:16px 20px;margin-bottom:10px;
+  display:flex;align-items:center;gap:16px;
+  animation:cdfadein .4s ease;
+  position:relative;overflow:hidden}
+.cdblock::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(245,158,11,.06) 0%,transparent 60%);pointer-events:none}
+@keyframes cdfadein{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.cdblock .cdi{font-size:32px;animation:cdtick 1s infinite}
+@keyframes cdtick{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.cdblock .cdinfo{flex:1}
+.cdblock .cdcat{font-size:15px;font-weight:900;font-style:italic;
+  text-transform:uppercase;letter-spacing:.5px}
+.cdblock .cdwave{font-size:11px;color:#fde68a;font-weight:700;margin-top:3px}
+.cdblock .cdtimer{font-size:36px;font-weight:900;font-variant-numeric:tabular-nums;
+  color:#f59e0b;letter-spacing:2px;
+  text-shadow:0 0 24px rgba(245,158,11,.6);min-width:120px;text-align:right}
+.cdblock.urgent .cdtimer{color:#ef4444;text-shadow:0 0 24px rgba(239,68,68,.7);animation:urgpulse .5s infinite}
+@keyframes urgpulse{50%{opacity:.6}}
+body.geant .cdblock .cdtimer{font-size:56px}
+body.geant .cdblock .cdcat{font-size:22px}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(500px,100%),1fr));gap:18px;padding-bottom:80px}
+
+/* ── BCARD premium ── */
+.bcard{
+  background:radial-gradient(ellipse at 20% 0%,rgba(30,58,138,.4) 0%,rgba(4,8,15,.95) 60%);
+  border-radius:20px;padding:18px 16px;
+  border:1px solid rgba(59,130,246,.2);
+  box-shadow:0 8px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
+  position:relative;overflow:hidden;
+  animation:cardin .35s ease}
+@keyframes cardin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.6}
+
 .bhdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.bbar{width:5px;height:34px;background:linear-gradient(#22d3ee,#3b82f6);border-radius:3px;box-shadow:0 0 12px #22d3ee}
-.bti{font-size:24px;font-weight:900;font-style:italic;letter-spacing:1px;text-transform:uppercase;color:#fff}
-.bsub{margin-left:auto;font-size:11px;font-weight:800;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);padding:5px 12px;border-radius:20px;color:#67e8f9}
-.bseclbl{font-size:12px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;color:#7dd3fc;display:flex;align-items:center;gap:8px}
-.bseclbl::before{content:'';width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 10px #22d3ee;animation:bblink 1.5s infinite}
-@keyframes bblink{50%{opacity:.3}}
-.brow{display:flex;align-items:center;background:linear-gradient(90deg,rgba(30,58,138,.35),rgba(15,30,61,.15));border-radius:14px;margin-bottom:8px;padding:13px 12px;border:1px solid rgba(59,130,246,.2);transition:all .6s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden}
-.brow.lead{background:linear-gradient(90deg,rgba(34,211,238,.28),rgba(15,30,61,.1));border-color:rgba(34,211,238,.5);box-shadow:0 0 22px rgba(34,211,238,.18)}
-.brow.lead::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#22d3ee;box-shadow:0 0 14px #22d3ee}
+.bbar{width:5px;border-radius:3px;align-self:stretch;min-height:32px;
+  background:linear-gradient(#22d3ee,#3b82f6);
+  box-shadow:0 0 14px rgba(34,211,238,.5)}
+.bti{font-size:22px;font-weight:900;font-style:italic;
+  letter-spacing:1px;text-transform:uppercase;color:#fff;flex:1}
+.bsub{font-size:11px;font-weight:800;
+  background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);
+  padding:5px 12px;border-radius:20px;color:#67e8f9;white-space:nowrap}
+.bsub.fin{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3);color:#4ade80}
+
+/* ── SECTION LABEL ── */
+.bseclbl{font-size:10px;font-weight:900;font-style:italic;text-transform:uppercase;
+  letter-spacing:2px;margin:0 0 10px;color:#7dd3fc;
+  display:flex;align-items:center;gap:8px}
+.bseclbl::before{content:'';width:7px;height:7px;border-radius:50%;
+  background:#22d3ee;box-shadow:0 0 10px #22d3ee;animation:bblink 1.5s infinite}
+@keyframes bblink{50%{opacity:.25}}
+.bseclbl.done::before{background:#4ade80;box-shadow:0 0 10px #4ade80;animation:none}
+
+/* ── ROWS EN COURSE ── */
+.brow{
+  display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(30,58,138,.3),rgba(15,30,61,.1));
+  border-radius:14px;margin-bottom:8px;padding:12px 14px;
+  border:1px solid rgba(59,130,246,.15);
+  transition:all .5s cubic-bezier(.22,1,.36,1);
+  position:relative;overflow:hidden}
+.brow.lead{
+  background:linear-gradient(90deg,rgba(34,211,238,.22),rgba(15,30,61,.05));
+  border-color:rgba(34,211,238,.45);
+  box-shadow:0 0 28px rgba(34,211,238,.14)}
+.brow.lead::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(#22d3ee,#3b82f6);
+  box-shadow:0 0 18px var(--cyan)}
+.brow.running-fast{
+  animation:fastpulse 2s ease-in-out infinite}
+@keyframes fastpulse{0%,100%{border-color:rgba(59,130,246,.15)}50%{border-color:rgba(34,211,238,.35)}}
+
+/* RANK PILL */
 .brk{width:54px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.bpill{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;font-style:italic;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.bpill{width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;font-style:italic;
+  box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .bpill.p1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3a2410}
 .bpill.p2{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#1e293b}
 .bpill.p3{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff}
-.bpill.px{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff}
+.bpill.px{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:15px}
+
+/* TEAM INFO */
 .bteam{flex:1;min-width:0;padding:0 12px}
-.bnm{font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.bclub{font-size:10px;color:#64a0d8;font-weight:700;letter-spacing:.5px}
-.bst{width:54px;text-align:center;font-size:20px;font-weight:900;flex-shrink:0;color:#93c5fd}
-.bmid{width:110px;text-align:center;flex-shrink:0}
-.bmlbl{font-size:10px;color:#7dd3fc;text-transform:uppercase;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bmv{font-size:16px;font-weight:900;color:#fcd34d}
-.btot{width:92px;text-align:right;font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;flex-shrink:0;color:#22d3ee}
-.btot .chrono{color:#22d3ee}
-/* TICKER */
-.ticker{position:fixed;bottom:0;left:0;right:0;height:60px;background:linear-gradient(90deg,#0a1428,#0f1e3d);border-top:2px solid #22d3ee;display:flex;align-items:center;overflow:hidden;box-shadow:0 -4px 20px rgba(0,0,0,.5);z-index:50}
-.ticker .tag{position:relative;z-index:3;flex-shrink:0;background:#22d3ee;color:#06121f;font-weight:900;font-style:italic;font-size:13px;padding:0 16px;height:100%;display:flex;align-items:center;text-transform:uppercase;letter-spacing:1px;box-shadow:8px 0 16px rgba(10,20,40,.9)}
+.bnm{font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.bclub{font-size:10px;color:#4a7aaa;font-weight:700;letter-spacing:.5px;margin-top:1px}
+
+/* STATION COUNT */
+.bst{width:50px;text-align:center;font-size:18px;font-weight:900;
+  flex-shrink:0;color:#93c5fd}
+.bst-lbl{font-size:8px;color:#4a7aaa;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+
+/* ETAT STATION */
+.bmid{width:120px;text-align:center;flex-shrink:0}
+.bmlbl{font-size:10px;color:#7dd3fc;text-transform:uppercase;
+  font-weight:800;letter-spacing:.3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bmv{font-size:15px;font-weight:900;color:#fcd34d;margin-top:2px}
+
+/* CHRONO */
+.btot{width:88px;text-align:right;flex-shrink:0}
+.chrono{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;
+  color:#22d3ee;letter-spacing:.5px}
+
+/* ── BARRE PROGRESSION ── */
+.bprog{height:3px;background:rgba(255,255,255,.06);border-radius:2px;
+  margin-top:10px;overflow:hidden}
+.bprog>div{height:100%;border-radius:2px;
+  background:linear-gradient(90deg,#3b82f6,#22d3ee);
+  transition:width .6s ease;
+  box-shadow:0 0 8px rgba(34,211,238,.5)}
+
+/* ── ROWS ARRIVÉS ── */
+.frow{display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:12px;margin-bottom:6px;
+  background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.12)}
+.frank{width:28px;font-size:14px;font-weight:900;color:#4ade80;text-align:center}
+.fnom{flex:1;font-size:13px;font-weight:800;color:#d1fae5;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ftime{font-size:14px;font-weight:900;color:#4ade80;font-variant-numeric:tabular-nums}
+
+/* ── TICKER ── */
+.ticker{position:fixed;bottom:0;left:0;right:0;height:58px;
+  background:linear-gradient(90deg,#04111f,#061628);
+  border-top:2px solid rgba(34,211,238,.4);
+  display:flex;align-items:center;overflow:hidden;
+  box-shadow:0 -4px 24px rgba(0,0,0,.6);z-index:50}
+.ticker .tag{flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#22d3ee);
+  color:#04111f;font-weight:900;font-style:italic;font-size:13px;
+  padding:0 18px;height:100%;display:flex;align-items:center;
+  text-transform:uppercase;letter-spacing:1.5px;
+  box-shadow:10px 0 20px rgba(4,17,31,.9)}
 .tickwin{flex:1;overflow:hidden;position:relative}
-.ticker .scroll{display:flex;gap:44px;white-space:nowrap;animation:tickslide 16s linear infinite;padding-left:30px}
+.ticker .scroll{display:flex;gap:48px;white-space:nowrap;animation:tickslide 18s linear infinite;padding-left:32px}
 @keyframes tickslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.ticker .fin{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800}
-.ticker .fr{font-weight:900;font-style:italic;color:#fbbf24;font-size:14px}
+.ticker .fin{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800}
+.ticker .fr{font-weight:900;font-style:italic;color:#fbbf24;font-size:13px}
 .ticker .fn{font-style:italic;text-transform:uppercase;color:#fff}
 .ticker .ft{color:#4ade80;font-weight:900;font-variant-numeric:tabular-nums}
-.ticker .fc{color:#64a0d8;font-size:10px}
-.grid{padding-bottom:76px}
-/* ── COUNTDOWN AVANT DÉPART ── */
-.cdblock{background:linear-gradient(135deg,#0f1e3d,#0a1428);border:1px solid rgba(245,158,11,.35);border-radius:14px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
-.cdblock .cdi{font-size:28px}
-.cdblock .cdinfo{flex:1}
-.cdblock .cdcat{font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;color:#fcd34d;letter-spacing:.5px}
-.cdblock .cdwave{font-size:11px;color:#7dd3fc;font-weight:700;margin-top:2px}
-.cdblock .cdtimer{font-size:32px;font-weight:900;font-variant-numeric:tabular-nums;color:#f59e0b;letter-spacing:1px;text-shadow:0 0 18px #f59e0b88;min-width:110px;text-align:right}
-body.geant .cdblock .cdtimer{font-size:48px}
-body.geant .cdblock .cdcat{font-size:20px}
-/* Mode géant : agrandir le board */
-body.geant .bnm{font-size:28px}
+.ticker .fc{color:#5a8ab0;font-size:10px}
+
+/* ── MODE GÉANT ── */
+body.geant .bcard{padding:24px 20px}
+body.geant .bhdr{margin-bottom:20px}
 body.geant .bti{font-size:32px}
-body.geant .btot{font-size:32px;width:120px}
-body.geant .bst{font-size:28px}
+body.geant .bnm{font-size:28px}
+body.geant .chrono{font-size:32px}
 body.geant .bpill{width:58px;height:58px;font-size:26px}
+body.geant .bst{font-size:26px;width:60px}
 body.geant .bmv{font-size:20px}
-body.geant .ticker{height:74px}
-body.geant .ticker .fin{font-size:20px}
+body.geant .bmlbl{font-size:12px}
+body.geant .ticker{height:72px}
+body.geant .ticker .fin{font-size:18px}
+body.geant .brow{padding:16px 18px}
+body.geant .bsub{font-size:13px}
+
+.empty{text-align:center;color:var(--ink2);padding:32px;font-size:13px;line-height:1.8}
 </style>
 </head>
 <body>
 <div class="hdr">
-  <h1><span class="live-dot"></span><span id="evnom">HYROX</span> · Live</h1>
-  <button class="geantbtn" onclick="toggleGeant()" title="Basculer en mode écran géant / rétroprojecteur"><span id="geant-lbl">📽️ Mode écran géant</span></button>
-  <div id="divbtns"></div>
+  <div class="hdr-left">
+    <div class="logo">⚡</div>
+    <div>
+      <h1><span class="live-dot"></span><span id="evnom">HYROX</span></h1>
+    </div>
+  </div>
+  <div class="hdr-clock" id="hdr-clock">--:--:--</div>
+  <button class="geantbtn" onclick="toggleGeant()"><span id="geant-lbl">📽️ Écran géant</span></button>
 </div>
+
 <div id="countdowns"></div>
-<div class="grid" id="grid"><div class="empty">Connexion…</div></div>
-<div class="foot" id="foot">—</div>
+<div class="grid" id="grid"><div class="empty">⏳ Connexion en cours…</div></div>
 
 <script>
 var FIREBASE_DB_URL='https://foc-2026-default-rtdb.europe-west1.firebasedatabase.app';
@@ -138,7 +233,7 @@ var R='hyrox/race';
 
 var CFG=null, WAVES={}, PROGRESS={}, OFFSET=0, FILTER='all';
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
-var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
+var ADJ=0;
 db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
 var PEN={};
 db.ref(R+'/penalties').on('value',function(s){ PEN=s.val()||{}; render(); });
@@ -146,8 +241,7 @@ function penMs(id){ var e=PEN[id]; if(!e) return 0; if(e.sec!=null) return Math.
   var t=0; Object.keys(e).forEach(function(k){ var v=e[k]; if(v&&v.sec!=null) t+=Math.max(0,parseInt(v.sec,10)||0)*1000; }); return t; }
 function offMs(id,p){ if(!p||p.officialMs==null) return null; var o=parseInt(p.officialMs,10); return isNaN(o)?null:Math.max(0,o)+penMs(id); }
 function now(){ return Date.now()+OFFSET+ADJ; }
-var TK={};
-db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; });
+
 db.ref(R+'/config').on('value',function(s){ CFG=s.val(); render(); });
 db.ref(R+'/waves').on('value',function(s){ WAVES=s.val()||{}; render(); });
 db.ref(R+'/progress').on('value',function(s){ PROGRESS=s.val()||{}; render(); });
@@ -157,156 +251,107 @@ function fmt(ms){
   var s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
   return (h?h+':':'')+('0'+m).slice(-2)+':'+('0'+sec).slice(-2);
 }
+function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
 function nSegments(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';}).length; }
+function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
+function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
 
-// ── Où en est une équipe : segments faits, segment en cours, reps en direct ──
+function WAVEcat(id){
+  var w=Object.values(WAVES).find(function(w){return (w.athletes||[]).some(function(a){return a.id===id;});});
+  return w?w.catId:null;
+}
+
 function courseState(id){
   var segs=((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station'||st.seg==='run';});
   var p=prog(id); var pst=(p&&p.stations)||{};
-  var out=[]; var curLabel=null; var runActive=false; var repNow=null; var stIndexInStations=0;
+  var out=[]; var runActive=false; var repNow=null; var stIdx=0;
   var stationsTotal=segs.filter(function(s){return s.seg==='station';}).length;
   for(var k=0;k<segs.length;k++){
     var s=segs[k]; var rec=pst[s.idx]; var done=!!(rec&&rec.done);
-    if(s.seg==='station'){
-      stIndexInStations++;
-      out.push({type:'station',num:stIndexInStations,done:done,idx:s.idx,nom:s.nom});
-    } else {
-      out.push({type:'run',done:done,idx:s.idx});
-    }
+    if(s.seg==='station'){ stIdx++; out.push({type:'station',num:stIdx,done:done,idx:s.idx,nom:s.nom}); }
+    else { out.push({type:'run',done:done,idx:s.idx}); }
   }
-  // segment "en cours" = premier non-fini ; run actif s'il suit une station finie et précède une station non finie
   var curPos=-1;
   for(var i=0;i<out.length;i++){ if(!out[i].done){ curPos=i; break; } }
   if(curPos>=0){
     var seg=out[curPos];
-    if(seg.type==='run'){ runActive=true; }
-    else { seg.current=true; }
+    if(seg.type==='run'){ runActive=true; } else { seg.current=true; }
   }
-  // ★ FIX : cherche les reps sur TOUTES les stations non-validées (pas seulement curPos)
-  // Cas typique : la station précédente n'est pas encore done=true côté juge
-  // donc curPos pointe trop tôt, mais le juge tape déjà des reps sur la station suivante.
+  // ★ FIX reps : cherche sur toutes les stations non-validées
   for(var j=0;j<out.length;j++){
-    if(out[j].type!=='station' || out[j].done) continue;
+    if(out[j].type!=='station'||out[j].done) continue;
     var rec2=pst[out[j].idx];
-    if(rec2 && rec2.val!=null && !rec2.done){
+    if(rec2&&rec2.val!=null&&!rec2.done){
       var sdef=segs.find(function(x){return x.idx===out[j].idx;});
       var target=null;
       if(sdef){ var q=(sdef.qtyParCat&&WAVEcat(id)!=null&&sdef.qtyParCat[String(WAVEcat(id))]!=null)?sdef.qtyParCat[String(WAVEcat(id))]:sdef.qty; target=parseFloat(q)||null; }
-      // On garde la première station avec des reps en cours (la plus avancée)
-      if(!repNow || (parseFloat(rec2.val)||0)>0){
-        repNow={val:rec2.val, target:target, nom:out[j].nom, num:out[j].num};
-        break; // première station active trouvée = la bonne
-      }
+      if(!repNow||(parseFloat(rec2.val)||0)>0){ repNow={val:rec2.val,target:target,nom:out[j].nom,num:out[j].num}; break; }
     }
   }
-  return {segs:out, runActive:runActive, repNow:repNow, stationsTotal:stationsTotal};
+  return {segs:out,runActive:runActive,repNow:repNow,stationsTotal:stationsTotal};
 }
-function WAVEcat(id){ var w=Object.values(WAVES).find(function(w){return (w.athletes||[]).some(function(a){return a.id===id;});}); return w?w.catId:null; }
 
-function toggleGeant(){
-  var on=document.body.classList.toggle('geant');
-  var lbl=document.getElementById('geant-lbl');
-  if(lbl) lbl.textContent = on ? '💻 Mode PC' : '📽️ Mode écran géant';
-  try{ localStorage.setItem('hyrox-live-geant', on?'1':'0'); }catch(e){}
-}
-// restaurer le choix au chargement
-(function(){
-  try{
-    if(localStorage.getItem('hyrox-live-geant')==='1'){
-      document.body.classList.add('geant');
-      var lbl=document.getElementById('geant-lbl'); if(lbl) lbl.textContent='💻 Mode PC';
-    }
-  }catch(e){}
-})();
-function nStations(){ return ((CFG&&CFG.stations)||[]).filter(function(st){return st.seg==='station';}).length; }
-function prog(id){ return (PROGRESS&&PROGRESS[id])||{}; }
-function doneCount(id){ var p=prog(id); return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0; }
-
-// ── Score d'avancement pour le tri live (même départ → le plus avancé devant) ──
-// stations validées ×1e9  +  reps en cours sur la station actuelle (départage à station égale)
 function advScore(id){
   var stations=doneCount(id)*1e9;
   var cs=courseState(id);
-  var reps=0;
-  if(cs && cs.repNow && typeof cs.repNow.val!=='undefined'){
-    reps=parseFloat(cs.repNow.val)||0;
-  }
-  // bonus léger si l'équipe est sur un run (elle a quitté la station précédente = un peu plus avancée)
-  var runBonus=(cs && cs.runActive)?5e8:0;
-  return stations + runBonus + reps;
+  var reps=cs&&cs.repNow?parseFloat(cs.repNow.val)||0:0;
+  var runBonus=(cs&&cs.runActive)?5e8:0;
+  return stations+runBonus+reps;
 }
 
-var EXPANDED={};
-function toggleSplits(id){ EXPANDED[id]=!EXPANDED[id]; render(); }
-// Détail des temps par segment (run + station) — split = elapsedMs cumulé − précédent
-function splitsHTML(p){
-  var segs=(CFG&&CFG.stations)||[];
-  var prev=0, runTot=0, staTot=0, out='';
-  segs.forEach(function(s,i){
-    if(s.seg!=='run' && s.seg!=='station') return;
-    var st=p.stations&&p.stations[i];
-    var has=st && st.elapsedMs!=null;
-    var split=has?Math.max(0, st.elapsedMs-prev):null;
-    if(has) prev=st.elapsedMs;
-    if(split!=null){ if(s.seg==='run') runTot+=split; else staTot+=split; }
-    var isRun=(s.seg==='run');
-    out+='<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:11px">'
-      +'<span style="width:16px;text-align:center">'+(isRun?'🏃':'🏋️')+'</span>'
-      +'<span style="flex:1;color:#334155;'+(isRun?'font-style:italic;opacity:.85':'font-weight:700')+'">'+(s.nom||(isRun?'Run':'Station'))+'</span>'
-      +'<span style="font-variant-numeric:tabular-nums;font-weight:800;color:'+(isRun?'#2563EB':'#0F172A')+'">'+(split!=null?fmt(split):'—')+'</span>'
-      +'</div>';
-  });
-  return '<div style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:8px 4px 4px;margin:-2px 0 8px">'+out
-    +'<div style="display:flex;gap:10px;padding:8px 12px 2px;border-top:1px solid #E2E8F0;margin-top:4px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#64748B">'
-    +'<span style="flex:1">🏃 Runs '+fmt(runTot)+'</span><span>🏋️ Stations '+fmt(staTot)+'</span></div></div>';
+// ── COUNTDOWN ──
+// ★ Robuste : utilise schedAt si dispo, sinon recalcule depuis w.time + date du jour
+function getSchedAt(w){
+  if(w.schedAt) return w.schedAt;
+  if(!w.time) return null;
+  var t=w.time; // "HH:MM"
+  var parts=t.split(':');
+  if(parts.length<2) return null;
+  var d=new Date();
+  d.setHours(parseInt(parts[0],10)||0, parseInt(parts[1],10)||0, 0, 0);
+  return d.getTime();
 }
 
-// ── Countdown avant départ pour les vagues pas encore lancées ──
 function fmtCountdown(ms){
   if(ms<=0) return '00:00';
   var s=Math.ceil(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
   if(h>0) return h+'h'+('0'+m).slice(-2)+'m'+('0'+sec).slice(-2)+'s';
   return ('0'+m).slice(-2)+':'+('0'+sec).slice(-2);
 }
+
 function renderCountdowns(){
   var cd=document.getElementById('countdowns'); if(!cd) return;
-  // Récupérer toutes les vagues avec schedAt mais sans startAt (pas encore lancées)
   var pending=[];
   Object.values(WAVES).forEach(function(w){
-    if(w.startAt) return; // déjà lancée
-    var sched=w.schedAt;
-    if(!sched) return; // pas programmée
+    if(w.startAt) return;
+    var sched=getSchedAt(w);
+    if(!sched) return;
     var remain=sched-now();
-    if(remain<0 || remain>12*3600000) return; // passée ou trop loin (>12h)
-    pending.push({catNom:w.catNom||'', couleur:w.couleur||'#3B82F6', waveNum:w.num||'', sched:sched, remain:remain});
+    if(remain<0||remain>14*3600000) return;
+    pending.push({catNom:w.catNom||'',couleur:w.couleur||'#3B82F6',waveNum:w.num||'',sched:sched,remain:remain});
   });
-  pending.sort(function(a,b){ return a.sched-b.sched; });
+  pending.sort(function(a,b){return a.sched-b.sched;});
   if(!pending.length){ cd.innerHTML=''; return; }
   cd.innerHTML=pending.map(function(p){
-    return '<div class="cdblock" data-sched="'+p.sched+'">'
-      +'<div class="cdi">⏳</div>'
+    var urgent=p.remain<180000; // <3 min → rouge
+    return '<div class="cdblock'+(urgent?' urgent':'')+'" data-sched="'+p.sched+'">'
+      +'<div class="cdi">'+(urgent?'🚨':'⏳')+'</div>'
       +'<div class="cdinfo">'
         +'<div class="cdcat" style="color:'+p.couleur+'">'+p.catNom+'</div>'
-        +'<div class="cdwave">Vague '+p.waveNum+' · Départ dans</div>'
+        +'<div class="cdwave">Vague '+p.waveNum+' · départ dans</div>'
       +'</div>'
       +'<div class="cdtimer" id="cdt-'+p.sched+'">'+fmtCountdown(p.remain)+'</div>'
       +'</div>';
   }).join('');
 }
-function setFilter(f){ FILTER=f; render(); }
 
 function render(){
   var grid=document.getElementById('grid');
-  if(!CFG){ grid.innerHTML='<div class="empty">En attente de la publication de la course…</div>'; return; }
+  if(!CFG){ grid.innerHTML='<div class="empty">⏳ En attente de la publication de la course…</div>'; return; }
   document.getElementById('evnom').textContent=CFG.nom||'HYROX';
 
-  // boutons divisions retirés du live public (le board affiche tout, pas de filtre à cliquer)
-  var _db=document.getElementById('divbtns'); if(_db) _db.innerHTML='';
-
-  var total=nSegments();
   var byDiv={};
   Object.values(WAVES).forEach(function(w){
-    if(FILTER!=='all' && String(w.catId)!==FILTER) return;
     if(!w.startAt) return;
     if(!byDiv[w.catId]) byDiv[w.catId]={nom:w.catNom,couleur:w.couleur,finished:[],running:[]};
     (w.athletes||[]).forEach(function(a){
@@ -318,135 +363,215 @@ function render(){
   });
 
   var keys=Object.keys(byDiv);
-  if(!keys.length){ grid.innerHTML='<div class="empty">Aucune vague lancée pour l\'instant.</div>'; return; }
+  if(!keys.length){
+    grid.innerHTML='<div class="empty">⏳ Aucune vague lancée pour l\'instant.<br>Les équipes apparaîtront ici au départ.</div>';
+  } else {
+    // DOM-diff : créer/mettre à jour sans détruire
+    var existingCards={};
+    grid.querySelectorAll('.bcard[data-cat]').forEach(function(el){ existingCards[el.dataset.cat]=el; });
+    Object.keys(existingCards).forEach(function(k){ if(!byDiv[k]) grid.removeChild(existingCards[k]); });
 
-  grid.innerHTML=keys.map(function(k){
-    var d=byDiv[k];
-    d.finished.sort(function(a,b){ return (a.p.dnf?9e13:(offMs(a.id,a.p)||9e12))-(b.p.dnf?9e13:(offMs(b.id,b.p)||9e12)); });
-    // En course : tri par avancement (même départ = même temps, le plus avancé devant)
-    d.running.forEach(function(t){ t._adv=advScore(t.id); });
-    d.running.sort(function(a,b){ return b._adv-a._adv || a.waveNum-b.waveNum; });
+    keys.forEach(function(k){
+      var d=byDiv[k];
+      var totSt=nStations();
+      d.finished.sort(function(a,b){return (a.p.dnf?9e13:(offMs(a.id,a.p)||9e12))-(b.p.dnf?9e13:(offMs(b.id,b.p)||9e12));});
+      d.running.forEach(function(t){t._adv=advScore(t.id);});
+      d.running.sort(function(a,b){return b._adv-a._adv||a.waveNum-b.waveNum;});
 
-    // ── EN COURSE : lignes plein écran, board premium ──
-    var rows='';
-    d.running.forEach(function(t,ri){
-      var cs=courseState(t.id);
-      var rang=ri+1;
-      var pillCls = rang===1?'p1':rang===2?'p2':rang===3?'p3':'px';
-      var lead = rang===1?' lead':'';
-      // état : station en cours + avancement
-      var lbl, val;
-      if(cs.runActive){ lbl='🏃 Run'; val=''; }
-      else if(cs.repNow){
-        lbl=cs.repNow.nom+(cs.repNow.num?' · St'+cs.repNow.num:'');
-        val=cs.repNow.val+(cs.repNow.target?(' / '+cs.repNow.target):'');
-      } else {
-        var curSta=cs.segs.filter(function(s){return s.type==='station'&&s.current;})[0];
-        lbl=curSta?curSta.nom:'En course'; val='';
+      // Créer la carte si nécessaire
+      var card=existingCards[k];
+      if(!card){
+        card=document.createElement('div');
+        card.className='bcard'; card.dataset.cat=k;
+        card.innerHTML='<div class="bhdr">'
+          +'<div class="bbar" id="bar-'+k+'" style="background:linear-gradient('+d.couleur+','+d.couleur+'88)"></div>'
+          +'<div class="bti">'+d.nom+'</div>'
+          +'<div class="bsub" id="bsub-'+k+'">● LIVE</div>'
+          +'</div>'
+          +'<div class="bseclbl" id="lbl-run-'+k+'">En course</div>'
+          +'<div class="brows-running" id="rows-'+k+'"></div>'
+          +'<div class="bseclbl done" id="lbl-fin-'+k+'" style="margin-top:14px;display:none">Arrivés</div>'
+          +'<div id="frows-'+k+'"></div>';
+        grid.appendChild(card);
       }
-      var nbSt=doneCount(t.id), totSt=nStations();
-      rows+='<div class="brow'+lead+'" data-id="'+t.id+'">'
-        +'<div class="brk"><div class="bpill '+pillCls+'">'+rang+'</div></div>'
-        +'<div class="bteam"><div class="bnm">'+t.nom+'</div>'+(t.club?'<div class="bclub">'+t.club+'</div>':'<div class="bclub">&nbsp;</div>')+'</div>'
-        +'<div class="bst">'+nbSt+'/'+totSt+'</div>'
-        +'<div class="bmid"><div class="bmlbl">'+lbl+'</div>'+(val?'<div class="bmv">'+val+'</div>':'<div class="bmv">&nbsp;</div>')+'</div>'
-        +'<div class="btot"><span class="chrono" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span></div>'
-        +'</div>';
+      var bsub=document.getElementById('bsub-'+k);
+      if(bsub) bsub.textContent='● LIVE · '+d.running.length+' en course';
+
+      // ── RÉORDONNANCEMENT ANIMÉ des lignes ──
+      var container=document.getElementById('rows-'+k);
+      if(container){
+        var existingRows={};
+        container.querySelectorAll('.brow[data-id]').forEach(function(el){ existingRows[el.dataset.id]=el; });
+
+        d.running.forEach(function(t,ri){
+          var cs=courseState(t.id);
+          var rang=ri+1;
+          var pillCls=rang===1?'p1':rang===2?'p2':rang===3?'p3':'px';
+          var isLead=rang===1;
+          var pct=totSt?Math.round(doneCount(t.id)/totSt*100):0;
+          var lbl,val;
+          if(cs.runActive){ lbl='🏃 Run en cours'; val=''; }
+          else if(cs.repNow){
+            lbl=cs.repNow.nom+(cs.repNow.num?' · St'+cs.repNow.num:'');
+            val=(cs.repNow.val||0)+(cs.repNow.target?' / '+cs.repNow.target:'');
+          } else {
+            var curSta=cs.segs.filter(function(s){return s.type==='station'&&s.current;})[0];
+            lbl=curSta?curSta.nom:'En course'; val='';
+          }
+
+          var row=existingRows[t.id];
+          var oldRang=row?parseInt(row.dataset.rang||'99',10):99;
+          var isNew=!row;
+          var movedUp=!isNew&&rang<oldRang;
+
+          if(isNew){
+            row=document.createElement('div');
+            row.className='brow'; row.dataset.id=t.id;
+            row.innerHTML=
+              '<div class="brk"><div class="bpill" id="pill-'+t.id+'"></div></div>'
+              +'<div class="bteam"><div class="bnm" id="nm-'+t.id+'"></div><div class="bclub" id="cl-'+t.id+'"></div></div>'
+              +'<div class="bst"><div id="st-'+t.id+'"></div><div class="bst-lbl">St.</div></div>'
+              +'<div class="bmid"><div class="bmlbl" id="lbl-'+t.id+'"></div><div class="bmv" id="val-'+t.id+'"></div></div>'
+              +'<div class="btot"><span class="chrono" id="chr-'+t.id+'" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</span></div>'
+              +'<div class="bprog" style="position:absolute;bottom:0;left:0;right:0;border-radius:0 0 14px 14px"><div id="prg-'+t.id+'"></div></div>';
+          }
+
+          // Update content
+          var pill=document.getElementById('pill-'+t.id); if(pill){pill.className='bpill '+pillCls;pill.textContent=rang;}
+          var nm=document.getElementById('nm-'+t.id); if(nm) nm.innerHTML=t.nom+(isLead?'<span class="leader-badge">⚡ LEADER</span>':'');
+          var cl=document.getElementById('cl-'+t.id); if(cl) cl.textContent=t.club||'';
+          var st=document.getElementById('st-'+t.id); if(st) st.textContent=doneCount(t.id)+'/'+totSt;
+          var lb=document.getElementById('lbl-'+t.id); if(lb) lb.textContent=lbl;
+          var vl=document.getElementById('val-'+t.id); if(vl) vl.textContent=val||'';
+          var pr=document.getElementById('prg-'+t.id); if(pr) pr.style.width=pct+'%';
+          var chr=document.getElementById('chr-'+t.id); if(chr) chr.dataset.start=t.startAt;
+
+          row.classList.toggle('lead',isLead);
+          row.dataset.rang=rang;
+
+          // Animation montée
+          if(movedUp){
+            row.classList.remove('moving-up'); void row.offsetWidth;
+            row.classList.add('moving-up');
+            setTimeout(function(r){r.classList.remove('moving-up');},600,row);
+          }
+
+          // Réordonner dans le DOM sans recreer
+          var children=Array.from(container.children);
+          var cur=children.indexOf(row);
+          if(cur!==ri){
+            container.insertBefore(row, children[ri]||null);
+          } else if(!row.parentNode){
+            container.appendChild(row);
+          }
+          delete existingRows[t.id];
+        });
+        Object.values(existingRows).forEach(function(el){container.removeChild(el);});
+      }
+
+      // Arrivés
+      var fc=document.getElementById('frows-'+k);
+      if(fc) fc.innerHTML=d.finished.slice(0,6).map(function(t,fi){
+        var off=offMs(t.id,t.p);
+        return '<div class="frow">'
+          +'<div class="frank">'+(fi+1)+'</div>'
+          +'<div class="fnom">'+t.nom+(t.club?' <span style="color:#4a7aaa;font-weight:700;font-size:10px">'+t.club+'</span>':'')+'</div>'
+          +'<div class="ftime">'+(off!=null?fmt(off):'—')+'</div></div>';
+      }).join('');
+      var fl=document.getElementById('lbl-fin-'+k); if(fl) fl.style.display=d.finished.length?'flex':'none';
+      var rl=document.getElementById('lbl-run-'+k); if(rl) rl.style.display=d.running.length?'flex':'none';
     });
-
-    return '<div class="bcard">'
-      +'<div class="bhdr"><div class="bbar"></div><div class="bti">'+d.nom+'</div>'
-        +'<div class="bsub">● LIVE · '+d.running.length+' en course</div></div>'
-      +'<div class="bseclbl">En course</div>'
-      +(rows||'<div class="empty">En attente de départ…</div>')
-      +'</div>';
-  }).join('');
-
-  // ── COUNTDOWN avant départ ──
+  }
   renderCountdowns();
-  // ── TICKER ARRIVÉS (bandeau défilant en bas, 5 derniers arrivés toutes catégories) ──
   renderTicker(byDiv);
-
-  document.getElementById('foot').textContent='Mise à jour temps réel';
 }
 
-// Construit/actualise le ticker des arrivés en bas de l'écran
 function renderTicker(byDiv){
   var tick=document.getElementById('ticker');
-  if(!tick){
-    tick=document.createElement('div');
-    tick.id='ticker'; tick.className='ticker';
-    document.body.appendChild(tick);
-  }
-  // rassembler tous les arrivés, trier par heure d'arrivée décroissante (les + récents d'abord)
+  if(!tick){ tick=document.createElement('div'); tick.id='ticker'; tick.className='ticker'; document.body.appendChild(tick); }
   var arrivals=[];
   Object.keys(byDiv).forEach(function(k){
     var d=byDiv[k];
     d.finished.forEach(function(t){
       if(t.p.dnf) return;
-      arrivals.push({nom:t.nom, club:t.club||'', off:offMs(t.id,t.p), at:(t.p.finishedAt||0), catNom:d.nom});
+      arrivals.push({nom:t.nom,club:t.club||'',off:offMs(t.id,t.p),at:(t.p.finishedAt||0),catNom:d.nom});
     });
   });
   if(!arrivals.length){ tick.style.display='none'; return; }
   tick.style.display='flex';
-  // rang par catégorie (classement au temps final)
   var byCat={};
   arrivals.forEach(function(a){ (byCat[a.catNom]=byCat[a.catNom]||[]).push(a); });
   Object.keys(byCat).forEach(function(c){ byCat[c].sort(function(x,y){return x.off-y.off;}); byCat[c].forEach(function(a,i){a.rank=i+1;}); });
-  // les 5 plus récents (par heure d'arrivée)
-  var recent=arrivals.slice().sort(function(x,y){return y.at-x.at;}).slice(0,5);
-  // ordre d'affichage = par temps (plus rapide d'abord) pour la lisibilité
+  var recent=arrivals.slice().sort(function(x,y){return y.at-x.at;}).slice(0,6);
   recent.sort(function(x,y){return x.off-y.off;});
   function chip(a){
-    return '<div class="fin"><span class="fr">#'+a.rank+'</span><span class="fn">'+a.nom+'</span>'
+    return '<div class="fin">'
+      +'<span class="fr">#'+a.rank+'</span>'
+      +'<span class="fn">'+a.nom+'</span>'
       +(a.club?'<span class="fc">'+a.club+'</span>':'')
-      +'<span class="ft">'+fmt(a.off)+'</span></div>';
+      +'<span class="ft">'+fmt(a.off)+'</span>'
+      +'</div>';
   }
-  // doublé pour boucle fluide
   var inner=recent.map(chip).join('')+recent.map(chip).join('');
-  tick.innerHTML='<div class="tag">🏁 Arrivés</div><div class="tickwin"><div class="scroll">'+inner+'</div></div>';
+  tick.innerHTML='<div class="tag">🏁 Arrivées</div><div class="tickwin"><div class="scroll">'+inner+'</div></div>';
+}
+
+function toggleGeant(){
+  var on=document.body.classList.toggle('geant');
+  var lbl=document.getElementById('geant-lbl');
+  if(lbl) lbl.textContent=on?'💻 Mode PC':'📽️ Écran géant';
+  try{ localStorage.setItem('hyrox-live-geant',on?'1':'0'); }catch(e){}
+}
+(function(){
+  try{ if(localStorage.getItem('hyrox-live-geant')==='1'){ document.body.classList.add('geant'); var l=document.getElementById('geant-lbl'); if(l) l.textContent='💻 Mode PC'; } }catch(e){}
+})();
+
+// ── TICKER DE L'HEURE EN DIRECT ──
+function updateClock(){
+  var el=document.getElementById('hdr-clock'); if(!el) return;
+  var d=new Date();
+  el.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);
 }
 
 setInterval(function(){
-  // Chronos en cours
+  updateClock();
+  // Chronos en course
   document.querySelectorAll('.chrono[data-start]').forEach(function(n){
     n.textContent=fmt(now()-parseInt(n.dataset.start,10));
   });
-  // Countdowns avant départ
+  // Countdowns
   var needRerender=false;
   document.querySelectorAll('.cdblock[data-sched]').forEach(function(block){
     var sched=parseInt(block.dataset.sched,10);
     var remain=sched-now();
     var el=document.getElementById('cdt-'+sched);
-    if(remain<=0){
-      // La vague vient de démarrer → re-render complet pour la retirer
-      needRerender=true;
-    } else if(el){
-      el.textContent=fmtCountdown(remain);
+    if(remain<=0){ needRerender=true; }
+    else {
+      if(el) el.textContent=fmtCountdown(remain);
+      // Urgent si < 3 min
+      if(remain<180000&&!block.classList.contains('urgent')){
+        block.classList.add('urgent');
+        block.querySelector('.cdi').textContent='🚨';
+      }
     }
   });
-  if(needRerender){ renderCountdowns(); }
+  if(needRerender) renderCountdowns();
 },500);
 
-/* Le départ automatique des vagues est piloté par le TK (appareil maître).
-   Le live ne fait qu'AFFICHER l'état de la course en temps réel. */
+updateClock();
 </script>
 <script>
-/* ★ offline : cache des apps via service worker (sw.js) */
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
-
-/* ── ANTI-VEILLE : l'écran géant ne doit JAMAIS s'endormir (départs auto) ── */
 (function(){
   var wl=null;
   function acquire(){
     if('wakeLock' in navigator){
-      navigator.wakeLock.request('screen').then(function(l){ wl=l; l.addEventListener('release',function(){ wl=null; }); }).catch(function(){});
+      navigator.wakeLock.request('screen').then(function(l){ wl=l; l.addEventListener('release',function(){wl=null;}); }).catch(function(){});
     }
   }
   acquire();
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') acquire(); });
-  // Réacquisition périodique (certains navigateurs relâchent)
-  setInterval(acquire, 30000);
+  setInterval(acquire,30000);
 })();
 </script>
 </body>

@@ -525,6 +525,15 @@ body.hxt [style*="linear-gradient"][style*="#1565C0"]{
 body.hxt a{color:var(--hx)!important;}
 /* focus clavier visible (accessibilité) */
 body.hxt :focus-visible{outline:2px solid var(--hx)!important;outline-offset:2px;}
+
+/* ══ BANDEAU HEADER (noir + jaune, façon maquette) ══ */
+body.hxt .header{background:#0E0E11!important;border-bottom:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important;}
+body.hxt .logo-text .n1{color:#FFE500!important;font-family:'Bebas Neue',sans-serif!important;letter-spacing:.05em!important;font-size:22px!important;line-height:.9!important;}
+body.hxt .logo-text .n2{color:#F4F5F7!important;letter-spacing:.28em!important;}
+body.hxt .logo-text .n3{color:#85888F!important;}
+body.hxt #ev-subtitle{color:#B7BAC2!important;}
+body.hxt #hxt-countdown{font-family:'Bebas Neue',sans-serif;color:#FFE500;line-height:.8;text-align:right;padding:2px 10px;border-right:2px solid rgba(255,229,0,.4);margin-right:4px}
+body.hxt #hxt-countdown small{display:block;font-family:'Inter',sans-serif;font-size:8px;font-weight:800;letter-spacing:.18em;color:#85888F}
 </style>
 </head>
 <body>
@@ -960,6 +969,7 @@ function checkPassword(){
     </div>
     <span id="ev-subtitle"></span>
     <div class="header-actions">
+      <span id="hxt-countdown" style="display:none"></span>
       <span id="save-indicator"></span>
       
       
@@ -7013,8 +7023,8 @@ function renderCatGrid(){
   if(!el)return;
   var sorted=CATEGORIES.slice().sort(function(a,b){return (a.ordre||99)-(b.ordre||99);});
   if(!sorted.length){
-    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--ink2);font-size:13px;border:1px dashed #EBF0FA;border-radius:12px;">'
-      +'<div style="font-size:36px;margin-bottom:10px;opacity:.3">🏆</div>'
+    el.innerHTML='<div style="text-align:center;padding:40px;color:#A7AAB2;font-size:13px;border:1px dashed rgba(255,255,255,.14);border-radius:12px;background:#141417;">'
+      +'<div style="font-size:36px;margin-bottom:10px;opacity:.4">🏆</div>'
       +'Aucune catégorie — les divisions Hyrox se chargent automatiquement au démarrage'
       +'</div>';
     return;
@@ -7026,27 +7036,36 @@ function renderCatGrid(){
     var pct=total>0?Math.round(placed/total*100):0;
     var nbW=(typeof hyroxWaveCount==='function')?hyroxWaveCount(cat):(cat.nbHeats||1);
     
-    return '<div id="catrow-'+cat.id+'" style="border:1.5px solid '+(isActive?cat.couleur+'88':'var(--brd,#EBF0FA)')+';border-radius:11px;overflow:hidden;background:'+(isActive?cat.couleur+'12':'var(--s1,#FFFFFF)')+';transition:all .15s;">'
-      // ── HEADER (cliquable) ──
-      +'<div onclick="selectCat('+cat.id+')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;">'
-        +'<div style="width:14px;height:14px;border-radius:4px;background:'+cat.couleur+';flex-shrink:0;box-shadow:0 2px 8px '+cat.couleur+'66;"></div>'
-        +'<div style="flex:1;min-width:0;">'
-          +'<div style="font-size:15px;font-weight:900;color:#0F1C2E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(cat.nom)+'</div>'
-          +'<div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;" onclick="event.stopPropagation()">'
-            +'<select onchange="hxSetDiv('+cat.id+',\'jour\',this.value);renderCategories()" title="Jour" style="background:#EBF0FA;border:1px solid var(--brd,#DDE5F5);border-radius:6px;padding:2px 6px;font-size:10px;font-weight:900;font-family:inherit;outline:none;cursor:pointer">'
+    return '<div id="catrow-'+cat.id+'" style="position:relative;background:#141417;border:1px solid '+(isActive?cat.couleur+'99':'rgba(255,255,255,.09)')+';border-radius:12px;overflow:hidden;transition:all .15s;">'
+      +'<div style="display:grid;grid-template-columns:6px 1fr auto;align-items:center;">'
+        // ── SPINE couleur catégorie ──
+        +'<div style="align-self:stretch;background:'+cat.couleur+';box-shadow:2px 0 12px '+cat.couleur+'55;"></div>'
+        // ── MID (clic = déplier) ──
+        +'<div onclick="selectCat('+cat.id+')" style="padding:12px 6px 12px 15px;min-width:0;cursor:pointer;">'
+          +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:25px;line-height:.85;letter-spacing:.02em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(cat.nom)+'</div>'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;" onclick="event.stopPropagation()">'
+            +'<select onchange="hxSetDiv('+cat.id+',\'jour\',this.value);renderCategories()" title="Jour" style="background:#212328;border:1px solid rgba(255,255,255,.15);color:#F4F5F7;border-radius:6px;padding:3px 6px;font-size:10px;font-weight:800;font-family:inherit;outline:none;cursor:pointer">'
               +'<option value="1"'+((cat.jour||1)==1?' selected':'')+'>Jour 1</option>'
               +'<option value="2"'+((cat.jour||1)==2?' selected':'')+'>Jour 2</option></select>'
-            +'<span style="font-size:10px;color:#3A5270;font-weight:800">🌊 départ</span>'
-            +'<input type="text" inputmode="numeric" maxlength="5" value="'+(cat.hxStart||'08:00')+'" onchange="hxHeureInput(this,function(v){hxSetDiv('+cat.id+',\'hxStart\',v);renderCategories();},\''+(cat.hxStart||'08:00')+'\')" title="Heure de départ — tape 2330 ou 23:30" placeholder="HH:MM" style="width:52px;text-align:center;background:#EBF0FA;border:1px solid var(--brd,#DDE5F5);border-radius:6px;padding:2px 6px;font-size:11px;font-weight:900;font-family:inherit;outline:none;cursor:text">'
-            +'<span style="font-size:10px;color:#3A5270;">→ '+nbW+' vague'+(nbW>1?'s':'')+'</span>'
-            +'<span style="font-size:10px;color:#3A5270;">'+total+' inscrit'+(total>1?'s':'')+'</span>'
+            +'<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,229,0,.12);border:1px solid rgba(255,229,0,.32);border-radius:6px;padding:2px 5px 2px 7px;">'
+              +'<span style="font-size:10px">🌊</span>'
+              +'<input type="text" inputmode="numeric" maxlength="5" value="'+(cat.hxStart||'08:00')+'" onchange="hxHeureInput(this,function(v){hxSetDiv('+cat.id+',\'hxStart\',v);renderCategories();},\''+(cat.hxStart||'08:00')+'\')" title="Heure de départ — tape 2330 ou 23:30" placeholder="HH:MM" style="width:44px;text-align:center;background:transparent;border:none;color:#FFE500;font-size:12px;font-weight:700;font-family:\'JetBrains Mono\',monospace;outline:none;cursor:text">'
+            +'</span>'
+            +'<span style="font-size:10px;color:#85888F;font-weight:700;text-transform:uppercase;letter-spacing:.05em">→ '+nbW+' vague'+(nbW>1?'s':'')+'</span>'
           +'</div>'
         +'</div>'
-        +'<div style="font-size:18px;color:#3A5270;flex-shrink:0;transition:transform .2s;'+(isActive?'transform:rotate(90deg)':'')+'">›</div>'
-        +'<button onclick="event.stopPropagation();duplicateCatToOtherDay('+cat.id+')" title="Dupliquer cette catégorie sur l\'autre jour" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#2563EB;border-radius:7px;padding:5px 10px;font-size:13px;font-weight:900;cursor:pointer;flex-shrink:0;line-height:1;margin-right:6px">⧉ J'+((cat.jour||1)==1?'2':'1')+'</button>'
-        +'<button onclick="event.stopPropagation();deleteCat('+cat.id+')" title="Supprimer cette catégorie" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#EF4444;border-radius:7px;padding:5px 10px;font-size:13px;font-weight:900;cursor:pointer;flex-shrink:0;line-height:1">🗑</button>'
+        // ── RIGHT (inscrits + jauge + actions) ──
+        +'<div style="padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;">'
+          +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:12px;font-weight:700;color:#F4F5F7;white-space:nowrap;"><span style="color:#FFE500">'+total+'</span> inscrit'+(total>1?'s':'')+'</div>'
+          +'<div style="width:108px;height:5px;background:#212328;border-radius:3px;overflow:hidden;"><i style="display:block;height:100%;width:'+pct+'%;background:linear-gradient(90deg,#FFE500,#FFF07A)"></i></div>'
+          +'<div style="display:flex;gap:6px;align-items:center;">'
+            +'<span style="font-size:16px;color:#5A5D65;transition:transform .2s;'+(isActive?'transform:rotate(90deg)':'')+'">›</span>'
+            +'<button onclick="event.stopPropagation();duplicateCatToOtherDay('+cat.id+')" title="Dupliquer sur l\'autre jour" style="height:28px;padding:0 8px;border-radius:7px;background:#1A1B1F;border:1px solid rgba(255,255,255,.15);color:#B7BAC2;font-size:11px;font-weight:800;cursor:pointer;line-height:1">⧉ J'+((cat.jour||1)==1?'2':'1')+'</button>'
+            +'<button onclick="event.stopPropagation();deleteCat('+cat.id+')" title="Supprimer" style="width:28px;height:28px;border-radius:7px;background:rgba(240,68,68,.12);border:1px solid rgba(240,68,68,.32);color:#F04444;font-size:13px;font-weight:800;cursor:pointer;line-height:1">🗑</button>'
+          +'</div>'
+        +'</div>'
       +'</div>'
-      +(isActive?'<div id="cat-inline-detail" style="border-top:1px solid var(--brd,#EBF0FA);"></div>':'')
+      +(isActive?'<div id="cat-inline-detail" style="border-top:1px solid rgba(255,255,255,.09);"></div>':'')
       +'</div>';
   }).join('');
   
@@ -13469,6 +13488,20 @@ function toggleDarkMode(){
     });
   }
 })();;
+
+// ═══ Compte à rebours HYROX (lit la date d'event ev-date1) ═══
+function updateHxCountdown(){
+  var el=document.getElementById('hxt-countdown'); if(!el) return;
+  if(!document.body.classList.contains('hxt')){ el.style.display='none'; return; }
+  var d1=(document.getElementById('ev-date1')||{}).value||'';
+  if(!d1){ el.style.display='none'; return; }
+  var ev=new Date(d1+'T08:00:00'); if(isNaN(ev)){ el.style.display='none'; return; }
+  var days=Math.ceil((ev-new Date())/86400000);
+  var label = days>0 ? 'J–'+days : (days===0 ? 'JOUR J' : 'TERMINÉ');
+  el.innerHTML='<div style="font-size:26px">'+label+'</div><small>AVANT LE DÉPART</small>';
+  el.style.display='';
+}
+window.addEventListener('DOMContentLoaded',function(){ setTimeout(updateHxCountdown,600); });
 
 // ═══ THÈME HYROX (⚡) — indépendant, réversible, persistant ═══
 function toggleHxTheme(){

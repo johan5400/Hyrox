@@ -1795,6 +1795,9 @@ function checkPassword(){
   <!-- TOOLBAR CRÉATION -->
   <div style="background:#FFFFFF;border:1px solid var(--brd);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
     <button onclick="openAddCat()" style="padding:9px 16px;border:none;border-radius:9px;background:linear-gradient(135deg,#1565C0,#1E88E5);color:#fff;font-family:inherit;font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(30,136,229,.3)">➕ Nouvelle catégorie</button>
+    <button onclick="exportCategoriesTeamsCSV()" title="Exporter un CSV Catégorie ; Équipe (ouvre dans Excel)" style="padding:9px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;font-family:inherit;font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(16,185,129,.3)">⬇️ Export CSV</button>
+    <button onclick="document.getElementById('csv-import-input').click()" title="Importer un CSV Catégorie ; Équipe rempli dans Excel" style="padding:9px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#EA580C,#F97316);color:#fff;font-family:inherit;font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(249,115,22,.3)">⬆️ Import CSV</button>
+    <input type="file" id="csv-import-input" accept=".csv,text/csv,text/plain" style="display:none" onchange="var f=this.files&&this.files[0]; this.value=''; if(f) importCategoriesTeamsCSV(f);">
     <div style="font-size:11px;color:var(--ink3);font-weight:600;flex:1;min-width:180px">Définis le <b>Jour</b> (J1/J2) et l'<b>heure de départ</b> 🌊 de chaque catégorie. <b>⧉</b> = dupliquer sur l'autre jour.</div>
     <div id="heats-summary" style="font-size:11px;color:var(--mid);font-weight:600"></div>
   </div>
@@ -1836,6 +1839,41 @@ function checkPassword(){
     <div style="background:#1976D2;margin:-20px -20px 16px;padding:14px 18px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between">
       <span style="color:#fff;font-weight:800;font-size:13px" id="cat-modal-title">Nouvelle catégorie</span>
       <button onclick="closeModal('cat-modal')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer">×</button>
+    </div>
+    <div class="form-group" id="cat-preset-wrap" style="margin-bottom:14px">
+      <label>⚡ Division HYROX (remplit nom + couleur)</label>
+      <select id="cat-preset" onchange="applyCatPreset(this.value)">
+        <option value="">— Choisir une division… (ou saisir un nom custom ci-dessous) —</option>
+        <optgroup label="Individuels">
+          <option value="Open Hommes|#E8421A">Open Hommes</option>
+          <option value="Open Femmes|#C62828">Open Femmes</option>
+          <option value="Pro Hommes|#7C3AED">Pro Hommes</option>
+          <option value="Pro Femmes|#9333EA">Pro Femmes</option>
+        </optgroup>
+        <optgroup label="Doubles">
+          <option value="Doubles Hommes|#1D6DB5">Doubles Hommes</option>
+          <option value="Doubles Femmes|#0891B2">Doubles Femmes</option>
+          <option value="Doubles Mixte|#059669">Doubles Mixte</option>
+          <option value="Pro Doubles Hommes|#6D28D9">Pro Doubles Hommes</option>
+          <option value="Pro Doubles Femmes|#7E22CE">Pro Doubles Femmes</option>
+          <option value="Pro Doubles Mixte|#4338CA">Pro Doubles Mixte</option>
+        </optgroup>
+        <optgroup label="Relay (4)">
+          <option value="Relay Hommes|#FF8A00">Relay Hommes</option>
+          <option value="Relay Femmes|#FB923C">Relay Femmes</option>
+          <option value="Relay Mixte|#F59E0B">Relay Mixte</option>
+        </optgroup>
+        <optgroup label="Youngstars (Kids)">
+          <option value="Youngstars Filles 8-9|#EC4899">Youngstars Filles 8-9</option>
+          <option value="Youngstars Garçons 8-9|#3B82F6">Youngstars Garçons 8-9</option>
+          <option value="Youngstars Filles 10-11|#DB2777">Youngstars Filles 10-11</option>
+          <option value="Youngstars Garçons 10-11|#2563EB">Youngstars Garçons 10-11</option>
+          <option value="Youngstars Filles 12-13|#BE185D">Youngstars Filles 12-13</option>
+          <option value="Youngstars Garçons 12-13|#1D4ED8">Youngstars Garçons 12-13</option>
+          <option value="Youngstars Filles 14-15|#9D174D">Youngstars Filles 14-15</option>
+          <option value="Youngstars Garçons 14-15|#1E40AF">Youngstars Garçons 14-15</option>
+        </optgroup>
+      </select>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:2">
@@ -8590,9 +8628,137 @@ function duplicateCatToOtherDay(catId){
   if(typeof autoSave==='function') autoSave();
   toast('✅ « '+(src.nom||'')+' » dupliquée sur Jour '+otherDay,'#059669');
 }
+// Applique une division HYROX choisie dans le menu : remplit nom + couleur
+function applyCatPreset(v){
+  if(!v) return;
+  var sep = v.lastIndexOf('|');
+  var nom = sep>=0 ? v.slice(0,sep) : v;
+  var col = sep>=0 ? v.slice(sep+1) : '';
+  var nameEl = document.getElementById('cat-name');
+  var colEl  = document.getElementById('cat-color');
+  if(nameEl) nameEl.value = nom;
+  if(colEl && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(col)) colEl.value = col;
+}
+// ══════════════════════════════════════════════════════════════
+//  IMPORT / EXPORT CSV — Catégorie ; Équipe  (aller-retour Excel)
+// ══════════════════════════════════════════════════════════════
+function _csvEsc(v){
+  v = (v==null?'':String(v));
+  return /[";\r\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+}
+function _csvNorm(s){
+  return String(s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // enlève accents
+    .replace(/\s+/g,' ').trim();
+}
+// Parse robuste : gère guillemets, ; ou , comme séparateur, \n embarqués
+function _csvParse(text){
+  text = text.replace(/^\uFEFF/,''); // BOM
+  // détecte le séparateur sur la 1re ligne (hors guillemets)
+  var firstLine = text.split(/\r?\n/)[0]||'';
+  var sc=0,cc=0,inq=false;
+  for(var k=0;k<firstLine.length;k++){var ch=firstLine[k];if(ch==='"')inq=!inq;else if(!inq&&ch===';')sc++;else if(!inq&&ch===',')cc++;}
+  var sep = sc>=cc ? ';' : ',';
+  var rows=[], row=[], cur='', q=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===sep){ row.push(cur); cur=''; }
+      else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else if(c==='\r'){ /* ignore */ }
+      else cur+=c;
+    }
+  }
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(v){return String(v).trim()!=='';}); });
+}
+function exportCategoriesTeamsCSV(){
+  var cats = (CATEGORIES||[]).slice().sort(function(a,b){return (a.ordre||99)-(b.ordre||99);});
+  var lines = ['Catégorie;Équipe'];
+  cats.forEach(function(c){
+    var teams = (c.teams||[]);
+    if(!teams.length){ lines.push(_csvEsc(c.nom)+';'); }        // catégorie vide = 1 ligne repère
+    else teams.forEach(function(t){ lines.push(_csvEsc(c.nom)+';'+_csvEsc(t.nom)); });
+  });
+  var csv = '\uFEFF'+lines.join('\r\n');                          // BOM → accents OK dans Excel
+  var evName = ((document.getElementById('ev-nom')||{}).value||'FOC').replace(/[^\w\-]+/g,'_');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='categories-equipes-'+evName+'.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },100);
+  if(typeof toast==='function') toast('✅ Export CSV — ouvre-le dans Excel');
+}
+function importCategoriesTeamsCSV(file){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{ _applyCsvImport(String(e.target.result||'')); }
+    catch(err){ console.error(err); if(typeof toast==='function') toast('❌ Import impossible : '+err.message,'#D32F2F'); }
+  };
+  reader.onerror=function(){ if(typeof toast==='function') toast('❌ Lecture du fichier impossible','#D32F2F'); };
+  reader.readAsText(file,'UTF-8');
+}
+function _applyCsvImport(text){
+  var rows=_csvParse(text);
+  if(!rows.length){ toast('Fichier vide','#D32F2F'); return; }
+  // repère les colonnes via l'en-tête
+  var head=rows[0].map(_csvNorm);
+  var ci=head.indexOf('categorie'); if(ci<0) ci=head.indexOf('category');
+  var ti=head.indexOf('equipe');    if(ti<0) ti=head.indexOf('team'); if(ti<0) ti=head.indexOf('nom');
+  var start=1;
+  if(ci<0||ti<0){ ci=0; ti=1; start=0; } // pas d'en-tête reconnu → col0=cat, col1=équipe
+  // index des catégories existantes par nom normalisé
+  var byNorm={};
+  (CATEGORIES||[]).forEach(function(c){ byNorm[_csvNorm(c.nom)]=c; });
+  var grouped={}, unknown={}, nbTeams=0;
+  for(var r=start;r<rows.length;r++){
+    var catName=(rows[r][ci]||'').trim();
+    var teamName=(rows[r][ti]||'').trim();
+    if(!catName||!teamName) continue;
+    var cat=byNorm[_csvNorm(catName)];
+    if(!cat){ unknown[catName]=(unknown[catName]||0)+1; continue; }
+    (grouped[cat.id]=grouped[cat.id]||[]).push(teamName);
+    nbTeams++;
+  }
+  var catIds=Object.keys(grouped);
+  var unknownNames=Object.keys(unknown);
+  if(!catIds.length){
+    var msg='Aucune équipe importable.';
+    if(unknownNames.length) msg+='\n\nCatégories non reconnues dans le fichier :\n• '+unknownNames.join('\n• ')+'\n\nVérifie que les noms correspondent exactement à tes catégories, ou crée-les d\'abord.';
+    alert(msg); return;
+  }
+  // confirmation avant d'écraser les équipes des catégories concernées
+  var confMsg='Importer '+nbTeams+' équipe(s) dans '+catIds.length+' catégorie(s) ?\n\n'
+    +'⚠️ Les équipes actuelles de ces catégories seront REMPLACÉES par le fichier.\n'
+    +'Les autres catégories ne sont pas touchées.';
+  if(unknownNames.length) confMsg+='\n\n'+unknownNames.length+' catégorie(s) du fichier ignorée(s) (nom non trouvé) : '+unknownNames.join(', ');
+  if(!confirm(confMsg)) return;
+  var seed=Date.now();
+  catIds.forEach(function(id){
+    var cat=(CATEGORIES||[]).find(function(c){return String(c.id)===String(id);});
+    if(!cat) return;
+    cat.teams=grouped[id].map(function(nm,i){ return {id:(seed++)+i, nom:nm, ligne:null}; });
+  });
+  if(typeof renderCategories==='function') renderCategories();
+  if(typeof generateHeats==='function') generateHeats();
+  if(typeof autoSave==='function') autoSave();
+  var okMsg='✅ '+nbTeams+' équipe(s) importée(s) dans '+catIds.length+' catégorie(s)';
+  if(unknownNames.length) okMsg+=' · '+unknownNames.length+' ignorée(s)';
+  if(typeof toast==='function') toast(okMsg);
+}
+
 function openAddCat(){
   editCatId = null;
   document.getElementById('cat-modal-title').textContent = 'Nouvelle catégorie';
+  var presetEl = document.getElementById('cat-preset');
+  if(presetEl){ presetEl.selectedIndex = 0; }
+  var presetWrap = document.getElementById('cat-preset-wrap');
+  if(presetWrap){ presetWrap.style.display = ''; } // visible en création
   document.getElementById('cat-name').value = '';
   document.getElementById('cat-color').value = '#1E88E5';
   document.getElementById('cat-heats').value = '3';
@@ -8622,6 +8788,8 @@ function editCat(id){
   if(!cat) return;
   editCatId = id;
   document.getElementById('cat-modal-title').textContent = 'Modifier — ' + cat.nom;
+  var presetWrap = document.getElementById('cat-preset-wrap');
+  if(presetWrap){ presetWrap.style.display = 'none'; } // pas de preset en édition
   document.getElementById('cat-name').value = cat.nom;
   document.getElementById('cat-color').value = cat.couleur;
   document.getElementById('cat-heats').value = cat.nbHeats;

@@ -447,7 +447,7 @@ body.hxt{
   --brd:rgba(255,255,255,.08); --brd2:rgba(255,255,255,.15);
   --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.15);
   --ink:#F4F5F7; --ink2:#B7BAC2; --ink3:#85888F; --mid:#6C6F78; --dim:#3A3C42;
-  --fire:#FF5A2C; --fire2:#FF6B35; --ember:#FF8A00; --amber:#FFB020; --gold:#E0C24A;
+  --fire:#FFE500; --fire2:#FFE500; --ember:#FFE500; --amber:#FFE500; --gold:#FFE500;
   --ok:#22C55E; --green:#22C55E; --err:#F04444; --red:#F04444; --warn:#F59E0B;
   --blue:#3B9EFF; --purple:#B36BFF;
   --hx:#FFE500;
@@ -506,9 +506,29 @@ body.hxt [style*="color:#3A5270"],body.hxt [style*="color:#64748B"],
 body.hxt [style*="color:#6A84A0"],body.hxt [style*="color:#94A3B8"],
 body.hxt [style*="color:#636366"],body.hxt [style*="color:#888"],
 body.hxt [style*="color:#666"],body.hxt [style*="color:#33415C"]{color:var(--ink2)!important;}
+
+/* ══ BOUTONS D'ACTION → JAUNE, TEXTE NOIR (identité HYROX) ══ */
+/* tout bouton à dégradé (Nouvelle catégorie, Générer, Export, Import…) */
+body.hxt button[style*="linear-gradient"],
+body.hxt .gen-btn,body.hxt .btn-green,body.hxt .btn-blue,body.hxt .btn-primary{
+  background:var(--hx)!important;background-image:none!important;
+  color:#0B0B0D!important;border:none!important;box-shadow:0 6px 18px -8px rgba(255,229,0,.5)!important;
+}
+/* boutons bleus « plats » (hors couleurs de catégorie) */
+body.hxt button[style*="#1565C0"],body.hxt button[style*="#1E88E5"],
+body.hxt button[style*="#1976D2"],body.hxt button[style*="#2563EB"],
+body.hxt [style*="linear-gradient"][style*="#1E88E5"],
+body.hxt [style*="linear-gradient"][style*="#1565C0"]{
+  background:var(--hx)!important;background-image:none!important;color:#0B0B0D!important;border-color:var(--hx)!important;
+}
+/* liens & accents jaunes */
+body.hxt a{color:var(--hx)!important;}
+/* focus clavier visible (accessibilité) */
+body.hxt :focus-visible{outline:2px solid var(--hx)!important;outline-offset:2px;}
 </style>
 </head>
 <body>
+<script>/* thème HYROX dès la 1re image (anti-flash blanc) */try{if(localStorage.getItem("zonek-hxt")!=="0"){document.documentElement.style.background="#0B0B0D";document.body.classList.add("hxt");}}catch(e){}</script>
 
 <script>
 (function(){
@@ -13461,8 +13481,8 @@ function toggleHxTheme(){
 (function(){
   function mount(){
     if(document.getElementById("hxt-toggle")) return;
-    var on = localStorage.getItem("zonek-hxt") === "1";
-    if(on) document.body.classList.add("hxt");
+    var on = localStorage.getItem("zonek-hxt") !== "0"; // HYROX par défaut
+    if(on){ document.body.classList.add("hxt"); document.body.classList.remove("dark"); }
     var b = document.createElement("button");
     b.id = "hxt-toggle"; b.type = "button"; b.onclick = toggleHxTheme;
     b.setAttribute("aria-pressed", on?"true":"false");

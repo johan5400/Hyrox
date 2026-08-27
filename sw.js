@@ -3,7 +3,7 @@
    - HTML : réseau d'abord (pour récupérer les mises à jour), cache en secours.
    - Scripts/CDN (Firebase, fonts) : cache d'abord, mise à jour en arrière-plan.
    Pour déployer une nouvelle version des fichiers : incrémente V ci-dessous. */
-var V = 'hyrox-v1';
+var V = 'hyrox-v2';
 var SHELL = [
   './index.html',
   './juge-hyrox.html',

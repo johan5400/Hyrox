@@ -434,6 +434,79 @@ body.dark #btn-dark-mode{background:rgba(255,122,0,.15)!important;color:var(--fi
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 </script>
+<style id="hxt-theme">
+/* ═══════════════════════════════════════════════════════════════
+   THÈME HYROX — activable au bouton ⚡, tout scopé sous body.hxt.
+   Thème éteint = app d'origine strictement intacte (réversible).
+═══════════════════════════════════════════════════════════════ */
+body.hxt{background:#0B0B0D!important;color:#F4F5F7!important;}
+/* Redéfinition des tokens → tout ce qui utilise var(--x) bascule en sombre */
+body.hxt{
+  --bg:#0B0B0D; --void:#08080A;
+  --s1:#141417; --s2:#1A1B1F; --s3:#212328; --s4:#2A2C31;
+  --brd:rgba(255,255,255,.08); --brd2:rgba(255,255,255,.15);
+  --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.15);
+  --ink:#F4F5F7; --ink2:#B7BAC2; --ink3:#85888F; --mid:#6C6F78; --dim:#3A3C42;
+  --fire:#FF5A2C; --fire2:#FF6B35; --ember:#FF8A00; --amber:#FFB020; --gold:#E0C24A;
+  --ok:#22C55E; --green:#22C55E; --err:#F04444; --red:#F04444; --warn:#F59E0B;
+  --blue:#3B9EFF; --purple:#B36BFF;
+  --hx:#FFE500;
+  --shadow-xs:0 1px 3px rgba(0,0,0,.5);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.55);
+  --shadow-md:0 4px 16px rgba(0,0,0,.6);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.65);
+  --shadow-xl:0 20px 60px rgba(0,0,0,.7);
+}
+/* ── Onglets (accent jaune HYROX sur l'actif) ── */
+body.hxt .tabs{background:#0E0E11!important;border-bottom:1px solid var(--brd)!important;}
+body.hxt .tab{color:var(--ink3)!important;}
+body.hxt .tab:hover{color:var(--ink2)!important;}
+body.hxt .tab.active{color:#fff!important;border-bottom-color:var(--hx)!important;}
+/* ── Cartes / surfaces / modals ── */
+body.hxt .card{background:var(--s1)!important;border-color:var(--brd)!important;}
+body.hxt .card h3{color:var(--hx)!important;}
+body.hxt .sheet{color:var(--ink)!important;}
+body.hxt .modal{background:var(--s1)!important;border-color:var(--brd2)!important;color:var(--ink)!important;}
+body.hxt .modal-bg{background:rgba(0,0,0,.80)!important;}
+body.hxt .modal h3{color:var(--ink)!important;}
+body.hxt .toast{background:var(--s2)!important;color:var(--ink)!important;border:1px solid var(--brd2)!important;}
+/* ── Formulaires ── */
+body.hxt input,body.hxt select,body.hxt textarea{background:var(--s2)!important;border-color:var(--brd2)!important;color:var(--ink)!important;}
+body.hxt input::placeholder,body.hxt textarea::placeholder{color:var(--ink3)!important;}
+/* ── Tables ── */
+body.hxt table{color:var(--ink)!important;}
+body.hxt th,body.hxt td{border-color:var(--brd2)!important;}
+body.hxt th{background:#17181C!important;color:var(--ink2)!important;}
+body.hxt tr:nth-child(even){background:rgba(255,255,255,.02)!important;}
+body.hxt tr:hover{background:rgba(255,229,0,.05)!important;}
+/* ── Boutons neutres ── */
+body.hxt .btn-dark{background:var(--s3)!important;border-color:var(--brd2)!important;color:var(--ink)!important;}
+/* ── Scrollbars ── */
+body.hxt ::-webkit-scrollbar{background:var(--void);}
+body.hxt ::-webkit-scrollbar-thumb{background:#2A2C31;border-radius:4px;}
+
+/* ══ FLIP des couleurs écrites en dur dans les styles inline ══ */
+/* Fonds blancs → surface sombre. On ne touche PAS color:#fff (texte blanc). */
+body.hxt [style*="background:#fff"],body.hxt [style*="background:#FFF"],
+body.hxt [style*="background:#ffffff"],body.hxt [style*="background:#FFFFFF"],
+body.hxt [style*="background-color:#fff"],body.hxt [style*="background-color:#FFF"],
+body.hxt [style*="background-color:#ffffff"],body.hxt [style*="background:#FFFFFE"]{background-color:var(--s1)!important;}
+/* Gris/bleus clairs (fonds & bordures) → surface sombre */
+body.hxt [style*="#E2E8F0"],body.hxt [style*="#EBF0FA"],body.hxt [style*="#F0F9FF"],
+body.hxt [style*="#F8FAFF"],body.hxt [style*="#F1F5F9"],body.hxt [style*="#F5F8FF"],
+body.hxt [style*="#F8FAFC"],body.hxt [style*="#EEF2FA"],body.hxt [style*="#E8ECF4"],
+body.hxt [style*="#E0E7F6"],body.hxt [style*="#e4eaf7"],body.hxt [style*="#F0F4FA"],
+body.hxt [style*="#EFF4FB"],body.hxt [style*="#E0E0DA"]{background-color:var(--s2)!important;}
+/* Textes très sombres → clairs (lisibles sur fond désormais sombre) */
+body.hxt [style*="color:#0F1C2E"],body.hxt [style*="color:#1A2233"],
+body.hxt [style*="color:#1A3A6B"],body.hxt [style*="color:#1E3A5F"],
+body.hxt [style*="color:#1E293B"],body.hxt [style*="color:#0F1B2E"]{color:var(--ink)!important;}
+/* Textes gris moyens → gris clair */
+body.hxt [style*="color:#3A5270"],body.hxt [style*="color:#64748B"],
+body.hxt [style*="color:#6A84A0"],body.hxt [style*="color:#94A3B8"],
+body.hxt [style*="color:#636366"],body.hxt [style*="color:#888"],
+body.hxt [style*="color:#666"],body.hxt [style*="color:#33415C"]{color:var(--ink2)!important;}
+</style>
 </head>
 <body>
 
@@ -13376,6 +13449,35 @@ function toggleDarkMode(){
     });
   }
 })();;
+
+// ═══ THÈME HYROX (⚡) — indépendant, réversible, persistant ═══
+function toggleHxTheme(){
+  var on = document.body.classList.toggle("hxt");
+  if(on) document.body.classList.remove("dark"); // évite le conflit avec le mode compat
+  localStorage.setItem("zonek-hxt", on ? "1" : "0");
+  var b = document.getElementById("hxt-toggle");
+  if(b){ b.textContent = on ? "⚡ HYROX" : "⚡ Thème"; b.setAttribute("aria-pressed", on?"true":"false"); }
+}
+(function(){
+  function mount(){
+    if(document.getElementById("hxt-toggle")) return;
+    var on = localStorage.getItem("zonek-hxt") === "1";
+    if(on) document.body.classList.add("hxt");
+    var b = document.createElement("button");
+    b.id = "hxt-toggle"; b.type = "button"; b.onclick = toggleHxTheme;
+    b.setAttribute("aria-pressed", on?"true":"false");
+    b.title = "Thème HYROX (sombre) — activer / désactiver";
+    b.style.cssText = "position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99999;"
+      + "border:1px solid rgba(255,229,0,.5);border-right:none;background:#111;color:#FFE500;"
+      + "font:800 12px/1 Inter,sans-serif;letter-spacing:.04em;padding:11px 10px;"
+      + "border-radius:10px 0 0 10px;cursor:pointer;box-shadow:0 6px 20px -6px rgba(0,0,0,.7);"
+      + "writing-mode:vertical-rl;text-orientation:mixed;";
+    b.textContent = on ? "⚡ HYROX" : "⚡ Thème";
+    document.body.appendChild(b);
+  }
+  if(document.readyState === "loading") window.addEventListener("DOMContentLoaded", mount);
+  else mount();
+})();
 
 
 // ═══════════════════════════════════════════════════════════════════

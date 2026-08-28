@@ -1213,52 +1213,7 @@ function checkPassword(){
     <div style="font-size:10px;color:var(--ink3);font-weight:700;text-align:right;max-width:180px;line-height:1.4">Les vagues se publient via <span style="color:#16a34a;font-weight:900">🚀 Générer &amp; Publier</span> (en haut)</div>
   </div>
 
-  <!-- ── SÉLECTEUR ADULTES / KIDS ── -->
-  <div style="display:flex;gap:10px;margin-bottom:18px">
-    <button id="hxmode-adult" onclick="hxPickMode('adult')" style="flex:1;padding:15px 12px;border-radius:16px;border:2px solid var(--blue);background:var(--blue);color:#fff;font-weight:900;font-size:14px;cursor:pointer;transition:.18s;display:flex;align-items:center;justify-content:center;gap:8px">🏋️ Adultes</button>
-    <button id="hxmode-kids" onclick="hxPickMode('kids')" style="flex:1;padding:15px 12px;border-radius:16px;border:2px solid #EC4899;background:#fff;color:#DB2777;font-weight:900;font-size:14px;cursor:pointer;transition:.18s;display:flex;align-items:center;justify-content:center;gap:8px">🧒 Kids · Youngstars</button>
-  </div>
 
-  <!-- ── POP-UP HYROX YOUNGSTARS ── -->
-  <style>
-    #kids-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}
-    #kids-modal .kids-back{position:absolute;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);opacity:0;transition:opacity .22s}
-    #kids-modal .kids-card{position:relative;width:100%;max-width:520px;max-height:90vh;overflow:hidden auto;background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.4);transform:translateY(24px) scale(.96);opacity:0;transition:transform .26s cubic-bezier(.2,.9,.3,1.2),opacity .22s;-webkit-overflow-scrolling:touch}
-    #kids-modal.open .kids-back{opacity:1}
-    #kids-modal.open .kids-card{transform:none;opacity:1}
-    #kids-modal .kids-x{position:absolute;top:14px;right:14px;z-index:3;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:15px;font-weight:900;cursor:pointer;backdrop-filter:blur(4px)}
-    #kids-modal .kids-hero{padding:26px 24px 22px;color:#fff;transition:background .3s}
-    #kids-modal .kids-body{padding:18px 20px 22px}
-    #kids-modal .kids-ages{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-    #kids-modal .kids-age{padding:12px 4px;border-radius:14px;border:2px solid var(--brd2);background:#fff;cursor:pointer;text-align:center;transition:.15s;font-family:inherit}
-    #kids-modal .kids-age b{display:block;font-size:16px;font-weight:900;line-height:1}
-    #kids-modal .kids-age span{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
-    #kids-modal .kids-gender{display:flex;gap:6px;margin-bottom:16px;background:var(--bg2,#F1F5F9);border-radius:12px;padding:4px}
-    #kids-modal .kids-gender button{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;font-weight:800;font-size:12px;cursor:pointer;color:var(--ink2);font-family:inherit;transition:.15s}
-    #kids-modal .kids-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;background:#F8FAFC;margin-bottom:7px;opacity:0;transform:translateX(-10px);animation:kidsIn .32s forwards}
-    #kids-modal .kids-row .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-    #kids-modal .kids-row .nm{flex:1;font-weight:800;font-size:13px;color:var(--ink)}
-    #kids-modal .kids-row .vl{font-weight:900;font-size:13px;white-space:nowrap}
-    @keyframes kidsIn{to{opacity:1;transform:none}}
-    @media (prefers-reduced-motion:reduce){#kids-modal *{transition:none!important;animation:none!important;opacity:1!important;transform:none!important}}
-  </style>
-  <div id="kids-modal" role="dialog" aria-modal="true" aria-label="HYROX Youngstars">
-    <div class="kids-back" onclick="closeKidsModal()"></div>
-    <div class="kids-card">
-      <button class="kids-x" onclick="closeKidsModal()" aria-label="Fermer">✕</button>
-      <div class="kids-hero" id="kids-hero">
-        <div style="font-size:11px;letter-spacing:3px;opacity:.85;font-weight:800">HYROX</div>
-        <div style="font-size:28px;font-weight:900;line-height:1;margin-top:2px">YOUNGSTARS</div>
-        <div style="font-size:11px;opacity:.92;margin-top:6px" id="kids-hero-sub">Le format Kids officiel — 8 à 15 ans · 8 stations</div>
-      </div>
-      <div class="kids-body">
-        <div id="kids-ages" class="kids-ages"></div>
-        <div id="kids-gender" class="kids-gender"></div>
-        <div id="kids-parcours"></div>
-        <div id="kids-foot" style="margin-top:16px"></div>
-      </div>
-    </div>
-  </div>
 
   <!-- ── CONFIG VAGUES ── -->
   <div style="background:#F5F8FF;border:1px solid var(--brd2);border-radius:14px;padding:14px;margin-bottom:16px">
@@ -1313,10 +1268,7 @@ function checkPassword(){
   <!-- ── PLANNING VAGUES ── -->
   <div style="background:#fff;border:1px solid var(--brd2);border-radius:14px;padding:14px;margin-bottom:16px">
     <div style="font-size:11px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📅 Horaire des vagues</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-      <button onclick="calageDeparts()" style="padding:8px 16px;border:none;border-radius:9px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">⏱ Caler les départs (zéro conflit)</button>
-      <span style="font-size:10px;color:var(--ink3);font-weight:600">Réécrit les heures bout à bout — une seule zone, jamais 2 vagues en même temps.</span>
-    </div>
+    <div style="font-size:10px;color:var(--ink3);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:4px;background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;border-radius:6px;padding:3px 8px;font-weight:900;font-size:10px">✓ Calage auto</span> Les heures se répartissent bout à bout automatiquement — une seule zone, jamais 2 vagues en même temps.</div>
     <div id="hx-waves"></div>
   </div>
 
@@ -1966,15 +1918,6 @@ function checkPassword(){
           <option value="Relay Femmes|#FB923C">Relay Femmes</option>
           <option value="Relay Mixte|#F59E0B">Relay Mixte</option>
         </optgroup>
-        <optgroup label="Youngstars (Kids)">
-          <option value="Youngstars Filles 8-9|#EC4899">Youngstars Filles 8-9</option>
-          <option value="Youngstars Garçons 8-9|#3B82F6">Youngstars Garçons 8-9</option>
-          <option value="Youngstars Filles 10-11|#DB2777">Youngstars Filles 10-11</option>
-          <option value="Youngstars Garçons 10-11|#2563EB">Youngstars Garçons 10-11</option>
-          <option value="Youngstars Filles 12-13|#BE185D">Youngstars Filles 12-13</option>
-          <option value="Youngstars Garçons 12-13|#1D4ED8">Youngstars Garçons 12-13</option>
-          <option value="Youngstars Filles 14-15|#9D174D">Youngstars Filles 14-15</option>
-          <option value="Youngstars Garçons 14-15|#1E40AF">Youngstars Garçons 14-15</option>
         </optgroup>
       </select>
     </div>
@@ -2704,7 +2647,7 @@ function checkPassword(){
   <div class="gc">
     <div class="gc-title">Les divisions Hyrox</div>
     <div class="gc-body">
-      Les divisions sont déjà en place : Open (H/F), Pro (H/F), Doubles (H/F/Mixte), Relay, et les Youngstars (Filles/Garçons × 4 tranches d'âge). Pour chaque catégorie tu règles :<br><br>
+      Les divisions sont déjà en place : Open (H/F), Pro (H/F), Doubles (H/F/Mixte) et Relay. Pour chaque catégorie tu règles :<br><br>
       <strong>🌊 Heure de départ</strong> : l'heure de la 1ère vague de cette division. Tape directement <code>2330</code> → devient <code>23:30</code>.<br>
       <strong>📅 Jour</strong> : J1 ou J2.<br>
       <strong>👥 Équipes</strong> : ajoute ou importe les équipes inscrites.<br>
@@ -23334,36 +23277,44 @@ function syncHyroxEngineCats(){
 }
 
 /* ── Horaire des vagues (calcul autonome : start + k×intervalle par jour) ── */
-function calageDeparts(){
-  if(!confirm('⏱ Caler tous les départs bout à bout ?\n\nLes divisions gardent leur ORDRE actuel (par heure puis nom), mais leurs heures sont réécrites pour qu\'AUCUNE vague ne parte en même temps qu\'une autre (une seule zone de départ).\n\nIntervalle appliqué entre chaque vague : '+(HYROX_CFG.interval||10)+' min.')) return;
-  var iv=HYROX_CFG.interval||10;
+function _calageCore(){
+  var iv=HYROX_CFG.interval||10, changed=false;
   [1,2].forEach(function(day){
-    // divisions du jour, dans l'ordre voulu : heure actuelle puis ordre puis nom
     var cats=(CATEGORIES||[]).filter(function(c){return (c.jour||1)===day;});
     cats.sort(function(a,b){
       var ma=_hxStartMin(a), mb=_hxStartMin(b);
       return ma-mb || (a.ordre||99)-(b.ordre||99) || String(a.nom||'').localeCompare(String(b.nom||''));
     });
     if(!cats.length) return;
-    // point de départ du jour = heure de la 1ère division (ou hx-start-jX)
     var startEl=document.getElementById('hx-start-j'+day);
     var cur=_hxStartMin(cats[0]);
     if(startEl && startEl.value){ var s=startEl.value.split(':'); cur=(parseInt(s[0],10)||8)*60+(parseInt(s[1],10)||0); }
     cats.forEach(function(c){
-      c.hxStart=('0'+Math.floor(cur/60)).slice(-2)+':'+('0'+(cur%60)).slice(-2);
+      var nh=('0'+Math.floor(cur/60)).slice(-2)+':'+('0'+(cur%60)).slice(-2);
+      if(c.hxStart!==nh){ c.hxStart=nh; changed=true; }
       var nW=(typeof hyroxWaveCount==='function')?hyroxWaveCount(c):1;
-      cur += Math.max(1,nW)*iv; // on réserve le temps de TOUTES les vagues de la division
+      cur += Math.max(1,nW)*iv;
     });
   });
-  if(typeof autoSave==='function') autoSave();
-  if(typeof renderCategories==='function') renderCategories();
+  return changed;
+}
+// Calage désormais automatique (déclenché dans renderHyroxWaves). Wrapper conservé pour compat.
+function calageDeparts(){
+  if(_calageCore()){
+    if(typeof autoSave==='function') autoSave();
+    if(typeof renderCategories==='function') renderCategories();
+    if(typeof renderHyroxDivisions==='function') renderHyroxDivisions();
+  }
   renderHyroxWaves();
-  if(typeof toast==='function') toast('✅ Départs calés — aucun conflit','#059669');
 }
 function _hxStartMin(c){ var t=(c.hxStart||'08:00').split(':'); return (parseInt(t[0],10)||8)*60+(parseInt(t[1],10)||0); }
 
 function renderHyroxWaves(){
   var el = document.getElementById('hx-waves'); if(!el) return;
+  if(typeof _calageCore==='function' && _calageCore()){
+    if(typeof autoSave==='function') autoSave();
+    if(typeof renderHyroxDivisions==='function') renderHyroxDivisions();
+  }
   var html='';
   [1,2].forEach(function(day){
     var waves = hyroxWavesForDay(day);
@@ -23801,97 +23752,8 @@ function printHyroxPlanning(){
 
 /* ── Garde-fou : si un state Delta/CrossFit a été restauré (localStorage ou
      Firebase backup), on reconstruit le parcours et les divisions HYROX. ── */
-// ═══ HYROX Youngstars (Kids) — valeurs officielles rulebook 25/26 par âge/genre ═══
-// Ordre des 8 catégories : F8-9,G8-9, F10-11,G10-11, F12-13,G12-13, F14-15,G14-15
-function _hyroxApplyKids(P){
-  if(!P||!Array.isArray(P.mouvements)) return P||{};
-  var K=[1101,1102,1103,1104,1105,1106,1107,1108];
-  function setSta(kw, qty, poids){
-    (P.mouvements||[]).forEach(function(m){
-      if(m && m.hyroxSeg==='station' && m.nom && String(m.nom).toLowerCase().indexOf(kw)>=0){
-        m.qtyParCat=m.qtyParCat||{}; m.poids=m.poids||{};
-        K.forEach(function(id,i){ m.qtyParCat[id]=qty[i]; if(poids) m.poids[id]=poids[i]; });
-      }
-    });
-  }
-  // Stations (distance/reps + charge). Voir rulebook §6.
-  setSta('skierg',   [300,300,400,400,500,500,600,600]);
-  setSta('sled push',[15,15,15,15,30,30,30,30],   ['35kg','35kg','45kg','45kg','60kg','70kg','70kg','102kg']);
-  setSta('sled pull',[15,15,15,15,30,30,30,30],   ['25kg','25kg','40kg','40kg','25kg','50kg','50kg','78kg']);
-  setSta('burpee',   [20,20,20,20,40,40,40,40]);   // 8-9 = Frogger (même distance)
-  setSta('row',      [200,200,300,300,400,400,500,500]);
-  setSta('farmers',  [50,50,50,50,100,100,100,100],['2×4kg','2×4kg','2×6kg','2×6kg','2×8kg','2×12kg','2×12kg','2×16kg']);
-  setSta('lunges',   [20,20,20,20,40,40,40,40],    ['—','—','—','—','5kg','7.5kg','7.5kg','10kg']);
-  setSta('wall ball',[50,50,50,50,50,50,50,50],    ['1kg','1kg','2kg','2kg','2kg','3kg','3kg','4kg']); // 8-9/10-11 = Squats
-  // Course : structure par âge (rulebook §5.2, 1 tour ≈ 250m)
-  //  8-9 & 10-11 : 1 tour entrée + 1 tour sortie ; 12-13 : 2+2 ; 14-15 : 1 tour entre chaque station
-  var lap=250;
-  var runs=(P.mouvements||[]).filter(function(m){return m && m.hyroxSeg==='run';});
-  runs.forEach(function(m,ri){
-    m.qtyParCat=m.qtyParCat||{};
-    var isEntry=(ri===0), isExit=(ri===runs.length-1);
-    K.forEach(function(id){
-      var age=(id<=1102)?'8-9':(id<=1104)?'10-11':(id<=1106)?'12-13':'14-15';
-      var v;
-      if(age==='14-15'){ v=lap; }
-      else if(isEntry||isExit){ v=(age==='12-13')?2*lap:lap; }
-      else { v=0; }
-      m.qtyParCat[id]=v;
-    });
-  });
-  return P;
-}
 
-// ═══ Pop-up HYROX Youngstars (sélecteur Kids) ═══
-var KIDS_DATA={
-  ages:[
-    {k:'8-9',   lbl:'8-9',   col:'#EC4899', run:'1 tour entrée + 1 tour sortie'},
-    {k:'10-11', lbl:'10-11', col:'#F59E0B', run:'1 tour entrée + 1 tour sortie'},
-    {k:'12-13', lbl:'12-13', col:'#14B8A6', run:'2 tours entrée + 2 tours sortie'},
-    {k:'14-15', lbl:'14-15', col:'#8B5CF6', run:'1 tour entre chaque station'}
-  ],
-  st:[
-    {ic:'🎿',nom:'SkiErg',           v:{'8-9':['300m','300m'],'10-11':['400m','400m'],'12-13':['500m','500m'],'14-15':['600m','600m']}},
-    {ic:'🛷',nom:'Sled Push',        v:{'8-9':['15m · 35kg','15m · 35kg'],'10-11':['15m · 45kg','15m · 45kg'],'12-13':['30m · 60kg','30m · 70kg'],'14-15':['30m · 70kg','30m · 102kg']}},
-    {ic:'🪢',nom:'Sled Pull / Drag', v:{'8-9':['15m · 25kg','15m · 25kg'],'10-11':['15m · 40kg','15m · 40kg'],'12-13':['30m · 25kg','30m · 50kg'],'14-15':['30m · 50kg','30m · 78kg']}},
-    {ic:'🐸',nom:'Burpee / Frogger', v:{'8-9':['20m Frogger','20m Frogger'],'10-11':['20m','20m'],'12-13':['40m','40m'],'14-15':['40m','40m']}},
-    {ic:'🚣',nom:'Row',              v:{'8-9':['200m','200m'],'10-11':['300m','300m'],'12-13':['400m','400m'],'14-15':['500m','500m']}},
-    {ic:'🧺',nom:'Farmers Carry',    v:{'8-9':['50m · 2×4kg','50m · 2×4kg'],'10-11':['50m · 2×6kg','50m · 2×6kg'],'12-13':['100m · 2×8kg','100m · 2×12kg'],'14-15':['100m · 2×12kg','100m · 2×16kg']}},
-    {ic:'🦵',nom:'Lunges',           v:{'8-9':['20m','20m'],'10-11':['20m','20m'],'12-13':['40m · 5kg','40m · 7.5kg'],'14-15':['40m · 7.5kg','40m · 10kg']}},
-    {ic:'⚽',nom:'Wall Ball / Squat', v:{'8-9':['50 · 1kg squats','50 · 1kg squats'],'10-11':['50 · 2kg squats','50 · 2kg squats'],'12-13':['50 · 2kg','50 · 3kg'],'14-15':['50 · 3kg','50 · 4kg']}}
-  ]
-};
-var _kidsAge='8-9', _kidsGen=0; // 0=Filles, 1=Garçons
-function hxPickMode(m){
-  var a=document.getElementById('hxmode-adult'), k=document.getElementById('hxmode-kids');
-  if(m==='kids') openKidsModal();
-  if(a&&k){ var on=(m==='adult');
-    a.style.background=on?'var(--blue)':'#fff'; a.style.color=on?'#fff':'var(--blue)';
-    k.style.background=on?'#fff':'#EC4899';    k.style.color=on?'#DB2777':'#fff'; }
-}
-function openKidsModal(){ var m=document.getElementById('kids-modal'); if(!m)return; m.style.display='flex'; renderKidsModal(); requestAnimationFrame(function(){m.classList.add('open');}); document.addEventListener('keydown',_kidsEsc); }
-function closeKidsModal(){ var m=document.getElementById('kids-modal'); if(!m)return; m.classList.remove('open'); document.removeEventListener('keydown',_kidsEsc); setTimeout(function(){m.style.display='none'; hxPickMode('adult');},220); }
-function _kidsEsc(e){ if(e.key==='Escape') closeKidsModal(); }
-function kidsPickAge(a){ _kidsAge=a; renderKidsModal(); }
-function kidsPickGen(g){ _kidsGen=g; renderKidsModal(); }
 function _kidsShade(hex){ try{ hex=String(hex); var n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255,f=.72; if(isNaN(n)) return '#334155'; return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')'; }catch(e){ return '#334155'; } }
-function renderKidsModal(){
-  var age=KIDS_DATA.ages.find(function(x){return x.k===_kidsAge;})||KIDS_DATA.ages[0]; var col=age.col;
-  var hero=document.getElementById('kids-hero'); if(hero) hero.style.background='linear-gradient(135deg,'+col+','+_kidsShade(col)+')';
-  var sub=document.getElementById('kids-hero-sub'); if(sub) sub.textContent=(_kidsGen?'Garçons':'Filles')+' '+age.k+' ans · course : '+age.run;
-  var ac=document.getElementById('kids-ages');
-  if(ac) ac.innerHTML=KIDS_DATA.ages.map(function(a){ var on=(a.k===_kidsAge);
-    return '<button class="kids-age" onclick="kidsPickAge(\''+a.k+'\')" style="'+(on?'border-color:'+a.col+';background:'+a.col+'14':'')+'"><b style="'+(on?'color:'+a.col:'')+'">'+a.lbl+'</b><span>ans</span></button>'; }).join('');
-  var gc=document.getElementById('kids-gender');
-  if(gc) gc.innerHTML=['Filles','Garçons'].map(function(g,i){ var on=(i===_kidsGen);
-    return '<button onclick="kidsPickGen('+i+')" style="'+(on?'background:#fff;color:'+col+';box-shadow:0 1px 4px rgba(0,0,0,.12)':'')+'">'+(i?'👦 ':'👧 ')+g+'</button>'; }).join('');
-  var pc=document.getElementById('kids-parcours');
-  if(pc) pc.innerHTML='<div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin:2px 0 10px">Parcours station par station</div>'+
-    KIDS_DATA.st.map(function(s,i){ var val=s.v[_kidsAge][_kidsGen];
-      return '<div class="kids-row" style="animation-delay:'+(i*40)+'ms"><div class="ic" style="background:'+col+'1f">'+s.ic+'</div><div class="nm">'+s.nom+'</div><div class="vl" style="color:'+col+'">'+val+'</div></div>'; }).join('');
-  var ft=document.getElementById('kids-foot');
-  if(ft) ft.innerHTML='<div style="background:'+col+'12;border:1px solid '+col+'40;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">✅</div><div style="flex:1;font-size:11px;font-weight:700;color:var(--ink2);line-height:1.35">Les 8 catégories Youngstars (Filles/Garçons × 4 âges) sont déjà dans ton event — Jour 2, départs 13:00 → 15:20.</div></div><button onclick="closeKidsModal();show(\'categories\',document.querySelector(\'[onclick*=categories]\'));" style="width:100%;margin-top:10px;padding:13px;border:none;border-radius:13px;background:'+col+';color:#fff;font-weight:900;font-size:13px;cursor:pointer;font-family:inherit">Voir les catégories Kids →</button>';
-}
 
 function buildHyroxParcours(){
   function pc(oh,of,ph,pf,dh,df,dm,rl){ return {"1001":oh,"1002":of,"1003":ph,"1004":pf,"1005":dh,"1006":df,"1007":dm,"1008":rl}; }
@@ -23919,7 +23781,7 @@ function buildHyroxParcours(){
       RUN(8), mov('8 · Wall Balls',100,pc('6kg','4kg','9kg','6kg','6kg','4kg','4kg','4/6kg'),q(100),'station',1),
       {nom:'🏁 Arrivée',qty:1,type:'reps',ergoTarget:0,ergoUnit:'m',poids:{},qtyParCat:{},timeParCat:{},distParCat:{},hyroxSeg:'finish'}
     ]};
-  return _hyroxApplyKids(_HXP);
+  return _HXP;
 }
 
 // ── Base fictive : noms réalistes (genrés par catégorie) ──
@@ -23958,16 +23820,7 @@ function buildHyroxDivisions(){
     [1003,'Pro Hommes',    '#7C3AED',5,2,'09:00','PH'],
     [1004,'Pro Femmes',    '#9333EA',6,2,'09:40','PF'],
     [1007,'Doubles Mixte', '#059669',7,2,'10:20','DM'],
-    [1008,'Relay',         '#FF8A00',8,2,'11:00','RL'],
-    // ── HYROX Youngstars (Kids) — 4 âges × 2 genres, jour 2 après-midi ──
-    [1101,'Youngstars Filles 8-9',    '#EC4899', 9,2,'13:00','F8-9',   true,'8-9','F'],
-    [1102,'Youngstars Garçons 8-9',   '#3B82F6',10,2,'13:20','G8-9',   true,'8-9','G'],
-    [1103,'Youngstars Filles 10-11',  '#DB2777',11,2,'13:40','F10-11', true,'10-11','F'],
-    [1104,'Youngstars Garçons 10-11', '#2563EB',12,2,'14:00','G10-11', true,'10-11','G'],
-    [1105,'Youngstars Filles 12-13',  '#BE185D',13,2,'14:20','F12-13', true,'12-13','F'],
-    [1106,'Youngstars Garçons 12-13', '#1D4ED8',14,2,'14:40','G12-13', true,'12-13','G'],
-    [1107,'Youngstars Filles 14-15',  '#9D174D',15,2,'15:00','F14-15', true,'14-15','F'],
-    [1108,'Youngstars Garçons 14-15', '#1E40AF',16,2,'15:20','G14-15', true,'14-15','G']
+    [1008,'Relay',         '#FF8A00',8,2,'11:00','RL']
   ];
   return defs.map(function(d){
     var teams=_hxGenTeams(d);

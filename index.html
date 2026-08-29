@@ -6747,6 +6747,8 @@ function syncCategoriesToFirebase(){
 }
 
 
+var ADMIN_USER=(function(){ try{ return localStorage.getItem('hx-admin-user')||''; }catch(e){ return ''; } })();
+function setAdminUser(){ var v=prompt('Ton pr\u00e9nom (pour indiquer qui modifie le fichier partag\u00e9) :', ADMIN_USER||''); if(v!=null){ ADMIN_USER=String(v).trim(); try{ localStorage.setItem('hx-admin-user',ADMIN_USER); }catch(e){} } }
 function autoSave(){
   try{
     var state=getStateToSave();
@@ -6764,14 +6766,15 @@ function autoSave(){
     scheduleJudgeAssignmentsSync();
     // Cloud backup Firebase — toutes les 5 min max
     var now=Date.now();
-    if(!window._lastFbBackup||now-window._lastFbBackup>300000){
+    if(!window._lastFbBackup||now-window._lastFbBackup>4000){
       window._lastFbBackup=now;
       var _db2=(typeof LS_FB_DB!=='undefined'&&LS_FB_DB)||window.db||null;
       if(_db2&&typeof _db2.ref==='function'){
         try{
           _db2.ref('admin_backup').set({
             wods:WODS||[], categories:CATEGORIES||[], benevoles:BENEVOLES||[],
-            savedAt:now, version:'delta'
+            savedAt:now, savedBy:(typeof ADMIN_USER!=='undefined'?ADMIN_USER:'')||'', version:'delta',
+            ev:(state&&state.ev)||{}
           });
         }catch(e2){}
       }
@@ -11341,6 +11344,7 @@ function escHtml(s) {
 if(typeof escHtml==='undefined'){function escHtml(s){return esc(s);}}
 
 function init(){
+  try{ if(!localStorage.getItem('hx-admin-user') && !localStorage.getItem('hx-admin-user-asked')){ localStorage.setItem('hx-admin-user-asked','1'); var _u=prompt('Ton pr\u00e9nom (pour savoir qui modifie le fichier partag\u00e9 \u2014 optionnel) :',''); if(_u&&_u.trim()){ ADMIN_USER=_u.trim(); try{localStorage.setItem('hx-admin-user',ADMIN_USER);}catch(e){} } } }catch(e){}
   setTimeout(renderPublicQRs, 200);
   loadJSONBinConfig();
   var savedAt=loadFromStorage();
@@ -11385,17 +11389,34 @@ function init(){
           }
         }
         if(typeof generateHeatsSilent==='function') generateHeatsSilent();
-        if(typeof syncHeatsToFirebase==='function') syncHeatsToFirebase();
-        if(typeof syncBenevolesToFirebase==='function') syncBenevolesToFirebase();
+        // ★ NE PLUS pousser vers Firebase à l'ouverture (évite d'écraser les données du chef).
+        //   La synchro Firebase se fait uniquement sur édition (autoSave) et sur Générer & Publier.
         if(typeof renderZonesSynoptic==='function') renderZonesSynoptic();
         if(typeof renderPlanningCF==='function') renderPlanningCF();
         console.log('🔥 Firebase prêt — heats synchronisés');
       };
-      if(!hasLocalState && !window._deltaRestoreAttempted){
-        window._deltaRestoreAttempted = true;
-        restoreFromFirebaseBackup(_db).then(function(source){
-          finalizeWithCurrentState(source);
-        });
+      if(!window._deltaLoadAttempted){
+        window._deltaLoadAttempted = true;
+        _db.ref('admin_backup').once('value').then(function(snap){
+          var bk = snap.val();
+          var bkAt = (bk && bk.savedAt) || 0;
+          var localAt = savedAt || 0;
+          if(bk && (bkAt > localAt || !hasLocalState)){
+            try{
+              if(bk.benevoles && !Array.isArray(bk.benevoles)){
+                bk.benevoles = Object.keys(bk.benevoles).map(function(k){ return bk.benevoles[k]; }).filter(Boolean);
+              }
+              applyState(bk);
+              if(typeof normalizeWodOrdreZone==='function') normalizeWodOrdreZone();
+              try{ localStorage.setItem(SAVE_KEY, JSON.stringify(getStateToSave())); }catch(e){}
+              try{ localStorage.setItem('hyrox-data', JSON.stringify({benevoles:BENEVOLES||[],categories:CATEGORIES||[],wods:WODS||[]})); }catch(e){}
+              hasLocalState = true;
+              var ind3=document.getElementById('save-indicator');
+              if(ind3){ ind3.innerHTML='<span style="color:#06D6A0;font-size:9px">\u2601\ufe0f Version cloud charg\u00e9e'+(bk.savedBy?(' \u00b7 '+bk.savedBy):'')+(bk.savedAt?(' \u00b7 '+new Date(bk.savedAt).toLocaleTimeString('fr-FR')):'')+'</span>'; setTimeout(function(){ if(ind3) ind3.innerHTML=''; }, 6000); }
+            }catch(e){ console.warn('load cloud state:', e); }
+          }
+          finalizeWithCurrentState(false);
+        }).catch(function(){ finalizeWithCurrentState(false); });
       } else {
         finalizeWithCurrentState(false);
       }
@@ -18448,7 +18469,7 @@ function manualBackup(){
   var state=typeof getStateToSave==='function'?getStateToSave():{};
   _db2.ref('admin_backup').set({
     wods:WODS||[], categories:CATEGORIES||[], benevoles:BENEVOLES||[],
-    savedAt:Date.now(), version:'delta', manual:true,
+    savedAt:Date.now(), savedBy:(typeof ADMIN_USER!=='undefined'?ADMIN_USER:'')||'', version:'delta', manual:true,
     ev:state.ev||{}
   }).then(function(){
     toast('✅ Sauvegarde Firebase OK — '+new Date().toLocaleTimeString('fr-FR'),'#00E5A0',4000);

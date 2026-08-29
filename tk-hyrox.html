@@ -124,10 +124,10 @@ setInterval(function(){
       // ★ La 1ère vague qui part lance aussi le CHRONO GÉNÉRAL du jour (s'il ne tourne pas déjà)
       var wDay=w.jour||1;
       if(!(TK[wDay]&&TK[wDay].startAt)){
-        db.ref(R+'/tk/'+wDay+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
-        try{ console.log('⏱ TK — chrono général J'+wDay+' lancé (1ère vague auto)'); }catch(e){}
+        db.ref(R+'/tk/'+wDay+'/startAt').set(sched);
+        try{ console.log('⏱ TK — chrono général J'+wDay+' lancé (1ère vague auto, à l\'heure prévue)'); }catch(e){}
       }
-      db.ref(R+'/waves/'+k+'/startAt').set(firebase.database.ServerValue.TIMESTAMP);
+      db.ref(R+'/waves/'+k+'/startAt').set(sched);   // ★ départ auto calé sur l'heure prévue (schedAt), pas l'heure d'écriture
       try{ console.log('🚀 TK — départ AUTO vague '+w.num+' ('+w.catNom+') à '+w.time); }catch(e){}
     }
   });

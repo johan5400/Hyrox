@@ -62,6 +62,7 @@ body.geant .gbtn{border-color:var(--y);color:var(--y)}
 .tr.lead .nm{color:var(--w)}
 .tr.lead .chr{color:var(--c,var(--y));text-shadow:0 0 22px color-mix(in srgb,var(--c,var(--y)) 40%,transparent)}
 .chip{display:inline-block;background:var(--c,var(--y));color:#fff;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-left:8px;vertical-align:middle}
+.warnchip{display:inline-block;background:#F59E0B22;color:#FBBF24;border:1px solid #F59E0B55;font-size:9px;font-weight:900;letter-spacing:.5px;padding:2px 6px;border-radius:3px;margin-left:8px;vertical-align:middle}
 .pbar{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.03)}
 .pbar>div{height:100%;background:var(--c,var(--y));opacity:.45}
 
@@ -104,13 +105,14 @@ body.geant .he-cat{font-size:16px}
 <script>
 firebase.initializeApp({databaseURL:'https://foc-2026-default-rtdb.europe-west1.firebasedatabase.app'});
 var db=firebase.database(),R='hyrox/race';
-var CFG=null,WAVES={},PROGRESS={},PEN={},OFFSET=0,ADJ=0;
+var CFG=null,WAVES={},PROGRESS={},PEN={},WARN={},OFFSET=0,ADJ=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){OFFSET=s.val()||0;});
 db.ref(R+'/clockAdj').on('value',function(s){ADJ=parseInt(s.val(),10)||0;});
 db.ref(R+'/config').on('value',function(s){CFG=s.val();render();});
 db.ref(R+'/waves').on('value',function(s){WAVES=s.val()||{};render();});
 db.ref(R+'/progress').on('value',function(s){PROGRESS=s.val()||{};render();});
 db.ref(R+'/penalties').on('value',function(s){PEN=s.val()||{};render();});
+db.ref(R+'/warnings').on('value',function(s){WARN=s.val()||{};render();});
 
 /* ── helpers (inchangés) ── */
 function now(){return Date.now()+OFFSET+ADJ;}
@@ -120,6 +122,7 @@ function offMs(id,p){if(!p||p.officialMs==null)return null;var o=parseInt(p.offi
 function prog(id){return(PROGRESS&&PROGRESS[id])||{};}
 function nSt(){return((CFG&&CFG.stations)||[]).filter(function(s){return s.seg==='station';}).length;}
 function doneCount(id){var p=prog(id);return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0;}
+function warnCount(id){var w=WARN[id];return w?Object.keys(w).length:0;}
 function WAVEcat(id){var w=Object.values(WAVES).find(function(w){return(w.athletes||[]).some(function(a){return a.id===id;});});return w?w.catId:null;}
 
 function courseState(id){
@@ -193,8 +196,9 @@ function render(){
     d.running.sort(function(a,b){return b._adv-a._adv||a.waveNum-b.waveNum;});
     d._ls=d.running[0].startAt;d._la=d.running[0]._adv;
   });
-  divs.sort(function(a,b){return b._la-a._la;});         // 2 catégories dont le leader est le + avancé
-  var shown=divs.slice(0,2);
+  divs.sort(function(a,b){return b._la-a._la;});         // N catégories (réglable) dont le leader est le + avancé
+  var _N=Math.max(1,Math.min(6,(CFG&&parseInt(CFG.liveMaxCat,10))||2));
+  var shown=divs.slice(0,_N);
 
   // ── prochains départs ──
   var pending=[];
@@ -223,7 +227,7 @@ function render(){
         if(!isLead){var my=now()-t.startAt,ld=now()-d._ls,l=Math.max(0,my-ld);if(l>2000)sub+=(sub?' · ':'')+'+'+fmt(l);}
         html+='<div class="tr'+(isLead?' lead':'')+'">'
           +'<div class="rk">'+rank+'</div>'
-          +'<div class="who"><div class="nm">'+esc(t.nom)+(isLead?'<span class="chip">⚡ Leader</span>':'')+'</div><div class="sub">'+sub+'</div></div>'
+          +'<div class="who"><div class="nm">'+esc(t.nom)+(isLead?'<span class="chip">⚡ Leader</span>':'')+(warnCount(t.id)?'<span class="warnchip">⚠×'+warnCount(t.id)+'</span>':'')+'</div><div class="sub">'+sub+'</div></div>'
           +'<div class="stn"><b>'+done+'/'+totSt+'</b><span>Station</span></div>'
           +'<div class="chr" data-start="'+t.startAt+'">'+fmt(now()-t.startAt)+'</div>'
           +'<div class="pbar"><div style="width:'+pct+'%"></div></div>'

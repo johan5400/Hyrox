@@ -379,15 +379,22 @@ function render(){
   // ── SANCTIONS ──
   if(SCREEN==='sanction'&&CUR){
     ttl.textContent='🚩 Sanction';
-    var W=[['Obstruction / blocage du couloir'],['Aide au rythme (pacing) interdite'],['Équipement / tenue non conforme'],['Comportement antisportif']];
-    var P=[[60,'No-rep non corrigé'],[60,'Roxzone — marche/trajet interdit'],[60,'Distance ou répétitions incomplètes'],[60,'Faux départ / relais irrégulier'],[180,'Tour de run manquant']];
+    var _stNom=(stationByIdx(MY_STATION)||{}).nom||'';
+    var _w=WARN[CUR.teamId]||{};
+    var _atSt=Object.keys(_w).filter(function(k){var e=_w[k];return e&&e.station===_stNom;}).length;
+    var _warn=_atSt<1;
+    var faults=stationFaults(_stNom);
+    var gen=[[120,'Roxzone — arche IN/OUT'],[120,'Assistance extérieure'],[120,'Mauvaise magnésie'],[120,'Comportement antisportif']];
+    var _amt=function(s){ return s>=60?(Math.floor(s/60)+' min'+(s%60?' '+(s%60)+'s':'')):(s+' s'); };
+    var _btn=function(x){ return '<button onclick="giveFault('+x[0]+',\''+String(x[1]).replace(/'/g,"\\'")+'\')" style="width:100%;margin-bottom:6px;padding:13px 12px;border:1.5px solid '+(_warn?'#FBBF2455':'#DC262655')+';border-radius:11px;background:'+(_warn?'#FBBF2411':'#DC262611')+';color:'+(_warn?'#FCD34D':'#F87171')+';font-size:12px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>'+x[1]+'</span><b style="white-space:nowrap">'+(_warn?'⚠️':'+'+_amt(x[0]))+'</b></button>'; };
     el.innerHTML='<div style="padding:4px 2px">'
       +'<div style="font-size:15px;font-weight:900;margin-bottom:2px">'+CUR.nom+'</div>'
-      +'<div style="font-size:11px;color:var(--ink2);margin-bottom:12px">'+CUR.catNom+' · vague '+CUR.waveNum+' · ⚠×'+warnCount(CUR.teamId)+' · +'+penTotal(CUR.teamId)+'s</div>'
-      +'<div style="font-size:10px;font-weight:900;color:#FBBF24;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">⚠️ Avertissement</div>'
-      +W.map(function(w){ return '<button onclick="giveWarning(\''+w[0].replace(/'/g,"\\'")+'\''+')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #FBBF2455;border-radius:11px;background:#FBBF2411;color:#FCD34D;font-size:12px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer">⚠️ '+w[0]+'</button>'; }).join('')
-      +'<div style="font-size:10px;font-weight:900;color:#F87171;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">⏱ Pénalité</div>'
-      +P.map(function(x){ return '<button onclick="givePenalty('+x[0]+',\''+x[1].replace(/'/g,"\\'")+'\''+')" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262611;color:#F87171;font-size:12px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer"><b>+'+(x[0]>=60?Math.floor(x[0]/60)+':'+('0'+x[0]%60).slice(-2):x[0]+'s')+'</b> — '+x[1]+'</button>'; }).join('')
+      +'<div style="font-size:11px;color:var(--ink2);margin-bottom:10px">'+CUR.catNom+' · vague '+CUR.waveNum+' · ⚠×'+warnCount(CUR.teamId)+' · +'+penTotal(CUR.teamId)+'s</div>'
+      +'<div style="padding:9px 12px;border-radius:10px;margin-bottom:12px;font-size:11px;font-weight:900;'+(_warn?'background:#FBBF2415;color:#FCD34D;border:1px solid #FBBF2440':'background:#DC262615;color:#F87171;border:1px solid #DC262640')+'">'+(_warn?'1re faute à cette station → AVERTISSEMENT':'Faute suivante → PÉNALITÉ (recalcul du temps)')+'</div>'
+      +'<div style="font-size:10px;font-weight:900;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Faute — '+(_stNom||'station')+'</div>'
+      +faults.map(_btn).join('')
+      +'<div style="font-size:10px;font-weight:900;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">Général</div>'
+      +gen.map(_btn).join('')
       +'<div style="font-size:10px;font-weight:900;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">✏️ Personnalisée</div>'
       +'<div style="display:flex;gap:6px;margin-bottom:6px">'
         +'<input id="cust-sec" type="number" min="5" step="5" placeholder="sec" style="width:80px;padding:11px 10px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink);font-size:14px;font-weight:900;text-align:center;outline:none;font-family:inherit">'
@@ -415,6 +422,27 @@ function onSelectChange(){
   if(lbl){ lbl.style.display=other?'block':'none'; }
 }
 
+function stationFaults(nom){
+  var n=(nom||'').toLowerCase();
+  if(/ski/.test(n))            return [[15,'Pieds quittent la base / touchent le sol'],[15,'Autre faute de mouvement']];
+  if(/sled push/.test(n))      return [[15,'Couloir / ligne non respectés'],[15,'Sled ne franchit pas la marque 12,5 m']];
+  if(/sled pull/.test(n))      return [[15,'Marche sur la ligne (Racers Box)'],[15,'Corde hors couloir / mauvaise position']];
+  if(/burpee/.test(n))         return [[15,'Écart pieds >5 cm / dépassement'],[15,'Poitrine ne touche pas le sol']];
+  if(/row|rameur/.test(n))     return [[15,'Quitte le siège / faute de mouvement']];
+  if(/farmer/.test(n))         return [[30,'Kettlebells mal remises (zone/verticalité)'],[15,'Portage non conforme'],[120,'Poids incorrect']];
+  if(/sandbag|lunge|fente/.test(n)) return [[15,"Genou arrière / pas d'extension debout"],[15,'Sac retiré des épaules'],[30,'Sac mal remis dans la zone'],[120,'Poids incorrect']];
+  if(/wall/.test(n))           return [[120,'Magnésie en poudre à la station']];
+  return [[15,'Faute de mouvement']];
+}
+// 1re faute à cette station = avertissement ; 2e+ = pénalité (montant officiel), recalcul live
+function giveFault(sec,motif){
+  if(!CUR) return;
+  var stNom=(stationByIdx(MY_STATION)||{}).nom||'';
+  var w=WARN[CUR.teamId]||{};
+  var atStation=Object.keys(w).filter(function(k){var e=w[k];return e&&e.station===stNom;}).length;
+  if(atStation<1) giveWarning(motif);
+  else givePenalty(sec,motif);
+}
 function giveWarning(motif){
   if(!CUR) return;
   if(!confirm('⚠️ Avertissement pour '+CUR.nom+' ?\n'+motif)) return;

@@ -1251,6 +1251,14 @@ function checkPassword(){
             style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
         </div>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--brd2);border-radius:10px;padding:8px 14px;flex:1;min-width:160px">
+        <span style="font-size:18px">📺</span>
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase">Catégories en direct (live)</div>
+          <input id="hx-livemax" type="number" min="1" max="6" value="2" oninput="saveHyroxCfg()"
+            style="background:none;border:none;outline:none;font-size:18px;font-weight:900;color:var(--ink);font-family:inherit;width:100%;padding:0">
+        </div>
+      </div>
       <!-- Time cap retiré de l'affichage (pas de cap sur cet événement Hyrox). Input caché conservé pour compat interne. -->
       <input id="hx-cap" type="hidden" value="0">
     </div>
@@ -23064,7 +23072,7 @@ function exportClassementCSV(){
    hyroxCapMinutes = time cap réel de la course (pour juge/live à venir)
    ═══════════════════════════════════════════════════════════════ */
 var HYROX_CFG = (function(){
-  var d={startJ1:'09:00',startJ2:'09:00',interval:3,cap:100,slots:2,autoStart:false};
+  var d={startJ1:'09:00',startJ2:'09:00',interval:3,cap:100,slots:2,autoStart:false,liveMaxCat:2};
   try { return Object.assign(d, JSON.parse(localStorage.getItem('hyrox-cfg')||'{}')); } catch(e){ return d; }
 })();
 
@@ -23081,6 +23089,7 @@ function saveHyroxCfg(){
   HYROX_CFG.cap      = parseInt((document.getElementById('hx-cap')||{}).value,10) || 100;
   HYROX_CFG.slots    = parseInt((document.getElementById('hx-slots')||{}).value,10) || 10;
   HYROX_CFG.autoStart= !!((document.getElementById('hx-auto')||{}).checked);
+  HYROX_CFG.liveMaxCat = Math.max(1, Math.min(6, parseInt((document.getElementById('hx-livemax')||{}).value,10)||2));
   try { localStorage.setItem('hyrox-cfg', JSON.stringify(HYROX_CFG)); } catch(e){}
 }
 
@@ -23092,6 +23101,7 @@ function loadHyroxCfg(){
   if(iv && HYROX_CFG.interval) iv.value = HYROX_CFG.interval;
   if(cp && HYROX_CFG.cap) cp.value = HYROX_CFG.cap;
   var sl=document.getElementById('hx-slots'); if(sl && HYROX_CFG.slots) sl.value = HYROX_CFG.slots;
+  var lm=document.getElementById('hx-livemax'); if(lm && HYROX_CFG.liveMaxCat) lm.value = HYROX_CFG.liveMaxCat;
   var au=document.getElementById('hx-auto'); if(au) au.checked = !!HYROX_CFG.autoStart;
 }
 
@@ -23650,7 +23660,7 @@ function publishHyroxRace(){
       nom:(document.getElementById('ev-nom')||{}).value||'HYROX',
       capMinutes:HYROX_CFG.cap||100, interval:HYROX_CFG.interval||10,
       slots:HYROX_CFG.slots||10, stations:stations, divisions:divisions,
-      autoStart:!!HYROX_CFG.autoStart,
+      autoStart:!!HYROX_CFG.autoStart, liveMaxCat:HYROX_CFG.liveMaxCat||2,
       publishedAt:Date.now()
     }),
     db.ref('race/waves').set(waves),

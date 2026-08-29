@@ -7,46 +7,81 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root{--bg:#0B1220;--card:#111C30;--brd:#1E3050;--ink:#F1F5FB;--ink2:#9FB2CC;--blue:#3B82F6;--green:#10B981;--red:#EF4444;--violet:#8B5CF6}
+:root{--bg:#0A1120;--card:#131F36;--card2:#0F1A2E;--brd:#243A5E;--ink:#F4F8FF;--ink2:#9DB2D4;--ink3:#63779A;--blue:#3B82F6;--green:#10B981;--red:#EF4444;--amber:#F59E0B;--violet:#8B5CF6}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
-body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:14px}
-.hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.hdr h1{font-size:16px;font-weight:900;flex:1}
-.back{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
-.tile{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer}
-.tile:active{opacity:.8}
-.tile .n{font-size:15px;font-weight:900;flex:1}
-.tile .s{font-size:10px;color:var(--ink2);font-weight:700;margin-top:3px}
-.team{border-left:5px solid var(--blue)}
-.badge{font-size:10px;font-weight:900;border-radius:6px;padding:2px 8px;border:1px solid}
-.empty{text-align:center;color:var(--ink2);padding:40px 10px;font-size:13px;line-height:1.6}
-/* identification */
-.id-wrap{max-width:420px;margin:40px auto 0;text-align:center}
-.id-wrap h2{font-size:18px;font-weight:900;margin-bottom:6px}
-.id-wrap p{font-size:12px;color:var(--ink2);margin-bottom:24px}
-.id-select{width:100%;padding:14px;border:1.5px solid var(--brd);border-radius:12px;background:var(--card);color:var(--ink);font-size:15px;font-weight:700;font-family:inherit;margin-bottom:12px;outline:none;appearance:none;-webkit-appearance:none}
-.id-sep{font-size:11px;color:var(--ink2);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:10px 0}
-.id-input{width:100%;padding:14px;border:1.5px solid var(--brd);border-radius:12px;background:var(--card);color:var(--ink);font-size:15px;font-family:inherit;outline:none;margin-bottom:16px}
-.id-input::placeholder{color:var(--ink2)}
-.id-btn{width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px #2563EB44}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100dvh;padding:14px;display:flex;flex-direction:column}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-shrink:0}
+.hdr h1{font-size:17px;font-weight:900;flex:1}
+.back{background:var(--card);border:1px solid var(--brd);color:var(--ink2);border-radius:11px;padding:10px 14px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer}
+#stbanner{flex-shrink:0}
+#view{flex:1;min-height:0;display:flex;flex-direction:column}
+.empty{text-align:center;color:var(--ink2);padding:40px 12px;font-size:15px;line-height:1.7}
+.sechd{font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin:2px 2px 10px;flex-shrink:0}
 /* banner */
-.stbanner{background:linear-gradient(135deg,#1e3a8a,#312e81);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
-/* compteur */
-.counter{max-width:520px;margin:0 auto;text-align:center}
-.cnt-team{font-size:19px;font-weight:900;margin:6px 0 2px}
-.cnt-cat{font-size:11px;font-weight:900;margin-bottom:10px}
-.cnt-val{font-size:64px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
-.cnt-target{font-size:14px;color:var(--ink2);font-weight:800;margin-bottom:8px}
-.bar{height:12px;background:#0B1626;border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin:10px 0 18px}
-.bar>div{height:100%;background:linear-gradient(90deg,#2563EB,#10B981);width:0%;transition:width .15s}
-.tap{width:100%;padding:42px 10px;border:none;border-radius:20px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:26px;font-weight:900;font-family:inherit;box-shadow:0 6px 24px #2563EB55;cursor:pointer}
-.tap:active{transform:scale(.98)}
-.row2{display:flex;gap:10px;margin-top:12px}
-.minus{flex:1;padding:14px;border:1px solid var(--red);background:none;color:var(--red);border-radius:12px;font-size:16px;font-weight:900;font-family:inherit;cursor:pointer}
-.validbtn{flex:2;padding:14px;border:none;background:var(--green);color:#03170e;border-radius:12px;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer}
-.okscreen{text-align:center;padding:60px 10px}
-.okscreen .big{font-size:70px}
-.poids{font-size:12px;color:var(--violet);font-weight:900;margin-bottom:14px}
+.ctx{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#17376f,#2a2b6b);border-radius:14px;padding:12px 15px;margin-bottom:14px}
+.ctx .stnum{width:42px;height:42px;flex-shrink:0;border-radius:12px;background:#fff;color:#17376f;font-size:21px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.ctx .stn{font-size:16px;font-weight:900;line-height:1.1}
+.ctx .who{font-size:12px;color:#BFD0F5;font-weight:800;margin-top:3px}
+.ctx .who .sos{color:#FCD34D}
+/* identification */
+.id-wrap{max-width:420px;margin:24px auto 0;text-align:center;width:100%}
+.id-wrap h2{font-size:20px;font-weight:900;margin-bottom:6px}
+.id-wrap p{font-size:13px;color:var(--ink2);margin-bottom:24px;line-height:1.5}
+.id-select,.id-input{width:100%;padding:16px;border:1.5px solid var(--brd);border-radius:13px;background:var(--card);color:var(--ink);font-size:16px;font-weight:700;font-family:inherit;margin-bottom:12px;outline:none;appearance:none;-webkit-appearance:none}
+.id-input::placeholder{color:var(--ink2)}
+.id-sep{font-size:12px;color:var(--ink2);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:10px 0}
+.id-btn{width:100%;padding:18px;border:none;border-radius:15px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:17px;font-weight:900;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px #2563EB44}
+/* stations */
+.tile{background:var(--card);border:1px solid var(--brd);border-radius:15px;padding:16px;margin-bottom:11px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.tile:active{opacity:.85}
+.tile .stnum{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:#1c2f4e;color:#BFD0F5;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.tile .n{font-size:18px;font-weight:900;flex:1;line-height:1.15}
+.tile .s{font-size:13px;color:var(--ink2);font-weight:700;margin-top:4px}
+.tile .chev{font-size:24px;color:var(--ink3)}
+/* teams — adaptatif */
+.teamlist{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.team{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--brd);border-left:6px solid var(--c,#3B82F6);border-radius:16px;padding:14px 16px;cursor:pointer;flex:1 1 0;min-height:76px}
+.team:active{opacity:.85}
+.team .nm{font-weight:900;line-height:1.02;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .meta{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:900;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.pill.info{background:#22345480;color:#BFD0F5}
+.pill.reps{background:#F59E0B22;color:#FBBF24}
+.pill.warn{background:#F59E0B22;color:#FBBF24;border:1px solid #F59E0B55}
+.team .catpill{font-size:13px;font-weight:900;padding:6px 13px;border-radius:20px;flex-shrink:0}
+/* counter */
+.counter{flex:1;display:flex;flex-direction:column;text-align:center}
+.cnt-team{font-size:23px;font-weight:900;margin-top:2px}
+.cnt-cat{display:inline-block;font-size:13px;font-weight:900;padding:4px 13px;border-radius:20px;margin-top:8px}
+.poids{font-size:14px;font-weight:900;color:#C4B5FD;background:#8B5CF61a;border:1px solid #8B5CF640;display:inline-block;padding:5px 14px;border-radius:20px;margin-top:10px}
+.cnt-val{font-size:92px;font-weight:900;font-variant-numeric:tabular-nums;line-height:.9;margin-top:14px;letter-spacing:-2px}
+.cnt-target{font-size:19px;color:var(--ink2);font-weight:900;margin-top:2px}
+.bar{height:16px;background:#0a1424;border:1px solid var(--brd);border-radius:10px;overflow:hidden;margin:16px 0 18px}
+.bar>div{height:100%;background:linear-gradient(90deg,#2563EB,#10B981);width:0%;transition:width .15s;border-radius:10px}
+.tap{width:100%;padding:44px 10px;border:none;border-radius:22px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;font-size:32px;font-weight:900;font-family:inherit;box-shadow:0 8px 28px #2563EB55;cursor:pointer}
+.tap:active{transform:scale(.97)}
+.tap small{display:block;font-size:13px;font-weight:800;opacity:.85;letter-spacing:2px;margin-top:5px;text-transform:uppercase}
+.row2{display:flex;gap:11px;margin-top:13px}
+.minus{width:92px;flex-shrink:0;padding:18px;border:2px solid var(--red);background:#EF444414;color:#FCA5A5;border-radius:15px;font-size:20px;font-weight:900;font-family:inherit;cursor:pointer}
+.validbtn{flex:1;padding:18px;border:none;background:var(--green);color:#03170e;border-radius:15px;font-size:17px;font-weight:900;font-family:inherit;cursor:pointer}
+.sancbtn{width:100%;margin-top:12px;padding:16px;border:2px solid #DC262655;border-radius:15px;background:#DC26261a;color:#F87171;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+/* sanction */
+.s-hd{font-size:22px;font-weight:900}
+.s-sub{font-size:13px;color:var(--ink2);font-weight:800;margin:6px 0 14px}
+.s-status{padding:13px 15px;border-radius:14px;margin-bottom:16px;font-size:14px;font-weight:900}
+.s-status.warn{background:#F59E0B1a;color:#FBBF24;border:1px solid #F59E0B55}
+.s-status.pen{background:#DC26261a;color:#FCA5A5;border:1px solid #DC262655}
+.fbtn{width:100%;margin-bottom:9px;padding:16px;border-radius:14px;font-size:14px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fbtn.w{border:2px solid #F59E0B55;background:#F59E0B14;color:#FCD34D}
+.fbtn.p{border:2px solid #DC262655;background:#DC262614;color:#FCA5A5}
+.fbtn b{font-size:15px;white-space:nowrap}
+.custrow{display:flex;gap:8px;margin-bottom:9px}
+.custrow input{padding:14px;border:1.5px solid var(--brd);border-radius:13px;background:transparent;color:var(--ink);font-size:15px;font-family:inherit;outline:none}
+.backbtn{width:100%;margin-top:8px;padding:15px;border:2px solid var(--brd);border-radius:14px;background:transparent;color:var(--ink2);font-size:14px;font-weight:900;font-family:inherit;cursor:pointer}
+/* ok */
+.okscreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.okscreen .big{font-size:84px}
 .hx-net{position:fixed;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444AA;z-index:99;transition:all .3s}
 .hx-net.on{background:#10B981;box-shadow:0 0 8px #10B98188}
 </style>
@@ -274,11 +309,13 @@ function updateBanner(){
   if(MY_NAME && MY_STATION!=null && SCREEN!=='stations' && SCREEN!=='identify'){
     var st=stationByIdx(MY_STATION)||{};
     b.style.display='block';
-    b.innerHTML='<div class="stbanner">'
-      +'<span style="font-size:22px">🏋️</span>'
-      +'<div style="flex:1">'
-        +'<div style="font-size:13px;font-weight:900">'+(st.nom||'Station')+'</div>'
-        +'<div style="font-size:10px;color:#C7D2FE;font-weight:800;margin-top:2px">👤 '+MY_NAME+(MY_SECOURS?' · <span style="color:#FCD34D">🆘 Secours</span>':'')+'</div>'
+    var _num=(st.nom||'').match(/^\s*(\d+)/); _num=_num?_num[1]:'•';
+    var _snm=(st.nom||'Station').replace(/^\s*\d+\s*·\s*/,'');
+    b.innerHTML='<div class="ctx">'
+      +'<div class="stnum">'+_num+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div class="stn">'+_snm+'</div>'
+        +'<div class="who">👤 '+MY_NAME+(MY_SECOURS?' · <span class="sos">🆘 Secours</span>':' · juge de station')+'</div>'
       +'</div></div>';
   } else { b.style.display='none'; b.innerHTML=''; }
 }
@@ -317,15 +354,17 @@ function render(){
   // ── LISTE DES STATIONS ──
   if(SCREEN==='stations'){
     ttl.textContent='👋 '+MY_NAME+' · Choisis ta station';
-    el.innerHTML=stations().map(function(st){
+    el.innerHTML='<div class="sechd">Choisis ta station</div>'+stations().map(function(st){
+      var _num=(st.nom||'').match(/^\s*(\d+)/); _num=_num?_num[1]:'•';
+      var _snm=(st.nom||'').replace(/^\s*\d+\s*·\s*/,'');
       var enCours=runningTeams().filter(function(t){ return !stDone(t.teamId,st.idx); }).length;
       return '<div class="tile" onclick="pickStation('+st.idx+')">'
-        +'<span style="font-size:28px">🏋️</span>'
-        +'<div class="n">'+st.nom
-          +'<div class="s">'+st.qty+' reps · '+st.step+'/clic'
-          +(enCours?' · <span style="color:#F59E0B">'+enCours+' équipe(s) en attente</span>':'')
+        +'<div class="stnum">'+_num+'</div>'
+        +'<div class="n">'+_snm
+          +'<div class="s">'+st.qty+' · '+st.step+'/clic'
+          +(enCours?' · <span style="color:#F59E0B">'+enCours+' en attente</span>':'')
           +'</div></div>'
-        +'<span style="font-size:22px;color:var(--ink2)">›</span>'
+        +'<span class="chev">›</span>'
         +'</div>';
     }).join('')||'<div class="empty">Aucune station publiée.</div>';
     return;
@@ -337,18 +376,29 @@ function render(){
     ttl.textContent='🏋️ '+((st&&st.nom)||'Station');
     var teams=runningTeams().filter(function(t){ return !stDone(t.teamId,MY_STATION); })
       .sort(function(a,b){ return a.waveNum-b.waveNum||a.nom.localeCompare(b.nom); });
-    el.innerHTML=teams.length?teams.map(function(t){
+    var _n=teams.length;
+    var _nsz=_n<=3?'26px':_n<=5?'22px':_n<=7?'19px':'17px';
+    var _nst=stations().length||8;
+    el.innerHTML='<div class="sechd">Équipes en attente — '+_n+'</div>'
+      +(_n?'<div class="teamlist">'+teams.map(function(t){
       var p=teamProg(t.teamId);
       var nDone=p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0;
       var repsEnCours=(p.stations&&p.stations[MY_STATION]&&p.stations[MY_STATION].val)||0;
-      return '<div class="tile team" style="border-left-color:'+t.couleur+'" onclick="pickTeam(\''+t.waveKey+'\',\''+t.teamId+'\')">'
-        +'<div class="n">'+t.nom
-          +'<div class="s">Vague '+t.waveNum+' · '+nDone+'/'+stations().length+' stations · ⏱ '+fmt(now()-t.startAt)
-          +(repsEnCours?' · <span style="color:#F59E0B">'+repsEnCours+' reps en cours</span>':'')
-          +'</div></div>'
-        +'<span class="badge" style="color:'+t.couleur+';border-color:'+t.couleur+'55;background:'+t.couleur+'22">'+t.catNom+'</span>'
+      var wc=warnCount(t.teamId);
+      return '<div class="team" style="--c:'+t.couleur+'" onclick="pickTeam(\''+t.waveKey+'\',\''+t.teamId+'\')">'
+        +'<div style="flex:1;min-width:0">'
+          +'<div class="nm" style="font-size:'+_nsz+'">'+t.nom+'</div>'
+          +'<div class="meta">'
+            +'<span class="pill info">V'+t.waveNum+'</span>'
+            +'<span class="pill info">⏱ '+fmt(now()-t.startAt)+'</span>'
+            +'<span class="pill info">'+nDone+'/'+_nst+'</span>'
+            +(repsEnCours?'<span class="pill reps">'+repsEnCours+' reps</span>':'')
+            +(wc?'<span class="pill warn">⚠×'+wc+'</span>':'')
+          +'</div>'
+        +'</div>'
+        +'<span class="catpill" style="color:'+t.couleur+';background:'+t.couleur+'22;border:1px solid '+t.couleur+'55">'+t.catNom+'</span>'
         +'</div>';
-    }).join(''):'<div class="empty">Aucune équipe en attente pour cette station.</div>';
+    }).join('')+'</div>':'<div class="empty">Aucune équipe en attente pour cette station.</div>');
     return;
   }
 
@@ -360,17 +410,17 @@ function render(){
     var pct=target?Math.min(100,COUNT/target*100):0;
     el.innerHTML='<div class="counter">'
       +'<div class="cnt-team">'+CUR.nom+'</div>'
-      +'<div class="cnt-cat" style="color:'+CUR.couleur+'">'+CUR.catNom+' · vague '+CUR.waveNum+'</div>'
+      +'<div class="cnt-cat" style="color:'+CUR.couleur+';background:'+CUR.couleur+'22">'+CUR.catNom+' · vague '+CUR.waveNum+'</div>'
       +(poids?'<div class="poids">⚖️ '+poids+'</div>':'')
       +'<div class="cnt-val">'+(+COUNT.toFixed(2))+'</div>'
       +'<div class="cnt-target">/ '+target+'</div>'
       +'<div class="bar"><div style="width:'+pct+'%"></div></div>'
-      +'<button class="tap" onclick="tap()">+'+st.step+'</button>'
+      +'<button class="tap" onclick="tap()">+'+st.step+'<small>appuie pour compter</small></button>'
       +'<div class="row2">'
         +'<button class="minus" onclick="minus()">−'+st.step+'</button>'
-        +'<button class="validbtn" onclick="validate()">✅ VALIDER STATION</button>'
+        +'<button class="validbtn" onclick="validate()">✅ VALIDER LA STATION</button>'
       +'</div>'
-      +'<button onclick="SCREEN=\'sanction\';render()" style="width:100%;margin-top:10px;padding:12px;border:1.5px solid #DC262655;border-radius:12px;background:#DC262611;color:#F87171;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer">🚩 SANCTION'
+      +'<button class="sancbtn" onclick="SCREEN=\'sanction\';render()">🚩 SANCTION'
         +((penTotal(CUR.teamId)||warnCount(CUR.teamId))?('  ·  '+(warnCount(CUR.teamId)?'⚠×'+warnCount(CUR.teamId):'')+(penTotal(CUR.teamId)?' +'+penTotal(CUR.teamId)+'s':'')):(''))
       +'</button></div>';
     return;
@@ -386,22 +436,22 @@ function render(){
     var faults=stationFaults(_stNom);
     var gen=[[120,'Roxzone — arche IN/OUT'],[120,'Assistance extérieure'],[120,'Mauvaise magnésie'],[120,'Comportement antisportif']];
     var _amt=function(s){ return s>=60?(Math.floor(s/60)+' min'+(s%60?' '+(s%60)+'s':'')):(s+' s'); };
-    var _btn=function(x){ return '<button onclick="giveFault('+x[0]+',\''+String(x[1]).replace(/'/g,"\\'")+'\')" style="width:100%;margin-bottom:6px;padding:13px 12px;border:1.5px solid '+(_warn?'#FBBF2455':'#DC262655')+';border-radius:11px;background:'+(_warn?'#FBBF2411':'#DC262611')+';color:'+(_warn?'#FCD34D':'#F87171')+';font-size:12px;font-weight:800;text-align:left;font-family:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>'+x[1]+'</span><b style="white-space:nowrap">'+(_warn?'⚠️':'+'+_amt(x[0]))+'</b></button>'; };
-    el.innerHTML='<div style="padding:4px 2px">'
-      +'<div style="font-size:15px;font-weight:900;margin-bottom:2px">'+CUR.nom+'</div>'
-      +'<div style="font-size:11px;color:var(--ink2);margin-bottom:10px">'+CUR.catNom+' · vague '+CUR.waveNum+' · ⚠×'+warnCount(CUR.teamId)+' · +'+penTotal(CUR.teamId)+'s</div>'
-      +'<div style="padding:9px 12px;border-radius:10px;margin-bottom:12px;font-size:11px;font-weight:900;'+(_warn?'background:#FBBF2415;color:#FCD34D;border:1px solid #FBBF2440':'background:#DC262615;color:#F87171;border:1px solid #DC262640')+'">'+(_warn?'1re faute à cette station → AVERTISSEMENT':'Faute suivante → PÉNALITÉ (recalcul du temps)')+'</div>'
-      +'<div style="font-size:10px;font-weight:900;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Faute — '+(_stNom||'station')+'</div>'
+    var _btn=function(x){ return '<button class="fbtn '+(_warn?'w':'p')+'" onclick="giveFault('+x[0]+',\''+String(x[1]).replace(/'/g,"\\'")+'\')"><span>'+x[1]+'</span><b>'+(_warn?'⚠️ Avert.':'+'+_amt(x[0]))+'</b></button>'; };
+    el.innerHTML='<div style="padding:2px">'
+      +'<div class="s-hd">'+CUR.nom+'</div>'
+      +'<div class="s-sub">'+CUR.catNom+' · vague '+CUR.waveNum+' · ⚠×'+warnCount(CUR.teamId)+' · +'+penTotal(CUR.teamId)+'s</div>'
+      +'<div class="s-status '+(_warn?'warn':'pen')+'">'+(_warn?'⚠️ 1re faute ici → AVERTISSEMENT':'⏱ Faute suivante → PÉNALITÉ (recalcul du temps)')+'</div>'
+      +'<div class="sechd">Faute — '+(_stNom||'station')+'</div>'
       +faults.map(_btn).join('')
-      +'<div style="font-size:10px;font-weight:900;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">Général</div>'
+      +'<div class="sechd" style="margin-top:14px">Général</div>'
       +gen.map(_btn).join('')
-      +'<div style="font-size:10px;font-weight:900;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">✏️ Personnalisée</div>'
-      +'<div style="display:flex;gap:6px;margin-bottom:6px">'
-        +'<input id="cust-sec" type="number" min="5" step="5" placeholder="sec" style="width:80px;padding:11px 10px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink);font-size:14px;font-weight:900;text-align:center;outline:none;font-family:inherit">'
-        +'<input id="cust-motif" type="text" placeholder="Motif obligatoire" style="flex:1;padding:11px 12px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink);font-size:13px;font-weight:700;outline:none;font-family:inherit">'
+      +'<div class="sechd" style="margin-top:14px">✏️ Personnalisée</div>'
+      +'<div class="custrow">'
+        +'<input id="cust-sec" type="number" min="5" step="5" placeholder="sec" style="width:90px;text-align:center;font-weight:900">'
+        +'<input id="cust-motif" type="text" placeholder="Motif obligatoire" style="flex:1;font-weight:700">'
       +'</div>'
-      +'<button onclick="giveCustomPenalty()" style="width:100%;margin-bottom:6px;padding:12px;border:1.5px solid #DC262655;border-radius:11px;background:#DC262622;color:#F87171;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">⏱ Appliquer</button>'
-      +'<button onclick="SCREEN=\'counter\';render()" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid var(--brd);border-radius:11px;background:transparent;color:var(--ink2);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer">← Retour au comptage</button>'
+      +'<button class="fbtn p" style="justify-content:center" onclick="giveCustomPenalty()"><b>⏱ Appliquer la pénalité</b></button>'
+      +'<button class="backbtn" onclick="SCREEN=\'counter\';render()">← Retour au comptage</button>'
       +'</div>';
     return;
   }

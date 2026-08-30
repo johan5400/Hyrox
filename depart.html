@@ -42,6 +42,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 <div id="tkbar" style="background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:8px 14px;text-align:center;margin-bottom:10px;display:flex;align-items:center;gap:10px;justify-content:center">
   <span style="font-size:10px;font-weight:900;color:var(--ink2);text-transform:uppercase">TK</span>
   <span id="tkclock" style="font-size:22px;font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums">--:--:--</span>
+  <span id="netdot" title="Connexion" style="width:9px;height:9px;border-radius:50%;background:#EF4444;display:inline-block;flex-shrink:0"></span>
 </div>
 <div class="hdr">
   <h1>🚀 Départ · le chef</h1>
@@ -60,6 +61,7 @@ var DAY=1, WAVES={}, CFG={}, OFFSET=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){ OFFSET=s.val()||0; });
 var ADJ=0; // ★ calage manuel sur le chrono officiel (réglé depuis le TK, partagé via Firebase)
 db.ref(R+'/clockAdj').on('value',function(s){ ADJ=parseInt(s.val(),10)||0; });
+db.ref('.info/connected').on('value',function(s){var d=document.getElementById('netdot');if(d)d.style.background=(s.val()===true)?'#10B981':'#EF4444';});
 function now(){ return Date.now()+OFFSET+ADJ; }
 var TK={};
 db.ref(R+'/tk').on('value',function(s){ TK=s.val()||{}; render(); });

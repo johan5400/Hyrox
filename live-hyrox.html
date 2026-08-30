@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>🔴 Live · HYROX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,700;1,900&display=swap">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,700;1,900&display=swap');
-:root{--bg:#000;--y:#d4e000;--w:#fff;--g:#6a6a6a;--g2:#8a8a8a;--green:#00e676;--red:#ff1744}
+:root{--bg:#000;--y:#d4e000;--w:#fff;--g:#8ea2c0;--g2:#aab8d0;--green:#00e676;--red:#ff1744;--amber:#F59E0B}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:radial-gradient(120% 80% at 50% -10%,#0a0a05 0%,#000 60%);color:var(--w);
   font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
@@ -20,6 +22,8 @@ html,body{background:radial-gradient(120% 80% at 50% -10%,#0a0a05 0%,#000 60%);c
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:dp 1s infinite;flex-shrink:0}
 .live-w{font-size:12px;font-weight:900;letter-spacing:2px;color:var(--red);text-transform:uppercase;font-style:italic}
+.dot.off{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:none}
+.live-w.off{color:var(--amber)}
 @keyframes dp{50%{opacity:.1;transform:scale(.7)}}
 .hdr-clock{font-size:18px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--g);letter-spacing:2px;font-style:italic;margin:0 6px}
 .gbtn{border:1px solid #333;background:transparent;color:var(--g);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:900;
@@ -69,11 +73,11 @@ body.geant .gbtn{border-color:var(--y);color:var(--y)}
 .acts{margin-top:9px}
 .now{display:inline-flex;align-items:center;gap:6px;font-size:clamp(14px,1.6vw,18px);font-weight:900;font-style:italic;padding:5px 13px;border-radius:22px;background:#F59E0B1e;color:#FBBF24;border:1px solid #F59E0B66;animation:blink 1.1s infinite;white-space:nowrap}
 .strip{display:flex;align-items:center;gap:5px;margin-top:9px;flex-wrap:wrap}
-.seg{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#0e1728;border:1px solid #1e2c46;filter:grayscale(1);opacity:.4}
-.seg.done{background:#10B98122;border-color:#10B98166;filter:none;opacity:1}
-.seg.cur{background:#F59E0B26;border-color:#F59E0B;filter:none;opacity:1;animation:blink 1.1s infinite;box-shadow:0 0 14px #F59E0B55}
+.seg{min-width:38px;height:26px;padding:0 6px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:.5px;background:#0e1728;border:1px solid #1e2c46;color:#5b6f8f;opacity:.55}
+.seg.done{background:#00e67622;border-color:#00e67666;color:#00e676;opacity:1}
+.seg.cur{background:#F59E0B26;border-color:#F59E0B;color:#FBBF24;opacity:1;animation:blink 1.1s infinite;box-shadow:0 0 14px #F59E0B55}
 body.geant .now{font-size:clamp(18px,2vw,24px);padding:7px 16px}
-body.geant .seg{width:38px;height:38px;font-size:19px}
+body.geant .seg{min-width:50px;height:34px;font-size:16px}
 
 /* ── 4 heats à venir ── */
 .ups-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -105,7 +109,7 @@ body.geant .he-cat{font-size:16px}
 <div class="hdr">
   <div class="hdr-ico">⚡</div>
   <div class="hdr-title" id="evnom">HYROX</div>
-  <span class="dot"></span><span class="live-w">Live</span>
+  <span class="dot" id="netdot"></span><span class="live-w" id="netlabel">Live</span>
   <div class="hdr-clock" id="hdr-clock">--:--:--</div>
   <button class="gbtn" onclick="toggleGeant()" id="gbtn">📽 Écran géant</button>
 </div>
@@ -117,11 +121,20 @@ var db=firebase.database(),R='hyrox/race';
 var CFG=null,WAVES={},PROGRESS={},PEN={},WARN={},OFFSET=0,ADJ=0;
 db.ref('.info/serverTimeOffset').on('value',function(s){OFFSET=s.val()||0;});
 db.ref(R+'/clockAdj').on('value',function(s){ADJ=parseInt(s.val(),10)||0;});
-db.ref(R+'/config').on('value',function(s){CFG=s.val();render();});
-db.ref(R+'/waves').on('value',function(s){WAVES=s.val()||{};render();});
-db.ref(R+'/progress').on('value',function(s){PROGRESS=s.val()||{};render();});
-db.ref(R+'/penalties').on('value',function(s){PEN=s.val()||{};render();});
-db.ref(R+'/warnings').on('value',function(s){WARN=s.val()||{};render();});
+db.ref(R+'/config').on('value',function(s){CFG=s.val();scheduleRender();});
+db.ref(R+'/waves').on('value',function(s){WAVES=s.val()||{};scheduleRender();});
+db.ref(R+'/progress').on('value',function(s){PROGRESS=s.val()||{};scheduleRender();});
+db.ref(R+'/penalties').on('value',function(s){PEN=s.val()||{};scheduleRender();});
+db.ref(R+'/warnings').on('value',function(s){WARN=s.val()||{};scheduleRender();});
+db.ref('.info/connected').on('value',function(s){var on=s.val()===true,d=document.getElementById('netdot'),l=document.getElementById('netlabel');if(d)d.classList.toggle('off',!on);if(l){l.classList.toggle('off',!on);l.textContent=on?'Live':'Reconnexion\u2026';}});
+
+// ===== Rendu throttl\u00e9 : coalesce les rafales Firebase (taps juges) en ~1 rendu / 250ms =====
+var _rT=0,_rTimer=null;
+function scheduleRender(){
+  var since=Date.now()-_rT;
+  if(since>=250){ _rT=Date.now(); render(); }
+  else if(!_rTimer){ _rTimer=setTimeout(function(){ _rTimer=null; _rT=Date.now(); render(); }, 250-since); }
+}
 
 /* ── helpers (inchangés) ── */
 function now(){return Date.now()+OFFSET+ADJ;}
@@ -132,8 +145,11 @@ function prog(id){return(PROGRESS&&PROGRESS[id])||{};}
 function nSt(){return((CFG&&CFG.stations)||[]).filter(function(s){return s.seg==='station';}).length;}
 function doneCount(id){var p=prog(id);return p.stations?Object.values(p.stations).filter(function(x){return x&&x.done&&!x.auto;}).length:0;}
 function warnCount(id){var w=WARN[id];return w?Object.keys(w).length:0;}
+var _csCache={};
+function courseStateC(id){ if(_csCache[id])return _csCache[id]; return (_csCache[id]=courseState(id)); }
 function _num(v){return Math.round(parseFloat(v)||0);}
-function stIcon(nom){var n=(nom||'').toLowerCase();if(/ski/.test(n))return '\u26f7\ufe0f';if(/sled push/.test(n))return '\ud83d\udef7';if(/sled pull/.test(n))return '\ud83e\udea2';if(/burpee/.test(n))return '\ud83e\udd38';if(/row|rameur/.test(n))return '\ud83d\udea3';if(/farmer/.test(n))return '\ud83e\uddf3';if(/sandbag|lunge|fente/.test(n))return '\ud83c\udf92';if(/wall/.test(n))return '\ud83c\udfd0';return '\ud83c\udfcb\ufe0f';}
+var RUNNER='<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align:-2px"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg>';
+function stCode(nom){var n=(nom||'').toLowerCase();if(/ski/.test(n))return 'SKI';if(/sled push/.test(n))return 'PSH';if(/sled pull/.test(n))return 'PLL';if(/burpee/.test(n))return 'BUR';if(/row|rameur/.test(n))return 'ROW';if(/farmer/.test(n))return 'FAR';if(/sandbag|lunge|fente/.test(n))return 'LUN';if(/wall/.test(n))return 'WB';return '\u2022';}
 function WAVEcat(id){var w=Object.values(WAVES).find(function(w){return(w.athletes||[]).some(function(a){return a.id===id;});});return w?w.catId:null;}
 
 function courseState(id){
@@ -161,7 +177,7 @@ function courseState(id){
   return{segs:out,runActive:runActive,repNow:repNow};
 }
 function advScore(id){
-  var cs=courseState(id);
+  var cs=courseStateC(id);
   return doneCount(id)*1e9+(cs.runActive?5e8:0)+(cs.repNow?parseFloat(cs.repNow.val)||0:0);
 }
 function getSchedAt(w){
@@ -185,6 +201,7 @@ function cdText(remain){
 /* ── RENDER ── */
 function render(){
   var stage=document.getElementById('stage');if(!stage)return;
+  _csCache={};
   if(!CFG){stage.innerHTML='<div class="empty">⏳ En attente de la config…</div>';return;}
   var ev=document.getElementById('evnom');if(ev)ev.textContent=CFG.nom||'HYROX';
   var totSt=nSt();
@@ -236,14 +253,14 @@ function render(){
         var done=doneCount(t.id),pct=totSt?Math.round(done/totSt*100):0;
         var sub=t.club?esc(t.club):'';
         if(!isLead){var my=now()-t.startAt,ld=now()-d._ls,l=Math.max(0,my-ld);if(l>2000)sub+=(sub?' · ':'')+'+'+fmt(l);}
-        var cs=courseState(t.id);
+        var cs=courseStateC(t.id);
         var nowHtml='';
-        if(cs.runActive){ nowHtml='<span class="now">\ud83c\udfc3 Course</span>'; }
+        if(cs.runActive){ nowHtml='<span class="now">'+RUNNER+' Course</span>'; }
         else { var curSeg=null,_k; for(_k=0;_k<cs.segs.length;_k++){ if(cs.segs[_k].type==='station'&&cs.segs[_k].current){curSeg=cs.segs[_k];break;} }
           if(curSeg){ var rp=cs.repNow, rtxt=''; if(rp&&rp.val!=null){ rtxt=' \u00b7 '+_num(rp.val)+(rp.target?'/'+_num(rp.target):''); }
-            nowHtml='<span class="now">'+stIcon(curSeg.nom)+' '+esc(curSeg.nom)+rtxt+'</span>'; } }
+            nowHtml='<span class="now">'+esc(curSeg.nom)+rtxt+'</span>'; } }
         var strip='<div class="strip">'+cs.segs.filter(function(s){return s.type==='station';}).map(function(s){
-          var cls=s.done?'done':(s.current?'cur':''); return '<span class="seg '+cls+'">'+stIcon(s.nom)+'</span>'; }).join('')+'</div>';
+          var cls=s.done?'done':(s.current?'cur':''); return '<span class="seg '+cls+'">'+stCode(s.nom)+'</span>'; }).join('')+'</div>';
         html+='<div class="tr'+(isLead?' lead':'')+'">'
           +'<div class="rk">'+rank+'</div>'
           +'<div class="who">'
@@ -285,7 +302,7 @@ setInterval(function(){
     if(r<=0){rr=true;}
     else{if(el)el.textContent=cdText(r);if(r<180000)b.classList.add('urg');}
   });
-  if(rr)render();
+  if(rr)scheduleRender();
 },500);
 
 /* ── Écran géant : plein écran natif (rétroprojecteur) + agrandissement ── */
